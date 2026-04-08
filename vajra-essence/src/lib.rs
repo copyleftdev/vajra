@@ -27,147 +27,105 @@ mod tests {
     use super::*;
     use vajra_types::traits::{ConcernProfile, OutputFormat};
 
-    fn parse_doc(json: &str) -> vajra_types::document::Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(
+        json: &str,
+    ) -> Result<vajra_types::document::Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     #[test]
-    fn staff_profile_renders_narrative_sections() {
-        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#);
+    fn staff_profile_renders_narrative_sections() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#)?;
         let profile = StaffProfile;
         let essence = EssenceBuilder::new(&doc, &profile).build();
-        let text = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let text = profile.render(&essence, OutputFormat::Text)?;
 
-        assert!(
-            text.contains("Document Summary"),
-            "staff text should contain 'Document Summary'"
-        );
-        assert!(
-            text.contains("What Stands Out"),
-            "staff text should contain 'What Stands Out'"
-        );
-        assert!(
-            text.contains("What This Likely Means"),
-            "staff text should contain 'What This Likely Means'"
-        );
+        assert!(text.contains("Document Summary"));
+        assert!(text.contains("What Stands Out"));
+        assert!(text.contains("What This Likely Means"));
+        Ok(())
     }
 
     #[test]
-    fn engineer_profile_renders_technical_sections() {
-        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#);
+    fn engineer_profile_renders_technical_sections() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#)?;
         let profile = EngineerProfile;
         let essence = EssenceBuilder::new(&doc, &profile).build();
-        let text = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let text = profile.render(&essence, OutputFormat::Text)?;
 
-        assert!(
-            text.contains("Structure"),
-            "engineer text should contain 'Structure'"
-        );
-        assert!(
-            text.contains("Paths"),
-            "engineer text should contain 'Paths'"
-        );
-        assert!(
-            text.contains("Anomalies"),
-            "engineer text should contain 'Anomalies'"
-        );
-        assert!(
-            text.contains("Statistics"),
-            "engineer text should contain 'Statistics'"
-        );
+        assert!(text.contains("Structure"));
+        assert!(text.contains("Paths"));
+        assert!(text.contains("Anomalies"));
+        assert!(text.contains("Statistics"));
+        Ok(())
     }
 
     #[test]
-    fn render_json_produces_valid_json_with_expected_keys() {
-        let doc = parse_doc(r#"{"a": 1, "b": [2, 3]}"#);
+    fn render_json_produces_valid_json_with_expected_keys() -> Result<(), Box<dyn std::error::Error>>
+    {
+        let doc = parse_doc(r#"{"a": 1, "b": [2, 3]}"#)?;
         let profile = EngineerProfile;
         let essence = EssenceBuilder::new(&doc, &profile).build();
 
         let json = render_json(&essence);
 
-        assert!(
-            json.get("identity").is_some(),
-            "JSON should have 'identity' key"
-        );
-        assert!(
-            json.get("structure").is_some(),
-            "JSON should have 'structure' key"
-        );
-        assert!(
-            json.get("observations").is_some(),
-            "JSON should have 'observations' key"
-        );
-        assert!(
-            json.get("anomalies").is_some(),
-            "JSON should have 'anomalies' key"
-        );
+        assert!(json.get("identity").is_some());
+        assert!(json.get("structure").is_some());
+        assert!(json.get("observations").is_some());
+        assert!(json.get("anomalies").is_some());
 
-        // Structure should have the right subkeys
         let structure = json.get("structure").unwrap_or(&serde_json::Value::Null);
         assert!(structure.get("total_nodes").is_some());
         assert!(structure.get("distinct_paths").is_some());
         assert!(structure.get("max_depth").is_some());
 
-        // Observations should be an array
         assert!(json["observations"].is_array());
         assert!(json["anomalies"].is_array());
+        Ok(())
     }
 
     #[test]
-    fn render_json_via_profile() {
-        let doc = parse_doc(r#"{"x": 42}"#);
+    fn render_json_via_profile() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"x": 42}"#)?;
         let profile = StaffProfile;
         let essence = EssenceBuilder::new(&doc, &profile).build();
 
-        let json_str = profile
-            .render(&essence, OutputFormat::Json)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let json_str = profile.render(&essence, OutputFormat::Json)?;
 
-        let parsed: serde_json::Value =
-            serde_json::from_str(&json_str).unwrap_or_else(|e| panic!("{e}"));
+        let parsed: serde_json::Value = serde_json::from_str(&json_str)?;
         assert!(parsed.is_object());
         assert!(parsed.get("identity").is_some());
+        Ok(())
     }
 
     #[test]
-    fn empty_document_produces_minimal_valid_essence() {
-        let doc = parse_doc("{}");
+    fn empty_document_produces_minimal_valid_essence() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc("{}")?;
         let profile = StaffProfile;
 
         let essence = EssenceBuilder::new(&doc, &profile).build();
         assert!(essence.observations.is_empty());
         assert!(!essence.document_identity.is_empty());
 
-        // Text rendering should still work
-        let text = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let text = profile.render(&essence, OutputFormat::Text)?;
         assert!(!text.is_empty());
         assert!(text.contains("Document Summary"));
 
-        // JSON rendering should still work
         let json = render_json(&essence);
         assert!(json["observations"].is_array());
         assert_eq!(json["observations"].as_array().map(Vec::len), Some(0));
+        Ok(())
     }
 
     #[test]
-    fn full_pipeline_deterministic() {
+    fn full_pipeline_deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let json_input = r#"{"users": [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]}"#;
-        let doc = parse_doc(json_input);
+        let doc = parse_doc(json_input)?;
 
         use vajra_stats::StatsAnalyzer;
         use vajra_types::traits::Analyzer;
         let stats_analyzer = StatsAnalyzer;
-        let stats = stats_analyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let stats = stats_analyzer.analyze(&doc)?;
 
         let profile = EngineerProfile;
         let e1 = EssenceBuilder::new(&doc, &profile)
@@ -184,7 +142,6 @@ mod tests {
             assert!((a.score - b.score).abs() < f64::EPSILON);
         }
 
-        // Render should also be identical
         let t1 = render_text(&e1, "engineer");
         let t2 = render_text(&e2, "engineer");
         assert_eq!(t1, t2);
@@ -192,6 +149,7 @@ mod tests {
         let j1 = render_json(&e1);
         let j2 = render_json(&e2);
         assert_eq!(j1, j2);
+        Ok(())
     }
 
     #[test]
@@ -204,77 +162,47 @@ mod tests {
     }
 
     #[test]
-    fn fraud_profile_renders_investigative_sections() {
-        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#);
+    fn fraud_profile_renders_investigative_sections() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#)?;
         let profile = FraudProfile;
         let essence = EssenceBuilder::new(&doc, &profile).build();
-        let text = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let text = profile.render(&essence, OutputFormat::Text)?;
 
-        assert!(
-            text.contains("Risk Indicators"),
-            "fraud text should contain 'Risk Indicators'"
-        );
-        assert!(
-            text.contains("Numeric Anomalies"),
-            "fraud text should contain 'Numeric Anomalies'"
-        );
-        assert!(
-            text.contains("Pattern Analysis"),
-            "fraud text should contain 'Pattern Analysis'"
-        );
+        assert!(text.contains("Risk Indicators"));
+        assert!(text.contains("Numeric Anomalies"));
+        assert!(text.contains("Pattern Analysis"));
+        Ok(())
     }
 
     #[test]
-    fn auditor_profile_renders_formal_sections() {
-        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#);
+    fn auditor_profile_renders_formal_sections() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#)?;
         let profile = AuditorProfile;
         let essence = EssenceBuilder::new(&doc, &profile).build();
-        let text = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let text = profile.render(&essence, OutputFormat::Text)?;
 
-        assert!(
-            text.contains("Completeness Assessment"),
-            "auditor text should contain 'Completeness Assessment'"
-        );
-        assert!(
-            text.contains("Consistency Findings"),
-            "auditor text should contain 'Consistency Findings'"
-        );
-        assert!(
-            text.contains("Traceability Notes"),
-            "auditor text should contain 'Traceability Notes'"
-        );
+        assert!(text.contains("Completeness Assessment"));
+        assert!(text.contains("Consistency Findings"));
+        assert!(text.contains("Traceability Notes"));
+        Ok(())
     }
 
     #[test]
-    fn ai_profile_renders_compact_sections() {
-        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#);
+    fn ai_profile_renders_compact_sections() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#)?;
         let profile = AiProfile;
         let essence = EssenceBuilder::new(&doc, &profile).build();
-        let text = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let text = profile.render(&essence, OutputFormat::Text)?;
 
-        assert!(
-            text.contains("structure"),
-            "ai text should contain 'structure'"
-        );
-        assert!(
-            text.contains("observations"),
-            "ai text should contain 'observations'"
-        );
-        assert!(
-            text.contains("anomalies"),
-            "ai text should contain 'anomalies'"
-        );
+        assert!(text.contains("structure"));
+        assert!(text.contains("observations"));
+        assert!(text.contains("anomalies"));
+        Ok(())
     }
 
     #[test]
-    fn new_profiles_render_json_successfully() {
-        let doc = parse_doc(r#"{"x": 42}"#);
+    fn new_profiles_render_json_successfully() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"x": 42}"#)?;
 
         for profile in &[
             &FraudProfile as &dyn ConcernProfile,
@@ -282,13 +210,11 @@ mod tests {
             &AiProfile as &dyn ConcernProfile,
         ] {
             let essence = EssenceBuilder::new(&doc, *profile).build();
-            let json_str = profile
-                .render(&essence, OutputFormat::Json)
-                .unwrap_or_else(|e| panic!("{e}"));
-            let parsed: serde_json::Value =
-                serde_json::from_str(&json_str).unwrap_or_else(|e| panic!("{e}"));
+            let json_str = profile.render(&essence, OutputFormat::Json)?;
+            let parsed: serde_json::Value = serde_json::from_str(&json_str)?;
             assert!(parsed.is_object());
             assert!(parsed.get("identity").is_some());
         }
+        Ok(())
     }
 }

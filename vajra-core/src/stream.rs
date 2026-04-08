@@ -163,15 +163,13 @@ fn compute_max_depth(value: &serde_json::Value, current: u32) -> u32 {
 mod tests {
     use super::*;
 
-    fn parse_value(json: &str) -> serde_json::Value {
-        serde_json::from_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_value(json: &str) -> Result<serde_json::Value, serde_json::Error> {
+        serde_json::from_str(json)
     }
 
     #[test]
-    fn emit_simple_object_correct_events() {
-        let value = parse_value(r#"{"a": 1, "b": "hello"}"#);
+    fn emit_simple_object_correct_events() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value(r#"{"a": 1, "b": "hello"}"#)?;
         let events = emit_events(&value);
 
         // ObjectStart($), Value($.a), Value($.b), ObjectEnd($)
@@ -186,11 +184,12 @@ mod tests {
         assert!(
             matches!(events.last(), Some(JsonEvent::ObjectEnd { path }) if path == &WildcardPath::root())
         );
+        Ok(())
     }
 
     #[test]
-    fn emit_nested_arrays_correct_wildcard_paths() {
-        let value = parse_value(r#"[[1, 2], [3]]"#);
+    fn emit_nested_arrays_correct_wildcard_paths() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value(r#"[[1, 2], [3]]"#)?;
         let events = emit_events(&value);
 
         // Check that inner elements have $[*][*] paths
@@ -209,11 +208,12 @@ mod tests {
             }
         }
         assert_eq!(inner_values.len(), 3);
+        Ok(())
     }
 
     #[test]
-    fn emit_event_count_matches_node_count() {
-        let value = parse_value(r#"{"a": 1, "b": [2, 3], "c": {"d": true}}"#);
+    fn emit_event_count_matches_node_count() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value(r#"{"a": 1, "b": [2, 3], "c": {"d": true}}"#)?;
         let events = emit_events(&value);
 
         // Count Value events + container start events (which also represent nodes)
@@ -233,36 +233,40 @@ mod tests {
         // But we count ObjectStart/ArrayStart as container nodes, plus scalar Values
         // ObjectStart($) + Value($.a) + ArrayStart($.b) + Value($.b[*]) x2 + ObjectStart($.c) + Value($.c.d)
         assert_eq!(node_events, 7);
+        Ok(())
     }
 
     #[test]
-    fn emit_empty_object() {
-        let value = parse_value("{}");
+    fn emit_empty_object() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value("{}")?;
         let events = emit_events(&value);
         assert_eq!(events.len(), 2); // ObjectStart + ObjectEnd
+        Ok(())
     }
 
     #[test]
-    fn emit_empty_array() {
-        let value = parse_value("[]");
+    fn emit_empty_array() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value("[]")?;
         let events = emit_events(&value);
         assert_eq!(events.len(), 2); // ArrayStart + ArrayEnd
+        Ok(())
     }
 
     #[test]
-    fn emit_scalar_root() {
-        let value = parse_value("42");
+    fn emit_scalar_root() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value("42")?;
         let events = emit_events(&value);
         assert_eq!(events.len(), 1);
         assert!(matches!(&events[0], JsonEvent::Value {
             path,
             value: ScalarValue::Integer(42)
         } if path == &WildcardPath::root()));
+        Ok(())
     }
 
     #[test]
-    fn emit_null_root() {
-        let value = parse_value("null");
+    fn emit_null_root() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value("null")?;
         let events = emit_events(&value);
         assert_eq!(events.len(), 1);
         assert!(matches!(
@@ -272,11 +276,12 @@ mod tests {
                 ..
             }
         ));
+        Ok(())
     }
 
     #[test]
-    fn emit_bool_values() {
-        let value = parse_value(r#"{"x": true, "y": false}"#);
+    fn emit_bool_values() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value(r#"{"x": true, "y": false}"#)?;
         let events = emit_events(&value);
 
         let values: Vec<_> = events
@@ -291,33 +296,36 @@ mod tests {
             .collect();
 
         assert_eq!(values.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn emit_float_value() {
-        let value = parse_value("3.14");
+    fn emit_float_value() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value("2.75")?;
         let events = emit_events(&value);
         assert_eq!(events.len(), 1);
-        if let JsonEvent::Value {
+        let JsonEvent::Value {
             value: ScalarValue::Float(f),
             ..
         } = &events[0]
-        {
-            assert!((*f - 3.14).abs() < 1e-10);
-        } else {
-            panic!("expected Float event");
-        }
+        else {
+            return Err("expected Float event".into());
+        };
+        assert!((*f - 2.75).abs() < 1e-10);
+        Ok(())
     }
 
     #[test]
-    fn count_nodes_correct() {
-        let value = parse_value(r#"{"a": 1, "b": [2, 3], "c": {"d": true}}"#);
+    fn count_nodes_correct() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value(r#"{"a": 1, "b": [2, 3], "c": {"d": true}}"#)?;
         assert_eq!(count_nodes(&value), 7);
+        Ok(())
     }
 
     #[test]
-    fn compute_max_depth_correct() {
-        let value = parse_value(r#"{"a": {"b": {"c": 1}}}"#);
+    fn compute_max_depth_correct() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value(r#"{"a": {"b": {"c": 1}}}"#)?;
         assert_eq!(compute_max_depth(&value, 0), 3);
+        Ok(())
     }
 }

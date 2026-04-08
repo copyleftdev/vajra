@@ -202,9 +202,7 @@ fn build_drill(observations: &[ScoredObservation]) -> Vec<serde_json::Value> {
         }
 
         // Determine what capabilities this path offers
-        let entry = path_capabilities
-            .entry(path.clone())
-            .or_insert_with(Vec::new);
+        let entry = path_capabilities.entry(path.clone()).or_default();
 
         if obs.observation.anomaly_strength > 0.0 && !entry.contains(&"anomalies".to_string()) {
             entry.push("anomalies".to_string());
@@ -402,25 +400,25 @@ mod tests {
     }
 
     #[test]
-    fn compact_ai_has_expected_top_level_keys() {
+    fn compact_ai_has_expected_top_level_keys() -> Result<(), Box<dyn std::error::Error>> {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, false);
-        let obj = result.as_object().unwrap();
+        let obj = result.as_object().ok_or("expected object")?;
         assert!(obj.contains_key("v"), "should have version key 'v'");
         assert!(obj.contains_key("doc"), "should have 'doc' key");
         assert!(obj.contains_key("motifs"), "should have 'motifs' key");
         assert!(obj.contains_key("anomalies"), "should have 'anomalies' key");
         assert!(obj.contains_key("notable"), "should have 'notable' key");
         assert!(obj.contains_key("meta"), "should have 'meta' key");
+        Ok(())
     }
 
     #[test]
-    fn compact_ai_uses_short_keys() {
+    fn compact_ai_uses_short_keys() -> Result<(), Box<dyn std::error::Error>> {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, false);
-        let serialized = serde_json::to_string(&result).unwrap();
+        let serialized = serde_json::to_string(&result).unwrap_or_default();
 
-        // Should NOT contain verbose keys
         assert!(
             !serialized.contains("\"path\""),
             "should use 'p' not 'path' for observations"
@@ -430,10 +428,9 @@ mod tests {
             "should not contain 'description' key"
         );
 
-        // Should contain short keys
-        let anomalies = result["anomalies"].as_array().unwrap();
+        let anomalies = result["anomalies"].as_array().ok_or("expected array")?;
         if !anomalies.is_empty() {
-            let first = anomalies[0].as_object().unwrap();
+            let first = anomalies[0].as_object().ok_or("expected object")?;
             assert!(first.contains_key("p"), "anomaly should use 'p' for path");
             assert!(first.contains_key("t"), "anomaly should use 't' for type");
             assert!(
@@ -441,22 +438,22 @@ mod tests {
                 "anomaly should use 's' for score/strength"
             );
         }
+        Ok(())
     }
 
     #[test]
-    fn compact_ai_chain_ready_includes_drill() {
+    fn compact_ai_chain_ready_includes_drill() -> Result<(), Box<dyn std::error::Error>> {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, true);
         assert!(
             result.get("drill").is_some(),
             "chain-ready output should include 'drill' section"
         );
-        let drill = result["drill"].as_array().unwrap();
+        let drill = result["drill"].as_array().ok_or("expected array")?;
         assert!(
             !drill.is_empty(),
             "drill section should have entries for paths"
         );
-        // Each drill entry should have path and available
         for entry in drill {
             assert!(entry.get("path").is_some(), "drill entry needs 'path'");
             assert!(
@@ -464,6 +461,7 @@ mod tests {
                 "drill entry needs 'available'"
             );
         }
+        Ok(())
     }
 
     #[test]
@@ -477,13 +475,12 @@ mod tests {
     }
 
     #[test]
-    fn compact_ai_motifs_collapsed() {
+    fn compact_ai_motifs_collapsed() -> Result<(), Box<dyn std::error::Error>> {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, false);
-        let motifs = result["motifs"].as_array().unwrap();
-        // We have one motif observation; it should be collapsed
+        let motifs = result["motifs"].as_array().ok_or("expected array")?;
         assert!(!motifs.is_empty(), "should have at least one motif entry");
-        let first_motif = motifs[0].as_object().unwrap();
+        let first_motif = motifs[0].as_object().ok_or("expected object")?;
         assert!(first_motif.contains_key("hash"), "motif should have 'hash'");
         assert!(
             first_motif.contains_key("count"),
@@ -493,68 +490,68 @@ mod tests {
             first_motif.contains_key("fields"),
             "motif should have 'fields'"
         );
+        Ok(())
     }
 
     #[test]
-    fn compact_ai_anomalies_separate_from_notable() {
+    fn compact_ai_anomalies_separate_from_notable() -> Result<(), Box<dyn std::error::Error>> {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, false);
 
-        let anomalies = result["anomalies"].as_array().unwrap();
-        let notable = result["notable"].as_array().unwrap();
+        let anomalies = result["anomalies"].as_array().ok_or("expected array")?;
+        let notable = result["notable"].as_array().ok_or("expected array")?;
 
-        // The type_instability and numeric_outlier should be in anomalies
         assert!(!anomalies.is_empty(), "should have anomaly entries");
-        // The enum-like should be in notable
         assert!(!notable.is_empty(), "should have notable entries");
 
-        // Verify no overlap: anomaly paths should not appear in notable
         let anomaly_paths: Vec<&str> = anomalies.iter().filter_map(|a| a["p"].as_str()).collect();
         let notable_paths: Vec<&str> = notable.iter().filter_map(|n| n["p"].as_str()).collect();
 
         for ap in &anomaly_paths {
-            // A path CAN appear in both if it has both anomaly and non-anomaly observations
-            // but our test data has each path only once
             assert!(
                 !notable_paths.contains(ap),
                 "path {ap} should not be in both anomalies and notable"
             );
         }
+        Ok(())
     }
 
     #[test]
-    fn compact_ai_version_tag() {
+    fn compact_ai_version_tag() -> Result<(), Box<dyn std::error::Error>> {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, false);
-        assert_eq!(result["v"].as_str().unwrap(), "vajra/1");
+        assert_eq!(result["v"].as_str().ok_or("expected str")?, "vajra/1");
+        Ok(())
     }
 
     #[test]
-    fn compact_ai_doc_section_matches_metadata() {
+    fn compact_ai_doc_section_matches_metadata() -> Result<(), Box<dyn std::error::Error>> {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, false);
-        let doc = result.get("doc").unwrap();
-        assert_eq!(doc["nodes"].as_u64().unwrap(), 51);
-        assert_eq!(doc["paths"].as_u64().unwrap(), 24);
-        assert_eq!(doc["depth"].as_u64().unwrap(), 5);
+        let doc = result.get("doc").ok_or("expected doc")?;
+        assert_eq!(doc["nodes"].as_u64().ok_or("expected u64")?, 51);
+        assert_eq!(doc["paths"].as_u64().ok_or("expected u64")?, 24);
+        assert_eq!(doc["depth"].as_u64().ok_or("expected u64")?, 5);
+        Ok(())
     }
 
     #[test]
-    fn compact_ai_meta_truncation_field() {
+    fn compact_ai_meta_truncation_field() -> Result<(), Box<dyn std::error::Error>> {
         let mut essence = make_test_essence();
         essence.truncated = true;
         essence.budget_used = Some(450);
         essence.budget_limit = Some(500);
 
         let result = render_compact_ai(&essence, false);
-        let meta = result.get("meta").unwrap();
-        assert_eq!(meta["truncated"].as_bool().unwrap(), true);
-        assert_eq!(meta["budget_used"].as_u64().unwrap(), 450);
-        assert_eq!(meta["budget_limit"].as_u64().unwrap(), 500);
+        let meta = result.get("meta").ok_or("expected meta")?;
+        assert!(meta["truncated"].as_bool().ok_or("expected bool")?);
+        assert_eq!(meta["budget_used"].as_u64().ok_or("expected u64")?, 450);
+        assert_eq!(meta["budget_limit"].as_u64().ok_or("expected u64")?, 500);
+        Ok(())
     }
 
     #[test]
-    fn compact_ai_empty_essence() {
+    fn compact_ai_empty_essence() -> Result<(), Box<dyn std::error::Error>> {
         let essence = EssenceData {
             observations: vec![],
             document_identity: "empty".to_string(),
@@ -567,10 +564,10 @@ mod tests {
         };
         let result = render_compact_ai(&essence, true);
         assert!(result.is_object());
-        assert_eq!(result["anomalies"].as_array().unwrap().len(), 0);
-        assert_eq!(result["notable"].as_array().unwrap().len(), 0);
-        assert_eq!(result["motifs"].as_array().unwrap().len(), 0);
-        // drill should exist but be empty
-        assert_eq!(result["drill"].as_array().unwrap().len(), 0);
+        assert_eq!(result["anomalies"].as_array().ok_or("a")?.len(), 0);
+        assert_eq!(result["notable"].as_array().ok_or("a")?.len(), 0);
+        assert_eq!(result["motifs"].as_array().ok_or("a")?.len(), 0);
+        assert_eq!(result["drill"].as_array().ok_or("a")?.len(), 0);
+        Ok(())
     }
 }

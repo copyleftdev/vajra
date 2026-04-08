@@ -225,20 +225,15 @@ mod tests {
     use std::io::Write;
 
     /// Helper: compress a string with gzip.
-    fn gzip_compress(input: &str) -> Vec<u8> {
+    fn gzip_compress(input: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
-        encoder
-            .write_all(input.as_bytes())
-            .unwrap_or_else(|e| panic!("gzip write failed: {e}"));
-        encoder
-            .finish()
-            .unwrap_or_else(|e| panic!("gzip finish failed: {e}"))
+        encoder.write_all(input.as_bytes())?;
+        Ok(encoder.finish()?)
     }
 
     /// Helper: compress a string with zstd.
-    fn zstd_compress(input: &str) -> Vec<u8> {
-        zstd::encode_all(input.as_bytes(), 3)
-            .unwrap_or_else(|e| panic!("zstd compress failed: {e}"))
+    fn zstd_compress(input: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        Ok(zstd::encode_all(input.as_bytes(), 3)?)
     }
 
     // -----------------------------------------------------------------------
@@ -320,15 +315,17 @@ mod tests {
     }
 
     #[test]
-    fn detect_magic_bytes_gzip() {
-        let data = gzip_compress(r#"{"hello":"world"}"#);
+    fn detect_magic_bytes_gzip() -> Result<(), Box<dyn std::error::Error>> {
+        let data = gzip_compress(r#"{"hello":"world"}"#)?;
         assert_eq!(detect_compression_from_bytes(&data), Compression::Gzip);
+        Ok(())
     }
 
     #[test]
-    fn detect_magic_bytes_zstd() {
-        let data = zstd_compress(r#"{"hello":"world"}"#);
+    fn detect_magic_bytes_zstd() -> Result<(), Box<dyn std::error::Error>> {
+        let data = zstd_compress(r#"{"hello":"world"}"#)?;
         assert_eq!(detect_compression_from_bytes(&data), Compression::Zstd);
+        Ok(())
     }
 
     #[test]
@@ -342,21 +339,23 @@ mod tests {
     // -----------------------------------------------------------------------
 
     #[test]
-    fn decompress_gzip_json() {
+    fn decompress_gzip_json() -> Result<(), Box<dyn std::error::Error>> {
         let original = r#"{"name":"Alice","age":30}"#;
-        let compressed = gzip_compress(original);
+        let compressed = gzip_compress(original)?;
         let result = decompress_bytes(&compressed, Compression::Gzip);
         assert!(result.is_ok(), "decompress failed: {result:?}");
         assert_eq!(result.unwrap_or_default(), original);
+        Ok(())
     }
 
     #[test]
-    fn decompress_zstd_json() {
+    fn decompress_zstd_json() -> Result<(), Box<dyn std::error::Error>> {
         let original = r#"{"name":"Bob","scores":[1,2,3]}"#;
-        let compressed = zstd_compress(original);
+        let compressed = zstd_compress(original)?;
         let result = decompress_bytes(&compressed, Compression::Zstd);
         assert!(result.is_ok(), "decompress failed: {result:?}");
         assert_eq!(result.unwrap_or_default(), original);
+        Ok(())
     }
 
     #[test]
@@ -404,38 +403,41 @@ mod tests {
     // -----------------------------------------------------------------------
 
     #[test]
-    fn gzip_bomb_hits_size_limit() {
+    fn gzip_bomb_hits_size_limit() -> Result<(), Box<dyn std::error::Error>> {
         // Create a string that compresses well but decompresses large.
         let big = "A".repeat(1_000_000); // 1 MB of 'A's
-        let compressed = gzip_compress(&big);
+        let compressed = gzip_compress(&big)?;
         // Set a small limit
         let result = decompress_bytes_with_limit(&compressed, Compression::Gzip, 1024);
         assert!(result.is_err());
         match result {
             Err(VajraError::LimitExceeded { .. }) => {} // expected
-            other => panic!("expected LimitExceeded, got {other:?}"),
+            other => return Err(format!("expected LimitExceeded, got {other:?}").into()),
         }
+        Ok(())
     }
 
     #[test]
-    fn zstd_bomb_hits_size_limit() {
+    fn zstd_bomb_hits_size_limit() -> Result<(), Box<dyn std::error::Error>> {
         let big = "B".repeat(1_000_000);
-        let compressed = zstd_compress(&big);
+        let compressed = zstd_compress(&big)?;
         let result = decompress_bytes_with_limit(&compressed, Compression::Zstd, 1024);
         assert!(result.is_err());
         match result {
             Err(VajraError::LimitExceeded { .. }) => {} // expected
-            other => panic!("expected LimitExceeded, got {other:?}"),
+            other => return Err(format!("expected LimitExceeded, got {other:?}").into()),
         }
+        Ok(())
     }
 
     #[test]
-    fn truncated_gzip_returns_error() {
-        let full = gzip_compress(r#"{"hello":"world"}"#);
+    fn truncated_gzip_returns_error() -> Result<(), Box<dyn std::error::Error>> {
+        let full = gzip_compress(r#"{"hello":"world"}"#)?;
         // Truncate: take only first half
         let truncated = &full[..full.len() / 2];
         let result = decompress_bytes(truncated, Compression::Gzip);
         assert!(result.is_err());
+        Ok(())
     }
 
     #[test]
@@ -472,35 +474,25 @@ mod tests {
     // -----------------------------------------------------------------------
 
     #[test]
-    fn decompress_gzip_deterministic() {
+    fn decompress_gzip_deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let original = r#"{"items":[1,2,3],"name":"test"}"#;
-        let compressed = gzip_compress(original);
-        let results: Vec<String> = (0..10)
-            .map(|_| {
-                decompress_bytes(&compressed, Compression::Gzip).unwrap_or_else(|e| {
-                    panic!("decompress failed: {e}");
-                })
-            })
-            .collect();
-        for r in &results {
-            assert_eq!(r, original);
+        let compressed = gzip_compress(original)?;
+        for _ in 0..10 {
+            let result = decompress_bytes(&compressed, Compression::Gzip)?;
+            assert_eq!(result, original);
         }
+        Ok(())
     }
 
     #[test]
-    fn decompress_zstd_deterministic() {
+    fn decompress_zstd_deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let original = r#"{"items":[4,5,6],"name":"zstd_test"}"#;
-        let compressed = zstd_compress(original);
-        let results: Vec<String> = (0..10)
-            .map(|_| {
-                decompress_bytes(&compressed, Compression::Zstd).unwrap_or_else(|e| {
-                    panic!("decompress failed: {e}");
-                })
-            })
-            .collect();
-        for r in &results {
-            assert_eq!(r, original);
+        let compressed = zstd_compress(original)?;
+        for _ in 0..10 {
+            let result = decompress_bytes(&compressed, Compression::Zstd)?;
+            assert_eq!(result, original);
         }
+        Ok(())
     }
 
     // -----------------------------------------------------------------------
@@ -508,73 +500,79 @@ mod tests {
     // -----------------------------------------------------------------------
 
     #[test]
-    fn decompress_file_gzip() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn decompress_file_gzip() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.json.gz");
         let original = r#"{"file":"gzip_test"}"#;
-        let compressed = gzip_compress(original);
-        std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
+        let compressed = gzip_compress(original)?;
+        std::fs::write(&path, &compressed)?;
 
         let result = decompress_file(&path);
         assert!(result.is_ok(), "decompress_file failed: {result:?}");
         assert_eq!(result.unwrap_or_default(), original);
+        Ok(())
     }
 
     #[test]
-    fn decompress_file_zstd() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn decompress_file_zstd() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.json.zst");
         let original = r#"{"file":"zstd_test"}"#;
-        let compressed = zstd_compress(original);
-        std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
+        let compressed = zstd_compress(original)?;
+        std::fs::write(&path, &compressed)?;
 
         let result = decompress_file(&path);
         assert!(result.is_ok(), "decompress_file failed: {result:?}");
         assert_eq!(result.unwrap_or_default(), original);
+        Ok(())
     }
 
     #[test]
-    fn decompress_file_plain() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn decompress_file_plain() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.json");
         let original = r#"{"file":"plain"}"#;
-        std::fs::write(&path, original).unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, original)?;
 
         let result = decompress_file(&path);
         assert!(result.is_ok(), "decompress_file failed: {result:?}");
         assert_eq!(result.unwrap_or_default(), original);
+        Ok(())
     }
 
     #[test]
-    fn decompress_file_nonexistent() {
+    fn decompress_file_nonexistent() -> Result<(), Box<dyn std::error::Error>> {
         let result = decompress_file(Path::new("/nonexistent/file.json.gz"));
         assert!(result.is_err());
         match result {
             Err(VajraError::Io { .. }) => {} // expected
-            other => panic!("expected Io error, got {other:?}"),
+            other => return Err(format!("expected Io error, got {other:?}").into()),
         }
+        Ok(())
     }
 
     #[test]
-    fn zero_length_file_returns_error() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn zero_length_file_returns_error() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("empty.json.gz");
-        std::fs::write(&path, &[]).unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, [])?;
 
         let result = decompress_file(&path);
         assert!(result.is_err());
+        Ok(())
     }
 
     #[test]
-    fn large_decompressed_output_limit_enforcement() {
+    fn large_decompressed_output_limit_enforcement() -> Result<(), Box<dyn std::error::Error>> {
         // 500 KB of data, limit to 100 KB
         let big = "X".repeat(500_000);
-        let compressed = gzip_compress(&big);
+        let compressed = gzip_compress(&big)?;
         let result = decompress_bytes_with_limit(&compressed, Compression::Gzip, 100_000);
         assert!(result.is_err());
         match result {
             Err(VajraError::LimitExceeded { .. }) => {} // expected
-            other => panic!("expected LimitExceeded, got {other:?}"),
+            other => return Err(format!("expected LimitExceeded, got {other:?}").into()),
         }
+        Ok(())
     }
 }

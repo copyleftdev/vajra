@@ -104,7 +104,7 @@ impl StreamingFingerprintAccumulator {
             let type_name = self
                 .path_types
                 .get(path)
-                .and_then(|counts| dominant_type(counts))
+                .and_then(dominant_type)
                 .map_or("none", json_type_name);
 
             hasher.update(type_name.as_bytes());
@@ -157,24 +157,20 @@ mod tests {
     use vajra_core::stream::emit_events;
     use vajra_types::Analyzer;
 
-    fn parse_value(json: &str) -> serde_json::Value {
-        serde_json::from_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_value(json: &str) -> Result<serde_json::Value, serde_json::Error> {
+        serde_json::from_str(json)
     }
 
-    fn parse_doc(json: &str) -> vajra_types::Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(json: &str) -> Result<vajra_types::Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     // Test 10: Path set matches DOM path set fingerprint
     #[test]
-    fn streaming_path_set_matches_dom() {
+    fn streaming_path_set_matches_dom() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"a": 1, "b": [2, 3], "c": {"d": true}}"#;
-        let value = parse_value(json);
-        let doc = parse_doc(json);
+        let value = parse_value(json)?;
+        let doc = parse_doc(json)?;
 
         // DOM fingerprint
         let dom_fp = crate::path_set::path_set_fingerprint(&doc);
@@ -189,14 +185,15 @@ mod tests {
             dom_fp, stream_fp.path_set,
             "path set fingerprints should match"
         );
+        Ok(())
     }
 
     // Test 11: Typed path matches DOM typed path fingerprint
     #[test]
-    fn streaming_typed_path_matches_dom() {
+    fn streaming_typed_path_matches_dom() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"a": 1, "b": "hello", "c": [true, false]}"#;
-        let value = parse_value(json);
-        let doc = parse_doc(json);
+        let value = parse_value(json)?;
+        let doc = parse_doc(json)?;
 
         // DOM fingerprint
         let dom_fp = crate::typed_path::typed_path_fingerprint(&doc);
@@ -211,19 +208,18 @@ mod tests {
             dom_fp, stream_fp.typed_path,
             "typed path fingerprints should match"
         );
+        Ok(())
     }
 
     // Test 12 (part 1): Full streaming pipeline produces equivalent results
     #[test]
-    fn full_pipeline_fingerprints_match_dom() {
+    fn full_pipeline_fingerprints_match_dom() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"users": [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]}"#;
-        let value = parse_value(json);
-        let doc = parse_doc(json);
+        let value = parse_value(json)?;
+        let doc = parse_doc(json)?;
 
         // DOM fingerprints
-        let dom_result = crate::analyzer::FingerprintAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let dom_result = crate::analyzer::FingerprintAnalyzer.analyze(&doc)?;
 
         // Streaming fingerprints
         let events = emit_events(&value);
@@ -233,6 +229,7 @@ mod tests {
 
         assert_eq!(dom_result.path_set, stream_result.path_set);
         assert_eq!(dom_result.typed_path, stream_result.typed_path);
+        Ok(())
     }
 
     #[test]
@@ -245,9 +242,9 @@ mod tests {
     }
 
     #[test]
-    fn path_set_deterministic() {
+    fn path_set_deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"x": 1, "y": 2}"#;
-        let value = parse_value(json);
+        let value = parse_value(json)?;
         let events = emit_events(&value);
 
         let mut acc1 = StreamingFingerprintAccumulator::new();
@@ -260,5 +257,6 @@ mod tests {
 
         assert_eq!(r1.path_set, r2.path_set);
         assert_eq!(r1.typed_path, r2.typed_path);
+        Ok(())
     }
 }

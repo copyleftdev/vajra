@@ -318,8 +318,8 @@ mod tests {
     use vajra_stats::StatsAnalyzer;
     use vajra_types::traits::Analyzer;
 
-    fn parse_doc(json: &str) -> Document {
-        vajra_core::parse_str(json).unwrap()
+    fn parse_doc(json: &str) -> Result<Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     fn make_ctx_with_stats<'a>(doc: &'a Document, stats: &'a StatsResult) -> QueryContext<'a> {
@@ -334,226 +334,217 @@ mod tests {
     }
 
     #[test]
-    fn path_lookup_existing() {
-        let doc = parse_doc(r#"{"a": {"b": 42}}"#);
+    fn path_lookup_existing() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": {"b": 42}}"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("$.a.b").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::PathSet(ps) => {
-                assert_eq!(ps.len(), 1);
-                assert_eq!(ps[0].0.to_string(), "$.a.b");
-                assert_eq!(ps[0].1, vec![serde_json::json!(42)]);
-            }
-            other => panic!("expected PathSet, got {other:?}"),
-        }
+        let expr = parse_expr("$.a.b")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::PathSet(ps) = result else {
+            return Err("expected PathSet".into());
+        };
+        assert_eq!(ps.len(), 1);
+        assert_eq!(ps[0].0.to_string(), "$.a.b");
+        assert_eq!(ps[0].1, vec![serde_json::json!(42)]);
+        Ok(())
     }
 
     #[test]
-    fn path_lookup_nonexistent() {
-        let doc = parse_doc(r#"{"a": 1}"#);
+    fn path_lookup_nonexistent() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1}"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("$.z.missing").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::PathSet(ps) => {
-                assert!(ps.is_empty());
-            }
-            other => panic!("expected empty PathSet, got {other:?}"),
-        }
+        let expr = parse_expr("$.z.missing")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::PathSet(ps) = result else {
+            return Err("expected empty PathSet".into());
+        };
+        assert!(ps.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn entropy_returns_value() {
-        let doc = parse_doc(r#"["x", "y", "x", "x", "y"]"#);
+    fn entropy_returns_value() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["x", "y", "x", "x", "y"]"#)?;
         let analyzer = StatsAnalyzer;
-        let stats = analyzer.analyze(&doc).unwrap();
+        let stats = analyzer.analyze(&doc)?;
         let ctx = make_ctx_with_stats(&doc, &stats);
-        let expr = parse_expr("entropy($[*])").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => {
-                // Entropy for p=[3/5, 2/5]
-                let expected =
-                    -(3.0 / 5.0 * (3.0_f64 / 5.0).log2()) - (2.0 / 5.0 * (2.0_f64 / 5.0).log2());
-                assert!((v - expected).abs() < 1e-8);
-            }
-            other => panic!("expected Scalar, got {other:?}"),
-        }
+        let expr = parse_expr("entropy($[*])")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar".into());
+        };
+        let expected = -(3.0 / 5.0 * (3.0_f64 / 5.0).log2()) - (2.0 / 5.0 * (2.0_f64 / 5.0).log2());
+        assert!((v - expected).abs() < 1e-8);
+        Ok(())
     }
 
     #[test]
-    fn cardinality_returns_value() {
-        let doc = parse_doc(r#"["a", "b", "c", "a"]"#);
+    fn cardinality_returns_value() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["a", "b", "c", "a"]"#)?;
         let analyzer = StatsAnalyzer;
-        let stats = analyzer.analyze(&doc).unwrap();
+        let stats = analyzer.analyze(&doc)?;
         let ctx = make_ctx_with_stats(&doc, &stats);
-        let expr = parse_expr("cardinality($[*])").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => assert!((v - 3.0).abs() < f64::EPSILON),
-            other => panic!("expected Scalar, got {other:?}"),
-        }
+        let expr = parse_expr("cardinality($[*])")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar".into());
+        };
+        assert!((v - 3.0).abs() < f64::EPSILON);
+        Ok(())
     }
 
     #[test]
-    fn null_rate_returns_value() {
-        let doc = parse_doc(r#"[1, null, 2, null]"#);
+    fn null_rate_returns_value() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[1, null, 2, null]"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("null_rate($[*])").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => {
-                // 2 nulls out of 4
-                assert!((v - 0.5).abs() < 1e-8);
-            }
-            other => panic!("expected Scalar, got {other:?}"),
-        }
+        let expr = parse_expr("null_rate($[*])")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar".into());
+        };
+        assert!((v - 0.5).abs() < 1e-8);
+        Ok(())
     }
 
     #[test]
-    fn instability_returns_value() {
-        let doc = parse_doc(r#"[1, "two", 3]"#);
+    fn instability_returns_value() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[1, "two", 3]"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("instability($[*])").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => {
-                // 2 integers, 1 string => dominant=2/3, instability=1/3
-                assert!(v > 0.0);
-                assert!((v - 1.0 / 3.0).abs() < 1e-8);
-            }
-            other => panic!("expected Scalar, got {other:?}"),
-        }
+        let expr = parse_expr("instability($[*])")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar".into());
+        };
+        assert!(v > 0.0);
+        assert!((v - 1.0 / 3.0).abs() < 1e-8);
+        Ok(())
     }
 
     #[test]
-    fn count_returns_value() {
-        let doc = parse_doc(r#"[10, 20, 30]"#);
+    fn count_returns_value() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[10, 20, 30]"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("count($[*])").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => assert!((v - 3.0).abs() < f64::EPSILON),
-            other => panic!("expected Scalar, got {other:?}"),
-        }
+        let expr = parse_expr("count($[*])")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar".into());
+        };
+        assert!((v - 3.0).abs() < f64::EPSILON);
+        Ok(())
     }
 
     #[test]
-    fn depth_returns_value() {
-        let doc = parse_doc(r#"{"a": {"b": {"c": 1}}}"#);
+    fn depth_returns_value() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": {"b": {"c": 1}}}"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("depth($.a.b.c)").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => assert!((v - 3.0).abs() < f64::EPSILON),
-            other => panic!("expected Scalar, got {other:?}"),
-        }
+        let expr = parse_expr("depth($.a.b.c)")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar".into());
+        };
+        assert!((v - 3.0).abs() < f64::EPSILON);
+        Ok(())
     }
 
     #[test]
-    fn comparison_entropy_gt_zero() {
-        let doc = parse_doc(r#"["x", "y", "x"]"#);
+    fn comparison_entropy_gt_zero() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["x", "y", "x"]"#)?;
         let analyzer = StatsAnalyzer;
-        let stats = analyzer.analyze(&doc).unwrap();
+        let stats = analyzer.analyze(&doc)?;
         let ctx = make_ctx_with_stats(&doc, &stats);
-        let expr = parse_expr("entropy($[*]) > 0").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        // With distinct values, entropy > 0, so the comparison succeeds.
-        match result {
-            QueryResult::Scalar(v) => assert!(v > 0.0),
-            other => panic!("expected Scalar (comparison true), got {other:?}"),
-        }
+        let expr = parse_expr("entropy($[*]) > 0")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar (comparison true)".into());
+        };
+        assert!(v > 0.0);
+        Ok(())
     }
 
     #[test]
-    fn comparison_null_rate_filter() {
-        let doc = parse_doc(r#"[null, null, 1]"#);
+    fn comparison_null_rate_filter() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[null, null, 1]"#)?;
         let ctx = make_ctx(&doc);
-        // null_rate($[*]) should be 2/3 ~= 0.666
-        let expr = parse_expr("null_rate($[*]) > 0.5").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => {
-                // Comparison holds, returns the LHS scalar
-                assert!(v > 0.5);
-            }
-            other => panic!("expected Scalar (comparison true), got {other:?}"),
-        }
+        let expr = parse_expr("null_rate($[*]) > 0.5")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar (comparison true)".into());
+        };
+        assert!(v > 0.5);
+        Ok(())
     }
 
     #[test]
-    fn stats_required_error() {
-        let doc = parse_doc(r#"{"x": 1}"#);
-        let ctx = make_ctx(&doc); // no stats
-        let expr = parse_expr("entropy($.x)").unwrap();
+    fn stats_required_error() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"x": 1}"#)?;
+        let ctx = make_ctx(&doc);
+        let expr = parse_expr("entropy($.x)")?;
         let result = evaluate(&expr, &ctx);
         assert!(result.is_err());
-        match result {
-            Err(QueryError::StatsRequired) => {}
-            other => panic!("expected StatsRequired, got {other:?}"),
-        }
+        let Err(QueryError::StatsRequired) = result else {
+            return Err("expected StatsRequired".into());
+        };
+        Ok(())
     }
 
     #[test]
-    fn unknown_function_error() {
-        let doc = parse_doc(r#"{"x": 1}"#);
+    fn unknown_function_error() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"x": 1}"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("bogus($.x)").unwrap();
+        let expr = parse_expr("bogus($.x)")?;
         let result = evaluate(&expr, &ctx);
         assert!(result.is_err());
-        match result {
-            Err(QueryError::UnknownFunction { name }) => assert_eq!(name, "bogus"),
-            other => panic!("expected UnknownFunction, got {other:?}"),
-        }
+        let Err(QueryError::UnknownFunction { name }) = result else {
+            return Err("expected UnknownFunction".into());
+        };
+        assert_eq!(name, "bogus");
+        Ok(())
     }
 
     #[test]
-    fn rarity_returns_value() {
-        // ["a", "a", "a", "rare"] => min_count=1, total=4, rarity=-log2(1/4)=2.0
-        let doc = parse_doc(r#"["a", "a", "a", "rare"]"#);
+    fn rarity_returns_value() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["a", "a", "a", "rare"]"#)?;
         let analyzer = StatsAnalyzer;
-        let stats = analyzer.analyze(&doc).unwrap();
+        let stats = analyzer.analyze(&doc)?;
         let ctx = make_ctx_with_stats(&doc, &stats);
-        let expr = parse_expr("rarity($[*])").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::Scalar(v) => assert!((v - 2.0).abs() < 1e-8),
-            other => panic!("expected Scalar, got {other:?}"),
-        }
+        let expr = parse_expr("rarity($[*])")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::Scalar(v) = result else {
+            return Err("expected Scalar".into());
+        };
+        assert!((v - 2.0).abs() < 1e-8);
+        Ok(())
     }
 
     #[test]
-    fn path_with_array_values() {
-        let doc = parse_doc(r#"{"items": [{"name": "a"}, {"name": "b"}]}"#);
+    fn path_with_array_values() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"items": [{"name": "a"}, {"name": "b"}]}"#)?;
         let ctx = make_ctx(&doc);
-        let expr = parse_expr("$.items[*].name").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::PathSet(ps) => {
-                assert_eq!(ps.len(), 1);
-                assert_eq!(ps[0].0.to_string(), "$.items[*].name");
-                assert_eq!(
-                    ps[0].1,
-                    vec![serde_json::json!("a"), serde_json::json!("b")]
-                );
-            }
-            other => panic!("expected PathSet, got {other:?}"),
-        }
+        let expr = parse_expr("$.items[*].name")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::PathSet(ps) = result else {
+            return Err("expected PathSet".into());
+        };
+        assert_eq!(ps.len(), 1);
+        assert_eq!(ps[0].0.to_string(), "$.items[*].name");
+        assert_eq!(
+            ps[0].1,
+            vec![serde_json::json!("a"), serde_json::json!("b")]
+        );
+        Ok(())
     }
 
     #[test]
-    fn comparison_false_returns_empty_filtered() {
-        // entropy of constant path is 0; 0 > 999 is false
-        let doc = parse_doc(r#"["x", "x", "x"]"#);
+    fn comparison_false_returns_empty_filtered() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["x", "x", "x"]"#)?;
         let analyzer = StatsAnalyzer;
-        let stats = analyzer.analyze(&doc).unwrap();
+        let stats = analyzer.analyze(&doc)?;
         let ctx = make_ctx_with_stats(&doc, &stats);
-        let expr = parse_expr("entropy($[*]) > 999").unwrap();
-        let result = evaluate(&expr, &ctx).unwrap();
-        match result {
-            QueryResult::FilteredPaths(ps) => assert!(ps.is_empty()),
-            other => panic!("expected FilteredPaths (empty), got {other:?}"),
-        }
+        let expr = parse_expr("entropy($[*]) > 999")?;
+        let result = evaluate(&expr, &ctx)?;
+        let QueryResult::FilteredPaths(ps) = result else {
+            return Err("expected FilteredPaths (empty)".into());
+        };
+        assert!(ps.is_empty());
+        Ok(())
     }
 }

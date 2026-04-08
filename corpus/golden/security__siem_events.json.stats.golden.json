@@ -1,0 +1,1152 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].affected_host",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "webserver-prod-01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 443.0,
+        "mean": 443.0,
+        "median": 443.0,
+        "min": 443.0,
+        "p05": 443.0,
+        "p25": 443.0,
+        "p75": 443.0,
+        "p95": 443.0
+      },
+      "path": "$.events[*].affected_port",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "443"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].affected_service",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "nginx/1.24.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 7,
+      "entropy": 2.75,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.979569764547061,
+      "numeric": null,
+      "path": "$.events[*].alert_name",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "CVE-2024-3400 PAN-OS Exploit Attempt"
+        },
+        {
+          "count": 1,
+          "value": "DNS C2 Communication"
+        },
+        {
+          "count": 1,
+          "value": "Data Exfiltration Over HTTPS"
+        },
+        {
+          "count": 1,
+          "value": "Encoded PowerShell Execution"
+        },
+        {
+          "count": 1,
+          "value": "SSH Brute Force"
+        },
+        {
+          "count": 1,
+          "value": "Vulnerability Scan Finding"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].answer",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "dGhpcyBpcyBub3QgcmVhbCBkYXRh"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.2987949406953985,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.8194483718728035,
+      "numeric": null,
+      "path": "$.events[*].auth_result",
+      "top_values": [
+        {
+          "count": 5,
+          "value": "null"
+        },
+        {
+          "count": 2,
+          "value": "success"
+        },
+        {
+          "count": 1,
+          "value": "failure"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 52428800.0,
+        "mean": 52428800.0,
+        "median": 52428800.0,
+        "min": 52428800.0,
+        "p05": 52428800.0,
+        "p25": 52428800.0,
+        "p75": 52428800.0,
+        "p95": 52428800.0
+      },
+      "path": "$.events[*].bytes_transferred",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "52428800"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].command_line",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "powershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQA"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.061278124459133,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.6695919455357793,
+      "numeric": null,
+      "path": "$.events[*].cve",
+      "top_values": [
+        {
+          "count": 6,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "CVE-2023-44487"
+        },
+        {
+          "count": 1,
+          "value": "CVE-2024-3400"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.061278124459133,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.6695919455357793,
+      "numeric": null,
+      "path": "$.events[*].cvss",
+      "top_values": [
+        {
+          "count": 6,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+        },
+        {
+          "count": 1,
+          "value": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.events[*].description",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Brute-force login attempt from known malicious IP"
+        },
+        {
+          "count": 1,
+          "value": "Critical vulnerability found on web server"
+        },
+        {
+          "count": 1,
+          "value": "Exploitation of public-facing application detected"
+        },
+        {
+          "count": 1,
+          "value": "Large data transfer to external IP"
+        },
+        {
+          "count": 1,
+          "value": "Normal internal traffic"
+        },
+        {
+          "count": 1,
+          "value": "Successful API authentication with JWT"
+        },
+        {
+          "count": 1,
+          "value": "Suspicious DNS query to known C2 domain"
+        },
+        {
+          "count": 1,
+          "value": "Suspicious PowerShell execution with encoded command"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.5,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.967132018086354,
+      "numeric": null,
+      "path": "$.events[*].dst_ip",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "10.0.1.50"
+        },
+        {
+          "count": 2,
+          "value": "10.0.2.10"
+        },
+        {
+          "count": 1,
+          "value": "10.0.0.2"
+        },
+        {
+          "count": 1,
+          "value": "10.0.1.20"
+        },
+        {
+          "count": 1,
+          "value": "198.51.100.99"
+        },
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.4056390622295662,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.9306282244165778,
+      "numeric": {
+        "mad": 390.0,
+        "max": 8443.0,
+        "mean": 2182.714285714286,
+        "median": 443.0,
+        "min": 22.0,
+        "p05": 31.3,
+        "p25": 248.0,
+        "p75": 2937.5,
+        "p95": 7539.699999999998
+      },
+      "path": "$.events[*].dst_port",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "443"
+        },
+        {
+          "count": 1,
+          "value": "22"
+        },
+        {
+          "count": 1,
+          "value": "53"
+        },
+        {
+          "count": 1,
+          "value": "5432"
+        },
+        {
+          "count": 1,
+          "value": "8443"
+        },
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.events[*].event_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "EVT-20250407-001"
+        },
+        {
+          "count": 1,
+          "value": "EVT-20250407-002"
+        },
+        {
+          "count": 1,
+          "value": "EVT-20250407-003"
+        },
+        {
+          "count": 1,
+          "value": "EVT-20250407-004"
+        },
+        {
+          "count": 1,
+          "value": "EVT-20250407-005"
+        },
+        {
+          "count": 1,
+          "value": "EVT-20250407-006"
+        },
+        {
+          "count": 1,
+          "value": "EVT-20250407-007"
+        },
+        {
+          "count": 1,
+          "value": "EVT-20250407-008"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.5,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.967132018086354,
+      "numeric": null,
+      "path": "$.events[*].event_type",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "authentication"
+        },
+        {
+          "count": 2,
+          "value": "network_flow"
+        },
+        {
+          "count": 1,
+          "value": "dns_query"
+        },
+        {
+          "count": 1,
+          "value": "intrusion_detection"
+        },
+        {
+          "count": 1,
+          "value": "process_execution"
+        },
+        {
+          "count": 1,
+          "value": "vulnerability_scan"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 4,
+      "entropy": 1.5487949406953985,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.7743974703476992,
+      "numeric": null,
+      "path": "$.events[*].hash_ioc",
+      "top_values": [
+        {
+          "count": 5,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "098f6bcd4621d373cade4e832627b4f6"
+        },
+        {
+          "count": 1,
+          "value": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        },
+        {
+          "count": 1,
+          "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].mac_dst",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "aa:bb:cc:dd:ee:02"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].mac_src",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "aa:bb:cc:dd:ee:01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1234.0,
+        "mean": 1234.0,
+        "median": 1234.0,
+        "min": 1234.0,
+        "p05": 1234.0,
+        "p25": 1234.0,
+        "p75": 1234.0,
+        "p95": 1234.0
+      },
+      "path": "$.events[*].parent_pid",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1234"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 4872.0,
+        "mean": 4872.0,
+        "median": 4872.0,
+        "min": 4872.0,
+        "p05": 4872.0,
+        "p25": 4872.0,
+        "p75": 4872.0,
+        "p95": 4872.0
+      },
+      "path": "$.events[*].pid",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "4872"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].process_name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "powershell.exe"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.061278124459133,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.6695919455357793,
+      "numeric": null,
+      "path": "$.events[*].protocol",
+      "top_values": [
+        {
+          "count": 6,
+          "value": "TCP"
+        },
+        {
+          "count": 1,
+          "value": "UDP"
+        },
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].query_name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "exfil.badactor.example.com"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].query_type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "TXT"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.25,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.9690222556651344,
+      "numeric": null,
+      "path": "$.events[*].severity",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "critical"
+        },
+        {
+          "count": 2,
+          "value": "high"
+        },
+        {
+          "count": 2,
+          "value": "medium"
+        },
+        {
+          "count": 1,
+          "value": "info"
+        },
+        {
+          "count": 1,
+          "value": "low"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.4056390622295662,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.9306282244165778,
+      "numeric": null,
+      "path": "$.events[*].src_ip",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "10.0.3.22"
+        },
+        {
+          "count": 1,
+          "value": "10.0.0.5"
+        },
+        {
+          "count": 1,
+          "value": "10.0.1.10"
+        },
+        {
+          "count": 1,
+          "value": "192.168.1.100"
+        },
+        {
+          "count": 1,
+          "value": "198.51.100.42"
+        },
+        {
+          "count": 1,
+          "value": "203.0.113.17"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 7,
+      "entropy": 2.75,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.979569764547061,
+      "numeric": {
+        "mad": 5045.0,
+        "max": 55123.0,
+        "mean": 48021.666666666664,
+        "median": 47777.0,
+        "min": 38901.0,
+        "p05": 40233.5,
+        "p25": 44592.75,
+        "p75": 53209.75,
+        "p95": 54922.5
+      },
+      "path": "$.events[*].src_port",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "38901"
+        },
+        {
+          "count": 1,
+          "value": "44231"
+        },
+        {
+          "count": 1,
+          "value": "45678"
+        },
+        {
+          "count": 1,
+          "value": "49876"
+        },
+        {
+          "count": 1,
+          "value": "54321"
+        },
+        {
+          "count": 1,
+          "value": "55123"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.4056390622295662,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.9306282244165778,
+      "numeric": null,
+      "path": "$.events[*].tactic",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "TA0001"
+        },
+        {
+          "count": 1,
+          "value": "TA0002"
+        },
+        {
+          "count": 1,
+          "value": "TA0006"
+        },
+        {
+          "count": 1,
+          "value": "TA0010"
+        },
+        {
+          "count": 1,
+          "value": "TA0011"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.4056390622295662,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.9306282244165778,
+      "numeric": null,
+      "path": "$.events[*].technique",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "T1048.003"
+        },
+        {
+          "count": 1,
+          "value": "T1059.001"
+        },
+        {
+          "count": 1,
+          "value": "T1071.004"
+        },
+        {
+          "count": 1,
+          "value": "T1078.003"
+        },
+        {
+          "count": 1,
+          "value": "T1190"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.events[*].timestamp",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-04-07T14:23:11Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-04-07T14:23:45Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-04-07T14:24:02Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-04-07T14:25:30Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-04-07T14:26:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-04-07T14:27:15Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-04-07T14:28:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-04-07T14:29:00Z"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.events[*].token",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdmMtYXBpLXJlYWRlciIsImlhdCI6MTcxMjUwNjAzNX0.fake_signature_for_test_data"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.1556390622295662,
+      "max_rarity": 3.0,
+      "normalized_entropy": 0.9283832117695864,
+      "numeric": null,
+      "path": "$.events[*].user",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "null"
+        },
+        {
+          "count": 2,
+          "value": "jdoe"
+        },
+        {
+          "count": 1,
+          "value": "admin"
+        },
+        {
+          "count": 1,
+          "value": "app-service"
+        },
+        {
+          "count": 1,
+          "value": "svc-api-reader"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.export_time",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-04-07T18:30:00Z"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.source",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "SIEM-Export"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 2.0,
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p05": 2.0,
+        "p25": 2.0,
+        "p75": 2.0,
+        "p95": 2.0
+      },
+      "path": "$.summary.critical",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 2.0,
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p05": 2.0,
+        "p25": 2.0,
+        "p75": 2.0,
+        "p95": 2.0
+      },
+      "path": "$.summary.high",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.summary.info",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.summary.low",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 2.0,
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p05": 2.0,
+        "p25": 2.0,
+        "p75": 2.0,
+        "p95": 2.0
+      },
+      "path": "$.summary.medium",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 8.0,
+        "mean": 8.0,
+        "median": 8.0,
+        "min": 8.0,
+        "p05": 8.0,
+        "p25": 8.0,
+        "p75": 8.0,
+        "p95": 8.0
+      },
+      "path": "$.summary.total_events",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "8"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 2.0,
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p05": 2.0,
+        "p25": 2.0,
+        "p75": 2.0,
+        "p95": 2.0
+      },
+      "path": "$.summary.unique_cves",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5.0,
+        "mean": 5.0,
+        "median": 5.0,
+        "min": 5.0,
+        "p05": 5.0,
+        "p25": 5.0,
+        "p75": 5.0,
+        "p95": 5.0
+      },
+      "path": "$.summary.unique_dst_ips",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5.0,
+        "mean": 5.0,
+        "median": 5.0,
+        "min": 5.0,
+        "p05": 5.0,
+        "p25": 5.0,
+        "p75": 5.0,
+        "p95": 5.0
+      },
+      "path": "$.summary.unique_src_ips",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5.0,
+        "mean": 5.0,
+        "median": 5.0,
+        "min": 5.0,
+        "p05": 5.0,
+        "p25": 5.0,
+        "p75": 5.0,
+        "p95": 5.0
+      },
+      "path": "$.summary.unique_techniques",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

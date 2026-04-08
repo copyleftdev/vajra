@@ -104,19 +104,17 @@ mod tests {
     use super::*;
     use vajra_types::path::WildcardPath;
 
-    fn parse_value(json: &str) -> serde_json::Value {
-        serde_json::from_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_value(json: &str) -> Result<serde_json::Value, serde_json::Error> {
+        serde_json::from_str(json)
     }
 
     #[test]
-    fn trie_from_events_matches_dom_trie() {
+    fn trie_from_events_matches_dom_trie() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"a": 1, "b": [2, 3], "c": {"d": true}}"#;
-        let value = parse_value(json);
+        let value = parse_value(json)?;
 
         // DOM path
-        let doc = crate::parse::parse_str(json).unwrap_or_else(|e| panic!("parse: {e}"));
+        let doc = crate::parse::parse_str(json)?;
         let dom_paths: Vec<String> = doc
             .trie()
             .all_paths()
@@ -134,35 +132,38 @@ mod tests {
             .collect();
 
         assert_eq!(dom_paths, event_paths);
+        Ok(())
     }
 
     #[test]
-    fn metadata_from_events_matches_dom() {
+    fn metadata_from_events_matches_dom() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"a": 1, "b": [2, 3], "c": {"d": true}}"#;
-        let value = parse_value(json);
+        let value = parse_value(json)?;
 
-        let doc = crate::parse::parse_str(json).unwrap_or_else(|e| panic!("parse: {e}"));
+        let doc = crate::parse::parse_str(json)?;
 
         let (_events, _trie, meta) = emit_and_index(&value);
 
         assert_eq!(meta.total_nodes, doc.metadata().total_nodes);
         assert_eq!(meta.max_depth, doc.metadata().max_depth);
         assert_eq!(meta.distinct_paths, doc.metadata().distinct_paths);
+        Ok(())
     }
 
     #[test]
-    fn emit_and_index_empty_object() {
-        let value = parse_value("{}");
+    fn emit_and_index_empty_object() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value("{}")?;
         let (_events, trie, meta) = emit_and_index(&value);
 
         assert_eq!(meta.total_nodes, 1);
         assert_eq!(meta.distinct_paths, 1);
         assert_eq!(trie.path_count(), 1);
+        Ok(())
     }
 
     #[test]
-    fn emit_and_index_array_wildcards() {
-        let value = parse_value(r#"[{"id": 1}, {"id": 2}]"#);
+    fn emit_and_index_array_wildcards() -> Result<(), Box<dyn std::error::Error>> {
+        let value = parse_value(r#"[{"id": 1}, {"id": 2}]"#)?;
         let (_, trie, meta) = emit_and_index(&value);
 
         // $, $[*], $[*].id
@@ -173,5 +174,6 @@ mod tests {
         assert!(node.is_some());
         // count should be 2 (two array elements)
         assert_eq!(node.map(|n| n.metadata.count), Some(2));
+        Ok(())
     }
 }

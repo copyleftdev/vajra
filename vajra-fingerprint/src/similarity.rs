@@ -55,10 +55,10 @@ pub fn minhash_signature(paths: &[WildcardPath], k: usize, seed: u64) -> MinHash
 
     for path in paths {
         let path_bytes = path.as_str().into_bytes();
-        for i in 0..k {
+        for (i, hash_slot) in hashes.iter_mut().enumerate().take(k) {
             let h = fnv1a_hash(&path_bytes, seed.wrapping_add(i as u64));
-            if h < hashes[i] {
-                hashes[i] = h;
+            if h < *hash_slot {
+                *hash_slot = h;
             }
         }
     }
@@ -323,10 +323,8 @@ mod tests {
 
     const EPS: f64 = 1e-10;
 
-    fn parse_doc(json: &str) -> Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(json: &str) -> Result<Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     // ---- Jaccard similarity ----
@@ -507,8 +505,8 @@ mod tests {
     // ---- Clustering ----
 
     #[test]
-    fn cluster_identical_documents() {
-        let doc = parse_doc(r#"{"a": 1, "b": 2}"#);
+    fn cluster_identical_documents() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1, "b": 2}"#)?;
         let docs: Vec<&Document> = vec![&doc, &doc, &doc];
         let result = cluster_documents(&docs, 42);
         assert_eq!(
@@ -517,12 +515,13 @@ mod tests {
             "identical documents should form one cluster"
         );
         assert_eq!(result.clusters[0].len(), 3);
+        Ok(())
     }
 
     #[test]
-    fn cluster_different_documents() {
-        let doc_a = parse_doc(r#"{"a": 1}"#);
-        let doc_b = parse_doc(r#"{"z": 99, "w": 88, "v": 77}"#);
+    fn cluster_different_documents() -> Result<(), Box<dyn std::error::Error>> {
+        let doc_a = parse_doc(r#"{"a": 1}"#)?;
+        let doc_b = parse_doc(r#"{"z": 99, "w": 88, "v": 77}"#)?;
         let docs: Vec<&Document> = vec![&doc_a, &doc_b];
         let result = cluster_documents(&docs, 42);
         assert_eq!(
@@ -531,6 +530,7 @@ mod tests {
             "completely different documents should be in separate clusters, got {} clusters",
             result.clusters.len()
         );
+        Ok(())
     }
 
     #[test]
@@ -541,20 +541,21 @@ mod tests {
     }
 
     #[test]
-    fn cluster_single_document() {
-        let doc = parse_doc(r#"{"a": 1}"#);
+    fn cluster_single_document() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1}"#)?;
         let docs: Vec<&Document> = vec![&doc];
         let result = cluster_documents(&docs, 42);
         assert_eq!(result.clusters.len(), 1);
         assert_eq!(result.clusters[0], vec![0]);
+        Ok(())
     }
 
     #[test]
-    fn cluster_mixed_similarity() {
+    fn cluster_mixed_similarity() -> Result<(), Box<dyn std::error::Error>> {
         // Two similar docs and one different.
-        let doc_a = parse_doc(r#"{"name": "Alice", "age": 30, "city": "NY"}"#);
-        let doc_b = parse_doc(r#"{"name": "Bob", "age": 25, "city": "LA"}"#);
-        let doc_c = parse_doc(r#"{"totally": "different", "schema": true}"#);
+        let doc_a = parse_doc(r#"{"name": "Alice", "age": 30, "city": "NY"}"#)?;
+        let doc_b = parse_doc(r#"{"name": "Bob", "age": 25, "city": "LA"}"#)?;
+        let doc_c = parse_doc(r#"{"totally": "different", "schema": true}"#)?;
         let docs: Vec<&Document> = vec![&doc_a, &doc_b, &doc_c];
         let result = cluster_documents(&docs, 42);
 
@@ -567,11 +568,12 @@ mod tests {
             "expected 2 clusters, got {}",
             result.clusters.len()
         );
+        Ok(())
     }
 
     #[test]
-    fn cluster_threshold_is_reported() {
-        let doc = parse_doc(r#"{"a": 1}"#);
+    fn cluster_threshold_is_reported() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1}"#)?;
         let docs: Vec<&Document> = vec![&doc];
         let result = cluster_documents(&docs, 42);
         assert!(
@@ -579,5 +581,6 @@ mod tests {
             "expected threshold 0.5, got {}",
             result.similarity_threshold
         );
+        Ok(())
     }
 }

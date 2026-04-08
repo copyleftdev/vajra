@@ -142,15 +142,13 @@ fn scalar_to_string(value: &serde_json::Value) -> String {
 mod tests {
     use super::*;
 
-    fn parse_doc(json: &str) -> Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(json: &str) -> Result<Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     #[test]
-    fn simple_object_counts() {
-        let doc = parse_doc(r#"{"a": "hello", "b": "hello", "c": 42}"#);
+    fn simple_object_counts() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": "hello", "b": "hello", "c": 42}"#)?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -166,11 +164,12 @@ mod tests {
         let a_counts = fc.counts().get(&a_path);
         assert!(a_counts.is_some());
         assert_eq!(a_counts.and_then(|m| m.get("hello")), Some(&1));
+        Ok(())
     }
 
     #[test]
-    fn array_elements_counted() {
-        let doc = parse_doc(r#"[1, 2, 1, 3, 1]"#);
+    fn array_elements_counted() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[1, 2, 1, 3, 1]"#)?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -181,17 +180,18 @@ mod tests {
         assert_eq!(counts.and_then(|m| m.get("1")), Some(&3));
         assert_eq!(counts.and_then(|m| m.get("2")), Some(&1));
         assert_eq!(counts.and_then(|m| m.get("3")), Some(&1));
+        Ok(())
     }
 
     #[test]
-    fn nested_paths_counted() {
+    fn nested_paths_counted() -> Result<(), Box<dyn std::error::Error>> {
         let doc = parse_doc(
             r#"[
                 {"code": "A01", "value": 10},
                 {"code": "B02", "value": 20},
                 {"code": "A01", "value": 10}
             ]"#,
-        );
+        )?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -204,11 +204,12 @@ mod tests {
         let code_counts = fc.counts().get(&code_path);
         assert_eq!(code_counts.and_then(|m| m.get("A01")), Some(&2));
         assert_eq!(code_counts.and_then(|m| m.get("B02")), Some(&1));
+        Ok(())
     }
 
     #[test]
-    fn top_k_ordering() {
-        let doc = parse_doc(r#"["a", "b", "a", "c", "b", "a"]"#);
+    fn top_k_ordering() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["a", "b", "a", "c", "b", "a"]"#)?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -218,11 +219,12 @@ mod tests {
         assert_eq!(top.len(), 2);
         assert_eq!(top[0], ("a".to_owned(), 3));
         assert_eq!(top[1], ("b".to_owned(), 2));
+        Ok(())
     }
 
     #[test]
-    fn top_k_tie_breaking() {
-        let doc = parse_doc(r#"["b", "a", "c"]"#);
+    fn top_k_tie_breaking() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["b", "a", "c"]"#)?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -233,11 +235,12 @@ mod tests {
         assert_eq!(top[0].0, "a");
         assert_eq!(top[1].0, "b");
         assert_eq!(top[2].0, "c");
+        Ok(())
     }
 
     #[test]
-    fn null_bool_scalars() {
-        let doc = parse_doc(r#"{"n": null, "b": true, "c": false}"#);
+    fn null_bool_scalars() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"n": null, "b": true, "c": false}"#)?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -253,11 +256,12 @@ mod tests {
 
         let c_counts = fc.counts().get(&c_path);
         assert_eq!(c_counts.and_then(|m| m.get("false")), Some(&1));
+        Ok(())
     }
 
     #[test]
-    fn containers_not_counted() {
-        let doc = parse_doc(r#"{"items": [1, 2]}"#);
+    fn containers_not_counted() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"items": [1, 2]}"#)?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -268,19 +272,21 @@ mod tests {
         // But $.items[*] should have counts
         let elem_path = items_path.push_array_wildcard();
         assert_eq!(fc.cardinality(&elem_path), 2);
+        Ok(())
     }
 
     #[test]
-    fn empty_object() {
-        let doc = parse_doc("{}");
+    fn empty_object() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc("{}")?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
         assert!(fc.paths().is_empty());
+        Ok(())
     }
 
     #[test]
-    fn count_values_for_entropy() {
-        let doc = parse_doc(r#"["x", "y", "x", "x", "y"]"#);
+    fn count_values_for_entropy() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["x", "y", "x", "x", "y"]"#)?;
         let mut fc = FrequencyCounter::new();
         fc.count_document(&doc);
 
@@ -288,6 +294,7 @@ mod tests {
         let mut cv = fc.count_values(&path);
         cv.sort();
         assert_eq!(cv, vec![2, 3]); // "y"=2, "x"=3
+        Ok(())
     }
 
     #[test]

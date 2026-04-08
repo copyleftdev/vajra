@@ -198,7 +198,7 @@ impl StreamingStatsAccumulator {
     pub fn is_exact(&self, path: &WildcardPath) -> bool {
         self.path_accumulators
             .get(path)
-            .map_or(true, |acc| matches!(&acc.values, ValueTracker::Exact(_)))
+            .is_none_or(|acc| matches!(&acc.values, ValueTracker::Exact(_)))
     }
 
     /// Produce the final `StatsResult`, consuming the accumulator.
@@ -402,29 +402,23 @@ mod tests {
     use vajra_core::stream::emit_events;
     use vajra_types::Analyzer;
 
-    fn parse_value(json: &str) -> serde_json::Value {
-        serde_json::from_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_value(json: &str) -> Result<serde_json::Value, serde_json::Error> {
+        serde_json::from_str(json)
     }
 
-    fn parse_doc(json: &str) -> vajra_types::Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(json: &str) -> Result<vajra_types::Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     // Test 4: Streaming stats vs DOM stats - same document, equivalent results
     #[test]
-    fn streaming_vs_dom_stats_equivalent() {
+    fn streaming_vs_dom_stats_equivalent() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"["a", "b", "a", "c", "a", "b"]"#;
-        let value = parse_value(json);
-        let doc = parse_doc(json);
+        let value = parse_value(json)?;
+        let doc = parse_doc(json)?;
 
         // DOM stats
-        let dom_result = crate::analyzer::StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("dom analyze failed: {e}"));
+        let dom_result = crate::analyzer::StatsAnalyzer.analyze(&doc)?;
 
         // Streaming stats
         let events = emit_events(&value);
@@ -434,30 +428,23 @@ mod tests {
 
         let path = WildcardPath::root().push_array_wildcard();
 
-        let dom_stats = dom_result
-            .paths
-            .get(&path)
-            .unwrap_or_else(|| panic!("missing dom"));
-        let stream_stats = stream_result
-            .paths
-            .get(&path)
-            .unwrap_or_else(|| panic!("missing stream"));
+        let dom_stats = dom_result.paths.get(&path).ok_or("missing dom")?;
+        let stream_stats = stream_result.paths.get(&path).ok_or("missing stream")?;
 
         assert_eq!(dom_stats.cardinality, stream_stats.cardinality);
         assert_eq!(dom_stats.total_count, stream_stats.total_count);
         assert!((dom_stats.entropy - stream_stats.entropy).abs() < 1e-10);
+        Ok(())
     }
 
     // Test 5: Entropy matches DOM entropy for exact mode (below threshold)
     #[test]
-    fn streaming_entropy_matches_dom_exact() {
+    fn streaming_entropy_matches_dom_exact() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"["x", "y", "x", "x", "y", "z"]"#;
-        let value = parse_value(json);
-        let doc = parse_doc(json);
+        let value = parse_value(json)?;
+        let doc = parse_doc(json)?;
 
-        let dom_result = crate::analyzer::StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let dom_result = crate::analyzer::StatsAnalyzer.analyze(&doc)?;
 
         let events = emit_events(&value);
         let mut acc = StreamingStatsAccumulator::default();
@@ -480,14 +467,15 @@ mod tests {
             (dom_h - stream_h).abs() < 1e-10,
             "dom_h={dom_h}, stream_h={stream_h}"
         );
+        Ok(())
     }
 
     // Test 6: Numeric sketch produces correct median/percentiles
     #[test]
-    fn streaming_numeric_sketch_percentiles() {
+    fn streaming_numeric_sketch_percentiles() -> Result<(), Box<dyn std::error::Error>> {
         let values: Vec<i64> = (1..=100).collect();
-        let json = serde_json::to_string(&values).unwrap_or_else(|e| panic!("{e}"));
-        let value = parse_value(&json);
+        let json = serde_json::to_string(&values)?;
+        let value = parse_value(&json)?;
 
         let events = emit_events(&value);
         let mut acc = StreamingStatsAccumulator::default();
@@ -495,11 +483,8 @@ mod tests {
         let result = acc.finalize();
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
-        let ns = stats
-            .numeric_stats
-            .as_ref()
-            .unwrap_or_else(|| panic!("no numeric"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
+        let ns = stats.numeric_stats.as_ref().ok_or("no numeric")?;
 
         // DDSketch with alpha=0.01 should be within ~2% of true values
         assert!(
@@ -509,18 +494,17 @@ mod tests {
         );
         assert!((ns.min - 1.0).abs() < 1e-10, "min={}", ns.min);
         assert!((ns.max - 100.0).abs() < 1e-10, "max={}", ns.max);
+        Ok(())
     }
 
     // Test 7: Top-k matches exact top-k for small documents
     #[test]
-    fn streaming_top_k_matches_exact() {
+    fn streaming_top_k_matches_exact() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"["a", "b", "a", "c", "a", "b", "d"]"#;
-        let value = parse_value(json);
-        let doc = parse_doc(json);
+        let value = parse_value(json)?;
+        let doc = parse_doc(json)?;
 
-        let dom_result = crate::analyzer::StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let dom_result = crate::analyzer::StatsAnalyzer.analyze(&doc)?;
 
         let events = emit_events(&value);
         let mut acc = StreamingStatsAccumulator::default();
@@ -528,20 +512,13 @@ mod tests {
         let stream_result = acc.finalize();
 
         let path = WildcardPath::root().push_array_wildcard();
-        let dom_top = &dom_result
-            .paths
-            .get(&path)
-            .unwrap_or_else(|| panic!("m"))
-            .top_values;
-        let stream_top = &stream_result
-            .paths
-            .get(&path)
-            .unwrap_or_else(|| panic!("m"))
-            .top_values;
+        let dom_top = &dom_result.paths.get(&path).ok_or("m")?.top_values;
+        let stream_top = &stream_result.paths.get(&path).ok_or("m")?.top_values;
 
         // First entry (most frequent) should match
         assert_eq!(dom_top[0].0, stream_top[0].0);
         assert_eq!(dom_top[0].1, stream_top[0].1);
+        Ok(())
     }
 
     // Test 8: ValueTracker switches from Exact to Approximate at threshold
@@ -578,7 +555,7 @@ mod tests {
 
     // Test 9: Merge produces correct combined statistics
     #[test]
-    fn merge_combined_statistics() {
+    fn merge_combined_statistics() -> Result<(), Box<dyn std::error::Error>> {
         let mut acc1 = StreamingStatsAccumulator::default();
         let mut acc2 = StreamingStatsAccumulator::default();
 
@@ -607,14 +584,15 @@ mod tests {
         acc1.merge(acc2);
         let result = acc1.finalize();
 
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
         assert_eq!(stats.total_count, 6); // 3 + 2 + 1
         assert_eq!(stats.cardinality, 2); // "a" and "b"
+        Ok(())
     }
 
     // Test 13: Custom DDSketch alpha works
     #[test]
-    fn custom_ddsketch_alpha() {
+    fn custom_ddsketch_alpha() -> Result<(), Box<dyn std::error::Error>> {
         let config = StreamingConfig {
             ddsketch_alpha: 0.05,
             ..StreamingConfig::default()
@@ -630,11 +608,8 @@ mod tests {
         }
 
         let result = acc.finalize();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
-        let ns = stats
-            .numeric_stats
-            .as_ref()
-            .unwrap_or_else(|| panic!("no numeric"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
+        let ns = stats.numeric_stats.as_ref().ok_or("no numeric")?;
 
         // With alpha=0.05, wider buckets but median should still be reasonable
         assert!(
@@ -642,6 +617,7 @@ mod tests {
             "median={}",
             ns.median
         );
+        Ok(())
     }
 
     // Test 14: Empty events produce empty result
@@ -654,7 +630,7 @@ mod tests {
 
     // Test 15: Single event produces correct single-path result
     #[test]
-    fn single_event_single_path() {
+    fn single_event_single_path() -> Result<(), Box<dyn std::error::Error>> {
         let mut acc = StreamingStatsAccumulator::default();
         let path = WildcardPath::root().push_key("x");
         acc.process_event(&JsonEvent::Value {
@@ -665,9 +641,10 @@ mod tests {
         let result = acc.finalize();
         assert_eq!(result.paths.len(), 1);
 
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
         assert_eq!(stats.total_count, 1);
         assert_eq!(stats.cardinality, 1);
         assert!((stats.entropy - 0.0).abs() < 1e-10);
+        Ok(())
     }
 }

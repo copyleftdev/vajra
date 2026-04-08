@@ -187,38 +187,33 @@ mod tests {
 
     const EPS: f64 = 1e-10;
 
-    fn parse_doc(json: &str) -> Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(json: &str) -> Result<Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     #[test]
-    fn analyze_simple_object() {
-        let doc = parse_doc(r#"{"a": 1, "b": 2}"#);
+    fn analyze_simple_object() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1, "b": 2}"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc);
-        assert!(result.is_ok());
-        let result = result.unwrap_or_else(|e| panic!("analyze failed: {e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let a_path = WildcardPath::root().push_key("a");
-        let a_stats = result.paths.get(&a_path);
-        assert!(a_stats.is_some());
-        let a_stats = a_stats.unwrap_or_else(|| panic!("expected stats for $.a"));
+        let a_stats = result.paths.get(&a_path).ok_or("expected stats for $.a")?;
 
         assert!((a_stats.entropy - 0.0).abs() < EPS);
         assert_eq!(a_stats.cardinality, 1);
         assert_eq!(a_stats.total_count, 1);
+        Ok(())
     }
 
     #[test]
-    fn analyze_array_with_repeats() {
-        let doc = parse_doc(r#"["x", "y", "x", "x", "y"]"#);
+    fn analyze_array_with_repeats() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["x", "y", "x", "x", "y"]"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
 
         assert_eq!(stats.cardinality, 2);
         assert_eq!(stats.total_count, 5);
@@ -227,66 +222,64 @@ mod tests {
         let expected_h =
             -(3.0 / 5.0 * (3.0_f64 / 5.0).log2()) - (2.0 / 5.0 * (2.0_f64 / 5.0).log2());
         assert!((stats.entropy - expected_h).abs() < 1e-8);
+        Ok(())
     }
 
     #[test]
-    fn analyze_numeric_stats_present() {
-        let doc = parse_doc(r#"[1, 2, 3, 4, 5]"#);
+    fn analyze_numeric_stats_present() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[1, 2, 3, 4, 5]"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
 
         assert!(stats.numeric_stats.is_some());
-        let ns = stats
-            .numeric_stats
-            .as_ref()
-            .unwrap_or_else(|| panic!("expected numeric"));
+        let ns = stats.numeric_stats.as_ref().ok_or("expected numeric")?;
         assert!((ns.min - 1.0).abs() < EPS);
         assert!((ns.max - 5.0).abs() < EPS);
         assert!((ns.mean - 3.0).abs() < EPS);
         assert!((ns.median - 3.0).abs() < EPS);
+        Ok(())
     }
 
     #[test]
-    fn analyze_string_path_no_numeric() {
-        let doc = parse_doc(r#"["a", "b", "c"]"#);
+    fn analyze_string_path_no_numeric() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["a", "b", "c"]"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
         assert!(stats.numeric_stats.is_none());
+        Ok(())
     }
 
     #[test]
-    fn analyze_max_rarity() {
+    fn analyze_max_rarity() -> Result<(), Box<dyn std::error::Error>> {
         // Array: ["a", "a", "a", "rare"]
         // min_count = 1 ("rare"), total = 4, rarity = -log2(1/4) = 2.0
-        let doc = parse_doc(r#"["a", "a", "a", "rare"]"#);
+        let doc = parse_doc(r#"["a", "a", "a", "rare"]"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
         assert!((stats.max_rarity - 2.0).abs() < EPS);
+        Ok(())
     }
 
     #[test]
-    fn feature_extractor_populates_store() {
-        let doc = parse_doc(r#"{"scores": [10, 20, 30]}"#);
+    fn feature_extractor_populates_store() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"scores": [10, 20, 30]}"#)?;
         let analyzer = StatsAnalyzer;
         let mut store = FeatureStore::new();
-        let result = analyzer.extract(&doc, &mut store);
-        assert!(result.is_ok());
+        analyzer.extract(&doc, &mut store)?;
 
         let path = WildcardPath::root()
             .push_key("scores")
             .push_array_wildcard();
-        let features = store.get(&path);
-        assert!(features.is_some());
-        let features = features.unwrap_or_else(|| panic!("expected features"));
+        let features = store.get(&path).ok_or("expected features")?;
 
         assert!(features.entropy.is_some());
         assert!(features.cardinality.is_some());
@@ -294,28 +287,22 @@ mod tests {
         assert!(features.max_rarity.is_some());
         assert!(features.numeric.is_some());
 
-        let nf = features
-            .numeric
-            .as_ref()
-            .unwrap_or_else(|| panic!("expected numeric"));
+        let nf = features.numeric.as_ref().ok_or("expected numeric")?;
         assert!((nf.min - 10.0).abs() < EPS);
         assert!((nf.max - 30.0).abs() < EPS);
         assert!((nf.mean - 20.0).abs() < EPS);
+        Ok(())
     }
 
     #[test]
-    fn feature_extractor_includes_trie_features() {
-        let doc = parse_doc(r#"[1, null, 2]"#);
+    fn feature_extractor_includes_trie_features() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[1, null, 2]"#)?;
         let analyzer = StatsAnalyzer;
         let mut store = FeatureStore::new();
-        analyzer
-            .extract(&doc, &mut store)
-            .unwrap_or_else(|e| panic!("{e}"));
+        analyzer.extract(&doc, &mut store)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let features = store.get(&path);
-        assert!(features.is_some());
-        let features = features.unwrap_or_else(|| panic!("expected features"));
+        let features = store.get(&path).ok_or("expected features")?;
 
         // The trie records null_rate for $[*] as 1/3
         assert!(features.null_rate.is_some());
@@ -326,55 +313,60 @@ mod tests {
         assert!(features.type_instability.is_some());
         let ti = features.type_instability.unwrap_or(0.0);
         assert!(ti > 0.0);
+        Ok(())
     }
 
     #[test]
-    fn empty_document() {
-        let doc = parse_doc("{}");
+    fn empty_document() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc("{}")?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
         assert!(result.paths.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn analyze_top_values() {
-        let doc = parse_doc(r#"["a", "b", "a", "c", "a", "b"]"#);
+    fn analyze_top_values() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["a", "b", "a", "c", "a", "b"]"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
 
         // top values ordered by count desc
         assert_eq!(stats.top_values[0], ("a".to_owned(), 3));
         assert_eq!(stats.top_values[1], ("b".to_owned(), 2));
         assert_eq!(stats.top_values[2], ("c".to_owned(), 1));
+        Ok(())
     }
 
     #[test]
-    fn constant_entropy_normalized_zero() {
-        let doc = parse_doc(r#"["x", "x", "x", "x"]"#);
+    fn constant_entropy_normalized_zero() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["x", "x", "x", "x"]"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
 
         assert!((stats.entropy - 0.0).abs() < EPS);
         assert!((stats.normalized_entropy - 0.0).abs() < EPS);
+        Ok(())
     }
 
     #[test]
-    fn uniform_entropy_normalized_one() {
-        let doc = parse_doc(r#"["a", "b", "c", "d"]"#);
+    fn uniform_entropy_normalized_one() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["a", "b", "c", "d"]"#)?;
         let analyzer = StatsAnalyzer;
-        let result = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let result = analyzer.analyze(&doc)?;
 
         let path = WildcardPath::root().push_array_wildcard();
-        let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
+        let stats = result.paths.get(&path).ok_or("missing")?;
 
         // H = log2(4) = 2.0, normalized = 1.0
         assert!((stats.entropy - 2.0).abs() < EPS);
         assert!((stats.normalized_entropy - 1.0).abs() < EPS);
+        Ok(())
     }
 }

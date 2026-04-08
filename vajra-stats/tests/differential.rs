@@ -96,7 +96,7 @@ fn differential_cms_vs_exact_high_cardinality() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn differential_ddsketch_vs_exact() {
+fn differential_ddsketch_vs_exact() -> Result<(), Box<dyn std::error::Error>> {
     let alpha = 0.01;
     let mut sketch = DDSketch::new(alpha);
     let mut exact_values: Vec<f64> = Vec::new();
@@ -113,7 +113,7 @@ fn differential_ddsketch_vs_exact() {
     for &q in &quantiles {
         let sketch_est = sketch
             .quantile(q)
-            .unwrap_or_else(|| panic!("quantile {q} returned None"));
+            .ok_or_else(|| format!("quantile {q} returned None"))?;
 
         // Exact quantile: interpolation at rank q * (n-1).
         let rank = q * (exact_values.len() as f64 - 1.0);
@@ -137,10 +137,11 @@ fn differential_ddsketch_vs_exact() {
             "DDSketch q={q}: sketch={sketch_est:.2}, true={true_quantile:.2}, rel_error={rel_error:.6}"
         );
     }
+    Ok(())
 }
 
 #[test]
-fn differential_ddsketch_vs_exact_negative_values() {
+fn differential_ddsketch_vs_exact_negative_values() -> Result<(), Box<dyn std::error::Error>> {
     let alpha = 0.02;
     let mut sketch = DDSketch::new(alpha);
     let mut exact_values: Vec<f64> = Vec::new();
@@ -159,7 +160,7 @@ fn differential_ddsketch_vs_exact_negative_values() {
     for &q in &[0.25, 0.50, 0.75] {
         let sketch_est = sketch
             .quantile(q)
-            .unwrap_or_else(|| panic!("quantile {q} returned None"));
+            .ok_or_else(|| format!("quantile {q} returned None"))?;
 
         let rank = q * (exact_values.len() as f64 - 1.0);
         let lower = rank.floor() as usize;
@@ -177,6 +178,7 @@ fn differential_ddsketch_vs_exact_negative_values() {
             "DDSketch q={q}: sketch={sketch_est:.2}, true={true_quantile:.2}, abs_error={abs_error:.6}"
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------

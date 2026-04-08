@@ -19,6 +19,9 @@ use vajra_stats::{StatsAnalyzer, StatsResult};
 use vajra_types::traits::Analyzer;
 use vajra_types::Document;
 
+/// Intermediate result from parallel per-document analysis.
+type DocAnalysisResult = Result<(Document, StatsResult, AnomalyReport, FingerprintResult)>;
+
 /// Per-document analysis results.
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -79,11 +82,7 @@ pub fn analyze_batch(file_paths: &[PathBuf]) -> Result<BatchResult> {
     }
 
     // Phase 1: Parse and analyze each document in parallel
-    let results: Vec<(
-        usize,
-        String,
-        Result<(Document, StatsResult, AnomalyReport, FingerprintResult)>,
-    )> = file_paths
+    let results: Vec<(usize, String, DocAnalysisResult)> = file_paths
         .par_iter()
         .enumerate()
         .map(|(index, path)| {
@@ -144,11 +143,7 @@ pub fn analyze_batch_from_strings(inputs: &[(String, String)]) -> Result<BatchRe
         anyhow::bail!("no documents to analyze (empty batch)");
     }
 
-    let results: Vec<(
-        usize,
-        String,
-        Result<(Document, StatsResult, AnomalyReport, FingerprintResult)>,
-    )> = inputs
+    let results: Vec<(usize, String, DocAnalysisResult)> = inputs
         .par_iter()
         .enumerate()
         .map(|(index, (name, json))| {
@@ -300,7 +295,7 @@ mod tests {
     use std::fs;
 
     #[test]
-    fn batch_identical_files() {
+    fn batch_identical_files() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"name": "Alice", "age": 30, "scores": [95, 88, 72]}"#;
         let inputs: Vec<(String, String)> = vec![
             ("file1.json".to_string(), json.to_string()),
@@ -308,8 +303,7 @@ mod tests {
             ("file3.json".to_string(), json.to_string()),
         ];
 
-        let result =
-            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result = analyze_batch_from_strings(&inputs)?;
 
         assert_eq!(result.per_document.len(), 3);
         assert!(result.errors.is_empty());
@@ -333,10 +327,11 @@ mod tests {
             result.per_document[1].fingerprint.path_set,
             result.per_document[2].fingerprint.path_set,
         );
+        Ok(())
     }
 
     #[test]
-    fn batch_mixed_files() {
+    fn batch_mixed_files() -> Result<(), Box<dyn std::error::Error>> {
         let json_a = r#"{"name": "Alice", "age": 30, "city": "NYC"}"#;
         let json_b = r#"{"name": "Bob", "score": 95, "tags": ["a", "b"]}"#;
         let json_c = r#"{"name": "Charlie", "age": 25, "city": "LA"}"#;
@@ -346,8 +341,7 @@ mod tests {
             ("c.json".to_string(), json_c.to_string()),
         ];
 
-        let result =
-            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result = analyze_batch_from_strings(&inputs)?;
 
         assert_eq!(result.per_document.len(), 3);
         assert_eq!(result.aggregate.total_documents, 3);
@@ -373,6 +367,7 @@ mod tests {
             "tags paths should be rare, rare_paths = {:?}",
             result.aggregate.rare_paths,
         );
+        Ok(())
     }
 
     #[test]
@@ -383,11 +378,10 @@ mod tests {
     }
 
     #[test]
-    fn batch_single_file() {
+    fn batch_single_file() -> Result<(), Box<dyn std::error::Error>> {
         let json = r#"{"x": 1}"#;
         let inputs = vec![("only.json".to_string(), json.to_string())];
-        let result =
-            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result = analyze_batch_from_strings(&inputs)?;
 
         assert_eq!(result.per_document.len(), 1);
         assert_eq!(result.aggregate.total_documents, 1);
@@ -395,42 +389,40 @@ mod tests {
         // Single file: all paths are common (>50%), none are rare
         assert!(!result.aggregate.common_paths.is_empty());
         assert!(result.aggregate.rare_paths.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn batch_from_directory() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir failed: {e}"));
+    fn batch_from_directory() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let dir_path = dir.path();
 
         // Create test JSON files
-        fs::write(dir_path.join("a.json"), r#"{"name": "Alice", "age": 30}"#)
-            .unwrap_or_else(|e| panic!("write failed: {e}"));
+        fs::write(dir_path.join("a.json"), r#"{"name": "Alice", "age": 30}"#)?;
 
-        fs::write(dir_path.join("b.json"), r#"{"name": "Bob", "age": 25}"#)
-            .unwrap_or_else(|e| panic!("write failed: {e}"));
+        fs::write(dir_path.join("b.json"), r#"{"name": "Bob", "age": 25}"#)?;
 
         // Non-JSON file should be ignored
-        fs::write(dir_path.join("readme.txt"), "not json")
-            .unwrap_or_else(|e| panic!("write failed: {e}"));
+        fs::write(dir_path.join("readme.txt"), "not json")?;
 
-        let files = collect_json_files(dir_path).unwrap_or_else(|e| panic!("collect failed: {e}"));
+        let files = collect_json_files(dir_path)?;
         assert_eq!(files.len(), 2);
 
-        let result = analyze_batch(&files).unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result = analyze_batch(&files)?;
         assert_eq!(result.per_document.len(), 2);
         assert!(result.errors.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn batch_preserves_order() {
+    fn batch_preserves_order() -> Result<(), Box<dyn std::error::Error>> {
         let inputs: Vec<(String, String)> = vec![
             ("first.json".to_string(), r#"{"a": 1}"#.to_string()),
             ("second.json".to_string(), r#"{"b": 2}"#.to_string()),
             ("third.json".to_string(), r#"{"c": 3}"#.to_string()),
         ];
 
-        let result =
-            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result = analyze_batch_from_strings(&inputs)?;
 
         assert_eq!(result.per_document[0].file_name, "first.json");
         assert_eq!(result.per_document[1].file_name, "second.json");
@@ -438,32 +430,33 @@ mod tests {
         assert_eq!(result.per_document[0].index, 0);
         assert_eq!(result.per_document[1].index, 1);
         assert_eq!(result.per_document[2].index, 2);
+        Ok(())
     }
 
     #[test]
-    fn batch_handles_parse_errors_gracefully() {
+    fn batch_handles_parse_errors_gracefully() -> Result<(), Box<dyn std::error::Error>> {
         let inputs: Vec<(String, String)> = vec![
             ("good.json".to_string(), r#"{"a": 1}"#.to_string()),
             ("bad.json".to_string(), "not valid json{{{".to_string()),
             ("also_good.json".to_string(), r#"{"b": 2}"#.to_string()),
         ];
 
-        let result =
-            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result = analyze_batch_from_strings(&inputs)?;
 
         assert_eq!(result.per_document.len(), 2);
         assert_eq!(result.errors.len(), 1);
         assert_eq!(result.errors[0].0, "bad.json");
+        Ok(())
     }
 
     #[test]
-    fn empty_directory_returns_error() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir failed: {e}"));
-        let files =
-            collect_json_files(dir.path()).unwrap_or_else(|e| panic!("collect failed: {e}"));
+    fn empty_directory_returns_error() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let files = collect_json_files(dir.path())?;
         assert!(files.is_empty());
 
         let result = analyze_batch(&files);
         assert!(result.is_err());
+        Ok(())
     }
 }

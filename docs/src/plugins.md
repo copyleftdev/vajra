@@ -265,14 +265,82 @@ A plugin **may not:**
 
 ---
 
+## Shipped Plugins
+
+Three domain plugins ship with Vajra, all enabled by default via feature flags:
+
+| Domain | Plugin | Type Recognizers | Hints |
+|---|---|---|---|
+| Medical / EDI | `vajra-domain-med` | ICD-10, CPT, HCPCS, NDC, NPI, Diagnosis Code | 6 (claim service line, diagnosis, patient, provider, adjudication, denial) |
+| Security | `vajra-domain-sec` | CVE, IPv4, IPv6, CIDR, MAC, SHA-256, SHA-1, MD5, JWT, MITRE ATT&CK Technique, MITRE Tactic, CVSS | 6 (network flow, alert classification, vulnerability, auth, process execution, DNS) |
+| DevOps | `vajra-domain-devops` | Container ID, Semver, Git SHA, Docker Image, AWS ARN, GCP Resource, CIDR, Cron, K8s Namespace, Terraform Resource | 6 (K8s pod spec, deployment metadata, service endpoint, Terraform, CI pipeline, container spec) |
+
+### Feature Flags
+
+```toml
+# vajra-cli/Cargo.toml
+[features]
+default = ["medical", "security", "devops"]
+medical = ["vajra-domain-med"]
+security = ["vajra-domain-sec"]
+devops = ["vajra-domain-devops"]
+all-plugins = ["medical", "security", "devops"]
+```
+
+Build without a plugin: `cargo build --no-default-features --features security,devops`
+
+---
+
+## The Security Plugin: vajra-domain-sec
+
+The security plugin recognizes types commonly found in SIEM events, vulnerability scans, threat intelligence feeds, and network flow data.
+
+### Type Recognizers
+
+| Recognized Type | Pattern | Example Values |
+|---|---|---|
+| CVE ID | `CVE-YYYY-NNNNN` | `CVE-2024-3400`, `CVE-2023-44487` |
+| IPv4 | Dotted-quad, each octet 0-255 | `192.168.1.1`, `10.0.0.1` |
+| IPv6 | Full, compressed, mixed notation | `2001:db8::1`, `::1` |
+| CIDR | IPv4/prefix (0-32) | `10.0.0.0/8`, `192.168.1.0/24` |
+| MAC Address | Colon or hyphen separated | `aa:bb:cc:dd:ee:ff` |
+| SHA-256 | 64 lowercase hex chars | `e3b0c44298fc1c14...` |
+| SHA-1 | 40 lowercase hex chars | `da39a3ee5e6b4b0d...` |
+| MD5 | 32 lowercase hex chars | `d41d8cd98f00b204...` |
+| JWT | `eyJ...\.eyJ...\.sig` | JSON Web Tokens |
+| MITRE ATT&CK Technique | `T\d{4}(.\d{3})?` | `T1059`, `T1059.001` |
+| MITRE ATT&CK Tactic | `TA\d{4}` | `TA0001`, `TA0040` |
+| CVSS Vector | `CVSS:3.x/AV:.../...` | Full CVSS v3 vector strings |
+
+---
+
+## The DevOps Plugin: vajra-domain-devops
+
+The DevOps plugin recognizes types in Kubernetes manifests, Terraform state, CI/CD pipeline output, Docker configurations, and cloud infrastructure JSON.
+
+### Type Recognizers
+
+| Recognized Type | Pattern | Example Values |
+|---|---|---|
+| Container ID | 12 or 64 lowercase hex chars | `a1b2c3d4e5f6` |
+| Semver | `v?MAJOR.MINOR.PATCH(-pre)?(+build)?` | `v1.2.3`, `1.0.0-beta.1` |
+| Git SHA | 7-12 or 40 lowercase hex chars | `a1b2c3d`, full 40-char SHA |
+| Docker Image | `[registry/]repo:tag` or `repo@sha256:digest` | `nginx:latest`, `gcr.io/proj/img:v1` |
+| AWS ARN | `arn:aws:service:region:account:resource` | `arn:aws:s3:::my-bucket` |
+| GCP Resource | `projects/*/...` or `organizations/*/...` | `projects/my-proj/topics/t` |
+| CIDR Block | IPv4/prefix (0-32) | `10.0.0.0/16` |
+| Cron Expression | 5-field cron pattern | `0 */6 * * *` |
+| K8s Namespace | DNS-1123 labels, known system namespaces | `kube-system`, `my-app-staging` |
+| Terraform Resource | `provider_type.name` | `aws_instance.web` |
+
+---
+
 ## Future Plugin Domains
 
-The architecture supports any domain. The medical plugin is first because it validates the interface:
+The architecture supports any domain:
 
 | Domain | Plugin | Type Recognizers |
 |---|---|---|
-| Medical / EDI | `vajra-domain-med` | ICD-10, CPT, HCPCS, NDC, NPI |
 | Financial | `vajra-domain-finance` | SWIFT, IBAN, CUSIP, currency codes |
 | Telecom | `vajra-domain-telecom` | E.164 numbers, IMSI, CDR fields |
 | IoT / Sensor | `vajra-domain-iot` | Sensor types, unit patterns, device IDs |
-| Cloud / DevOps | `vajra-domain-cloud` | ARN, GCP resource IDs, K8s metadata |

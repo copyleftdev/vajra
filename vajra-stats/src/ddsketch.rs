@@ -235,30 +235,32 @@ mod tests {
     }
 
     #[test]
-    fn single_value_all_quantiles() {
+    fn single_value_all_quantiles() -> Result<(), Box<dyn std::error::Error>> {
         let mut sk = DDSketch::default();
         sk.add(42.0);
         assert_eq!(sk.count(), 1);
         assert!(!sk.is_empty());
         // All quantiles should return approximately 42
         for &q in &[0.0, 0.25, 0.5, 0.75, 1.0] {
-            let v = sk.quantile(q).unwrap();
+            let v = sk.quantile(q).ok_or("expected quantile")?;
             assert!(
                 (v - 42.0).abs() / 42.0 <= 0.01 + 1e-9,
                 "q={q}, v={v}, expected ~42.0"
             );
         }
+        Ok(())
     }
 
     #[test]
-    fn min_max_mean_exact() {
+    fn min_max_mean_exact() -> Result<(), Box<dyn std::error::Error>> {
         let mut sk = DDSketch::default();
         for v in [1.0, 2.0, 3.0, 4.0, 5.0] {
             sk.add(v);
         }
-        assert_eq!(sk.min().unwrap(), 1.0);
-        assert_eq!(sk.max().unwrap(), 5.0);
-        assert!((sk.mean().unwrap() - 3.0).abs() < 1e-12);
+        assert_eq!(sk.min().ok_or("no min")?, 1.0);
+        assert_eq!(sk.max().ok_or("no max")?, 5.0);
+        assert!((sk.mean().ok_or("no mean")? - 3.0).abs() < 1e-12);
+        Ok(())
     }
 
     #[test]
@@ -271,44 +273,46 @@ mod tests {
     }
 
     #[test]
-    fn median_of_1_to_100() {
+    fn median_of_1_to_100() -> Result<(), Box<dyn std::error::Error>> {
         let alpha = 0.01;
         let mut sk = DDSketch::new(alpha);
         for i in 1..=100 {
             sk.add(i as f64);
         }
-        let med = sk.quantile(0.5).unwrap();
+        let med = sk.quantile(0.5).ok_or("no median")?;
         let expected = 50.0;
         assert!(
             (med - expected).abs() / expected <= alpha + 0.02,
             "median={med}, expected ~{expected}"
         );
+        Ok(())
     }
 
     #[test]
-    fn p99_of_1_to_1000() {
+    fn p99_of_1_to_1000() -> Result<(), Box<dyn std::error::Error>> {
         let alpha = 0.01;
         let mut sk = DDSketch::new(alpha);
         for i in 1..=1000 {
             sk.add(i as f64);
         }
-        let p99 = sk.quantile(0.99).unwrap();
+        let p99 = sk.quantile(0.99).ok_or("no p99")?;
         let expected = 990.0;
         assert!(
             (p99 - expected).abs() / expected <= alpha + 0.02,
             "p99={p99}, expected ~{expected}"
         );
+        Ok(())
     }
 
     #[test]
-    fn p25_p75_of_1_to_100() {
+    fn p25_p75_of_1_to_100() -> Result<(), Box<dyn std::error::Error>> {
         let alpha = 0.01;
         let mut sk = DDSketch::new(alpha);
         for i in 1..=100 {
             sk.add(i as f64);
         }
-        let p25 = sk.quantile(0.25).unwrap();
-        let p75 = sk.quantile(0.75).unwrap();
+        let p25 = sk.quantile(0.25).ok_or("no p25")?;
+        let p75 = sk.quantile(0.75).ok_or("no p75")?;
         assert!(
             (p25 - 25.0).abs() / 25.0 <= alpha + 0.05,
             "p25={p25}, expected ~25"
@@ -317,10 +321,11 @@ mod tests {
             (p75 - 75.0).abs() / 75.0 <= alpha + 0.05,
             "p75={p75}, expected ~75"
         );
+        Ok(())
     }
 
     #[test]
-    fn merge_equals_single_sketch() {
+    fn merge_equals_single_sketch() -> Result<(), Box<dyn std::error::Error>> {
         let alpha = 0.01;
         let mut sk1 = DDSketch::new(alpha);
         let mut sk2 = DDSketch::new(alpha);
@@ -339,62 +344,66 @@ mod tests {
         assert_eq!(sk1.count(), combined.count());
         assert_eq!(sk1.min(), combined.min());
         assert_eq!(sk1.max(), combined.max());
-        assert!((sk1.mean().unwrap() - combined.mean().unwrap()).abs() < 1e-9);
+        assert!((sk1.mean().ok_or("no mean")? - combined.mean().ok_or("no mean")?).abs() < 1e-9);
 
         for &q in &[0.25, 0.5, 0.75, 0.99] {
-            let v1 = sk1.quantile(q).unwrap();
-            let v2 = combined.quantile(q).unwrap();
+            let v1 = sk1.quantile(q).ok_or("no quantile")?;
+            let v2 = combined.quantile(q).ok_or("no quantile")?;
             assert!(
                 (v1 - v2).abs() / v2.max(1.0) < 0.05,
                 "q={q}: merged={v1}, combined={v2}"
             );
         }
+        Ok(())
     }
 
     #[test]
-    fn negative_values() {
+    fn negative_values() -> Result<(), Box<dyn std::error::Error>> {
         let alpha = 0.01;
         let mut sk = DDSketch::new(alpha);
         for i in 1..=100 {
             sk.add(-(i as f64));
         }
-        assert_eq!(sk.min().unwrap(), -100.0);
-        assert_eq!(sk.max().unwrap(), -1.0);
+        assert_eq!(sk.min().ok_or("no min")?, -100.0);
+        assert_eq!(sk.max().ok_or("no max")?, -1.0);
 
         // Median should be around -50
-        let med = sk.quantile(0.5).unwrap();
+        let med = sk.quantile(0.5).ok_or("no median")?;
         assert!(
             (med - (-50.0)).abs() / 50.0 <= alpha + 0.05,
             "median={med}, expected ~-50"
         );
+        Ok(())
     }
 
     #[test]
-    fn mixed_positive_negative() {
+    fn mixed_positive_negative() -> Result<(), Box<dyn std::error::Error>> {
         let alpha = 0.01;
         let mut sk = DDSketch::new(alpha);
         for i in -50..=50 {
             sk.add(i as f64);
         }
         assert_eq!(sk.count(), 101);
-        assert_eq!(sk.min().unwrap(), -50.0);
-        assert_eq!(sk.max().unwrap(), 50.0);
+        assert_eq!(sk.min().ok_or("no min")?, -50.0);
+        assert_eq!(sk.max().ok_or("no max")?, 50.0);
 
         // Median should be around 0
-        let med = sk.quantile(0.5).unwrap();
+        let med = sk.quantile(0.5).ok_or("no median")?;
         assert!(med.abs() <= 2.0, "median={med}, expected ~0");
+        Ok(())
     }
 
     #[test]
-    fn zeros_only() {
+    fn zeros_only() -> Result<(), Box<dyn std::error::Error>> {
         let mut sk = DDSketch::default();
         for _ in 0..100 {
             sk.add(0.0);
         }
         assert_eq!(sk.count(), 100);
-        assert_eq!(sk.quantile(0.5).unwrap(), 0.0);
-        assert_eq!(sk.quantile(0.0).unwrap(), 0.0);
-        assert_eq!(sk.quantile(1.0).unwrap(), 0.0);
+        assert_eq!(sk.quantile(0.5).ok_or("no q50")?, 0.0);
+        assert_eq!(sk.quantile(0.0).ok_or("no q0")?, 0.0);
+        assert_eq!(sk.quantile(1.0).ok_or("no q1")?, 0.0);
+        Ok(())
     }
 
     #[test]
@@ -417,13 +426,17 @@ mod tests {
     }
 
     #[test]
-    fn merge_empty_into_nonempty() {
+    fn merge_empty_into_nonempty() -> Result<(), Box<dyn std::error::Error>> {
         let mut sk = DDSketch::default();
         sk.add(10.0);
         let empty = DDSketch::default();
         sk.merge(&empty);
         assert_eq!(sk.count(), 1);
-        assert_eq!(sk.quantile(0.5).unwrap(), sk.quantile(0.5).unwrap());
+        assert_eq!(
+            sk.quantile(0.5).ok_or("no q")?,
+            sk.quantile(0.5).ok_or("no q")?
+        );
+        Ok(())
     }
 
     #[test]
@@ -436,7 +449,7 @@ mod tests {
     }
 
     #[test]
-    fn large_dataset_quantiles() {
+    fn large_dataset_quantiles() -> Result<(), Box<dyn std::error::Error>> {
         let alpha = 0.01;
         let mut sk = DDSketch::new(alpha);
         for i in 1..=10_000 {
@@ -445,41 +458,44 @@ mod tests {
         assert_eq!(sk.count(), 10_000);
 
         // p50 ~ 5000
-        let p50 = sk.quantile(0.5).unwrap();
+        let p50 = sk.quantile(0.5).ok_or("no p50")?;
         assert!((p50 - 5000.0).abs() / 5000.0 <= alpha + 0.02, "p50={p50}");
 
         // p99 ~ 9900
-        let p99 = sk.quantile(0.99).unwrap();
+        let p99 = sk.quantile(0.99).ok_or("no p99")?;
         assert!((p99 - 9900.0).abs() / 9900.0 <= alpha + 0.02, "p99={p99}");
+        Ok(())
     }
 
     #[test]
-    fn duplicate_values() {
+    fn duplicate_values() -> Result<(), Box<dyn std::error::Error>> {
         let mut sk = DDSketch::default();
         for _ in 0..1000 {
             sk.add(42.0);
         }
         assert_eq!(sk.count(), 1000);
-        let med = sk.quantile(0.5).unwrap();
+        let med = sk.quantile(0.5).ok_or("no median")?;
         assert!(
             (med - 42.0).abs() / 42.0 <= 0.01 + 1e-9,
             "median={med}, expected 42"
         );
+        Ok(())
     }
 
     #[test]
-    fn quantile_boundaries() {
+    fn quantile_boundaries() -> Result<(), Box<dyn std::error::Error>> {
         let mut sk = DDSketch::default();
         for i in 1..=100 {
             sk.add(i as f64);
         }
-        let q0 = sk.quantile(0.0).unwrap();
-        let q1 = sk.quantile(1.0).unwrap();
+        let q0 = sk.quantile(0.0).ok_or("no q0")?;
+        let q1 = sk.quantile(1.0).ok_or("no q1")?;
         // q(0) should be near min, q(1) near max
         assert!((q0 - 1.0).abs() / 1.0 <= 0.02, "q(0)={q0}, expected ~1.0");
         assert!(
             (q1 - 100.0).abs() / 100.0 <= 0.02,
             "q(1)={q1}, expected ~100.0"
         );
+        Ok(())
     }
 }

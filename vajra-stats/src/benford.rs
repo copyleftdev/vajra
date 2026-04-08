@@ -137,7 +137,7 @@ fn leading_digit(value: f64) -> Option<u8> {
     let exp = abs.log10().floor();
     let leading = (abs / 10.0_f64.powf(exp)).floor() as u8;
     // Clamp to 1..=9 (rounding edge cases)
-    if leading >= 1 && leading <= 9 {
+    if (1..=9).contains(&leading) {
         Some(leading)
     } else if leading == 0 {
         // Edge case: floating point imprecision could give 0
@@ -184,8 +184,8 @@ mod tests {
     #[test]
     fn expected_distribution_known_values() {
         let dist = expected_benford_distribution();
-        // P(1) = log10(2) ≈ 0.30103
-        assert!((dist[0] - 0.30103).abs() < 1e-4);
+        // P(1) = log10(2)
+        assert!((dist[0] - std::f64::consts::LOG10_2).abs() < 1e-4);
         // P(9) = log10(10/9) ≈ 0.04576
         assert!((dist[8] - 0.04576).abs() < 1e-4);
     }

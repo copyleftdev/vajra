@@ -15,7 +15,7 @@ use vajra_types::traits::Analyzer;
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_deeply_nested_127_levels() {
+fn chaos_deeply_nested_127_levels() -> Result<(), Box<dyn std::error::Error>> {
     // serde_json's default recursion limit is 128, so 127 nested objects
     // (depth 127 after walk) should succeed.
     let depth = 127;
@@ -27,8 +27,9 @@ fn chaos_deeply_nested_127_levels() {
     for _ in 0..depth {
         json.push('}');
     }
-    let doc = parse_str(&json).unwrap_or_else(|e| panic!("parse failed at depth {depth}: {e}"));
+    let doc = parse_str(&json)?;
     assert_eq!(doc.metadata().max_depth, depth as u32);
+    Ok(())
 }
 
 #[test]
@@ -53,7 +54,7 @@ fn chaos_deeply_nested_beyond_serde_limit() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_extremely_wide_object() {
+fn chaos_extremely_wide_object() -> Result<(), Box<dyn std::error::Error>> {
     let mut json = String::from("{");
     for i in 0..10_000 {
         if i > 0 {
@@ -63,12 +64,13 @@ fn chaos_extremely_wide_object() {
     }
     json.push('}');
 
-    let doc = parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(&json)?;
     assert_eq!(doc.metadata().max_depth, 1);
 
     // Run stats and fingerprint -- should not panic.
     let _ = StatsAnalyzer.analyze(&doc);
     let _ = FingerprintAnalyzer.analyze(&doc);
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -76,11 +78,11 @@ fn chaos_extremely_wide_object() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_empty_everything() {
+fn chaos_empty_everything() -> Result<(), Box<dyn std::error::Error>> {
     let inputs = vec!["{}", "[]", r#""""#, "0", "null", "false", "true"];
 
     for input in inputs {
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed for '{input}': {e}"));
+        let doc = parse_str(input)?;
 
         // Full pipeline: no panics.
         let _ = canonicalize(doc.value());
@@ -88,6 +90,7 @@ fn chaos_empty_everything() {
         let _ = AnomalyAnalyzer::default().analyze(&doc);
         let _ = FingerprintAnalyzer.analyze(&doc);
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -95,9 +98,9 @@ fn chaos_empty_everything() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_null_everywhere() {
+fn chaos_null_everywhere() -> Result<(), Box<dyn std::error::Error>> {
     let json = r#"{"a": null, "b": [null, null], "c": {"d": null}}"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
 
     let stats = StatsAnalyzer.analyze(&doc);
     assert!(stats.is_ok(), "stats should handle nulls");
@@ -107,6 +110,7 @@ fn chaos_null_everywhere() {
 
     let fp = FingerprintAnalyzer.analyze(&doc);
     assert!(fp.is_ok(), "fingerprint should handle nulls");
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -114,9 +118,9 @@ fn chaos_null_everywhere() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_type_chaos() {
+fn chaos_type_chaos() -> Result<(), Box<dyn std::error::Error>> {
     let json = r#"[1, "two", true, null, {"x": 1}, [1, 2], 3.14]"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
 
     let stats = StatsAnalyzer.analyze(&doc);
     assert!(stats.is_ok(), "stats should handle mixed types");
@@ -133,6 +137,7 @@ fn chaos_type_chaos() {
             node.metadata.type_instability()
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -140,7 +145,7 @@ fn chaos_type_chaos() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_unicode_stress() {
+fn chaos_unicode_stress() -> Result<(), Box<dyn std::error::Error>> {
     // Emoji, RTL markers, combining characters, surrogate-safe multi-byte.
     let json = r#"{
         "emoji\ud83c\udf89": "party",
@@ -150,7 +155,7 @@ fn chaos_unicode_stress() {
         "four_byte": "\ud83d\ude00",
         "empty_val": ""
     }"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
 
     // Canonicalize should handle all these without panic.
     let canon = canonicalize(doc.value());
@@ -159,6 +164,7 @@ fn chaos_unicode_stress() {
     // Stats and fingerprint should work.
     let _ = StatsAnalyzer.analyze(&doc);
     let _ = FingerprintAnalyzer.analyze(&doc);
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -166,7 +172,7 @@ fn chaos_unicode_stress() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_huge_array_identical_elements() {
+fn chaos_huge_array_identical_elements() -> Result<(), Box<dyn std::error::Error>> {
     // 10,000 identical objects.
     let mut json = String::from("[");
     for i in 0..10_000 {
@@ -177,11 +183,9 @@ fn chaos_huge_array_identical_elements() {
     }
     json.push(']');
 
-    let doc = parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(&json)?;
 
-    let stats = StatsAnalyzer
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("stats failed: {e}"));
+    let stats = StatsAnalyzer.analyze(&doc)?;
 
     // $[*].id should have cardinality 1 and entropy 0.
     let id_path = vajra_types::path::WildcardPath::root()
@@ -198,6 +202,7 @@ fn chaos_huge_array_identical_elements() {
             ps.entropy
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -205,7 +210,7 @@ fn chaos_huge_array_identical_elements() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_huge_array_unique_elements() {
+fn chaos_huge_array_unique_elements() -> Result<(), Box<dyn std::error::Error>> {
     let mut json = String::from("[");
     for i in 0..10_000 {
         if i > 0 {
@@ -215,11 +220,9 @@ fn chaos_huge_array_unique_elements() {
     }
     json.push(']');
 
-    let doc = parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(&json)?;
 
-    let stats = StatsAnalyzer
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("stats failed: {e}"));
+    let stats = StatsAnalyzer.analyze(&doc)?;
 
     let path = vajra_types::path::WildcardPath::root().push_array_wildcard();
     if let Some(ps) = stats.paths.get(&path) {
@@ -229,6 +232,7 @@ fn chaos_huge_array_unique_elements() {
             "expected positive entropy for unique values"
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -236,15 +240,16 @@ fn chaos_huge_array_unique_elements() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_single_enormous_string() {
+fn chaos_single_enormous_string() -> Result<(), Box<dyn std::error::Error>> {
     // 1 MB string value.
     let big_str: String = "x".repeat(1_000_000);
     let json = format!(r#"{{"big": "{}"}}"#, big_str);
-    let doc = parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(&json)?;
     assert!(doc.metadata().raw_size_bytes > 1_000_000);
 
     let canon = canonicalize(doc.value());
     assert!(canon.is_ok(), "canonicalize should handle 1MB string");
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -252,7 +257,7 @@ fn chaos_single_enormous_string() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_numbers_at_extremes() {
+fn chaos_numbers_at_extremes() -> Result<(), Box<dyn std::error::Error>> {
     // serde_json may not parse f64::MAX because the text representation
     // can exceed f64 range on round-trip. Use values known to be safe.
     let json_safe = r#"[1.7976931348623157e308, 5e-324, 0, 1e-308, 1e308, 0.0000000001]"#;
@@ -264,14 +269,15 @@ fn chaos_numbers_at_extremes() {
     }
     // Also test -0 specifically.
     let neg_zero_json = r#"{"val": -0.0}"#;
-    let doc = parse_str(neg_zero_json).unwrap_or_else(|e| panic!("parse failed: {e}"));
-    let canon = canonicalize(doc.value()).unwrap_or_else(|e| panic!("canon failed: {e}"));
+    let doc = parse_str(neg_zero_json)?;
+    let canon = canonicalize(doc.value())?;
     let canon_str = String::from_utf8(canon).unwrap_or_default();
     // JCS: -0 should be serialized as 0.
     assert!(
         canon_str.contains(r#""val":0"#),
         "expected -0 to be serialized as 0, got: {canon_str}"
     );
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -279,9 +285,9 @@ fn chaos_numbers_at_extremes() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_empty_keys() {
+fn chaos_empty_keys() -> Result<(), Box<dyn std::error::Error>> {
     let json = r#"{"": 1, " ": 2, "  ": 3}"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
 
     // Should have 4 paths: $, $."", $." ", $."  " (key-based paths).
     assert!(doc.metadata().distinct_paths >= 3);
@@ -291,6 +297,7 @@ fn chaos_empty_keys() {
 
     let _ = StatsAnalyzer.analyze(&doc);
     let _ = FingerprintAnalyzer.analyze(&doc);
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -298,10 +305,10 @@ fn chaos_empty_keys() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_duplicate_keys_in_input() {
+fn chaos_duplicate_keys_in_input() -> Result<(), Box<dyn std::error::Error>> {
     // serde_json takes the last value for duplicate keys.
     let json = r#"{"a": 1, "a": 2}"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
 
     // serde_json should resolve to {"a": 2}.
     let val = doc.value().get("a");
@@ -312,6 +319,7 @@ fn chaos_duplicate_keys_in_input() {
 
     let _ = StatsAnalyzer.analyze(&doc);
     let _ = AnomalyAnalyzer::default().analyze(&doc);
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -319,7 +327,7 @@ fn chaos_duplicate_keys_in_input() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_query_on_adversarial_input() {
+fn chaos_query_on_adversarial_input() -> Result<(), Box<dyn std::error::Error>> {
     let adversarial_inputs = vec![
         r#"{"": null}"#,
         r#"[[[[[1]]]]]"#,
@@ -328,10 +336,8 @@ fn chaos_query_on_adversarial_input() {
     ];
 
     for input in adversarial_inputs {
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed for '{input}': {e}"));
-        let stats = StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("stats failed: {e}"));
+        let doc = parse_str(input)?;
+        let stats = StatsAnalyzer.analyze(&doc)?;
 
         let ctx = vajra_query::QueryContext {
             doc: &doc,
@@ -339,15 +345,14 @@ fn chaos_query_on_adversarial_input() {
         };
 
         // Run a path query -- should not panic.
-        let expr =
-            vajra_query::parse_expr("$").unwrap_or_else(|e| panic!("parse expr failed: {e}"));
+        let expr = vajra_query::parse_expr("$")?;
         let _ = vajra_query::evaluate(&expr, &ctx);
 
         // Try counting the root.
-        let expr = vajra_query::parse_expr("count($)")
-            .unwrap_or_else(|e| panic!("parse expr failed: {e}"));
+        let expr = vajra_query::parse_expr("count($)")?;
         let _ = vajra_query::evaluate(&expr, &ctx);
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -355,12 +360,13 @@ fn chaos_query_on_adversarial_input() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_boolean_array() {
+fn chaos_boolean_array() -> Result<(), Box<dyn std::error::Error>> {
     let json = r#"[true, false, true, false, true]"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
     let _ = StatsAnalyzer.analyze(&doc);
     let _ = AnomalyAnalyzer::default().analyze(&doc);
     let _ = FingerprintAnalyzer.analyze(&doc);
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -368,14 +374,15 @@ fn chaos_boolean_array() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_nested_empty_containers() {
+fn chaos_nested_empty_containers() -> Result<(), Box<dyn std::error::Error>> {
     let json = r#"{"a": {}, "b": [], "c": {"d": {}, "e": []}}"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
 
     let _ = canonicalize(doc.value());
     let _ = StatsAnalyzer.analyze(&doc);
     let _ = AnomalyAnalyzer::default().analyze(&doc);
     let _ = FingerprintAnalyzer.analyze(&doc);
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -383,16 +390,17 @@ fn chaos_nested_empty_containers() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_very_long_key_names() {
+fn chaos_very_long_key_names() -> Result<(), Box<dyn std::error::Error>> {
     let long_key = "k".repeat(10_000);
     let json = format!(r#"{{"{long_key}": 42}}"#);
-    let doc = parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(&json)?;
 
     let canon = canonicalize(doc.value());
     assert!(canon.is_ok(), "canonicalize should handle 10k-char keys");
 
     let _ = StatsAnalyzer.analyze(&doc);
     let _ = FingerprintAnalyzer.analyze(&doc);
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -400,9 +408,9 @@ fn chaos_very_long_key_names() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn chaos_numeric_strings() {
+fn chaos_numeric_strings() -> Result<(), Box<dyn std::error::Error>> {
     let json = r#"["123", "45.67", "-89", "1e10", "0x1F", "NaN", "Infinity"]"#;
-    let doc = parse_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    let doc = parse_str(json)?;
 
     let stats = StatsAnalyzer.analyze(&doc);
     assert!(stats.is_ok());
@@ -417,4 +425,5 @@ fn chaos_numeric_strings() {
             );
         }
     }
+    Ok(())
 }

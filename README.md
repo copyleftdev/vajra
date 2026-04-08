@@ -11,8 +11,8 @@
 <p align="center">
   <a href="https://github.com/copyleftdev/vajra/actions/workflows/ci.yml"><img src="https://github.com/copyleftdev/vajra/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://copyleftdev.github.io/vajra"><img src="https://img.shields.io/badge/docs-live-gold" alt="Docs"></a>
-  <a href="https://github.com/copyleftdev/vajra/actions"><img src="https://img.shields.io/badge/tests-761%20passed-brightgreen" alt="Tests"></a>
-  <a href="https://github.com/copyleftdev/vajra"><img src="https://img.shields.io/badge/crates-12-blue" alt="Crates"></a>
+  <a href="https://github.com/copyleftdev/vajra/actions"><img src="https://img.shields.io/badge/tests-908%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/copyleftdev/vajra"><img src="https://img.shields.io/badge/crates-14-blue" alt="Crates"></a>
   <a href="LICENSE-MIT"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-orange" alt="License"></a>
 </p>
 
@@ -125,7 +125,7 @@ Every algorithm was chosen against three gates: **works at any scale** (O(n) or 
 ## Testing
 
 ```
-761 tests, 0 failures
+908 tests, 0 failures
 
 43 property tests — every mathematical invariant encoded
 18 chaos tests — pathological inputs, no panics
@@ -157,6 +157,8 @@ vajra/
 ├── vajra-essence      # Profiles, scoring, rendering, TOML config, chunking
 ├── vajra-query        # Expression parser, analysis functions
 ├── vajra-domain-med   # Medical/EDI plugin (ICD-10, CPT, NPI, NDC)
+├── vajra-domain-sec   # Security plugin (CVE, MITRE ATT&CK, IPs, hashes, JWT)
+├── vajra-domain-devops # DevOps plugin (K8s, Docker, Terraform, ARN, semver)
 ├── vajra-motif        # (reserved)
 ├── vajra-cli          # CLI commands, batch processing
 └── docs/              # mdbook documentation site

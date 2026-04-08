@@ -1,10 +1,10 @@
 # Architecture
 
-Vajra is a Rust workspace of 12 crates. Each crate has a single responsibility. Dependencies flow downward. Nothing cycles.
+Vajra is a Rust workspace of 14 crates. Each crate has a single responsibility. Dependencies flow downward. Nothing cycles.
 
 ---
 
-## The 12-Crate Workspace
+## The 14-Crate Workspace
 
 ```text
 vajra/
@@ -18,7 +18,9 @@ vajra/
 ├── vajra-essence/       Profiles, scoring, ranking, rendering, templates
 ├── vajra-query/         Expression parsing, path filtering, analysis functions
 ├── vajra-cli/           CLI argument parsing, command dispatch, output formatting
-├── vajra-domain-med/    Medical/EDI type recognizers, domain profiles
+├── vajra-domain-med/    Medical/EDI type recognizers (ICD-10, CPT, NPI, NDC, HCPCS)
+├── vajra-domain-sec/    Security type recognizers (CVE, MITRE ATT&CK, IPs, hashes, JWT)
+├── vajra-domain-devops/ DevOps type recognizers (K8s, Docker, Terraform, ARN, semver)
 └── Cargo.toml           Workspace root
 ```
 
@@ -30,7 +32,7 @@ vajra/
                     vajra-types
                    /     |     \
                   /      |      \
-           vajra-core    |    vajra-domain-med
+           vajra-core    |    vajra-domain-{med,sec,devops}
             /    \       |       /
            /      \      |      /
   vajra-fingerprint  vajra-stats

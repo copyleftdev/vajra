@@ -180,18 +180,17 @@ mod tests {
     }
 
     #[test]
-    fn length_mismatch_error() {
+    fn length_mismatch_error() -> Result<(), Box<dyn std::error::Error>> {
         let p = [0.5, 0.5];
         let q = [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0];
         let result = jensen_shannon_divergence(&p, &q);
         assert!(result.is_err());
-        match result {
-            Err(JsdError::LengthMismatch { p_len, q_len }) => {
-                assert_eq!(p_len, 2);
-                assert_eq!(q_len, 3);
-            }
-            _ => panic!("expected LengthMismatch error"),
-        }
+        let Err(JsdError::LengthMismatch { p_len, q_len }) = result else {
+            return Err("expected LengthMismatch error".into());
+        };
+        assert_eq!(p_len, 2);
+        assert_eq!(q_len, 3);
+        Ok(())
     }
 
     #[test]

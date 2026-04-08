@@ -583,9 +583,9 @@ mod tests {
     use super::*;
 
     // Helper: parse markdown and return the raw JSON value.
-    fn md_json(input: &str) -> Value {
-        let doc = parse_markdown(input).unwrap_or_else(|e| panic!("parse_markdown failed: {e}"));
-        doc.value().clone()
+    fn md_json(input: &str) -> Result<Value, Box<dyn std::error::Error>> {
+        let doc = parse_markdown(input)?;
+        Ok(doc.value().clone())
     }
 
     // Helper: get metadata sub-object.
@@ -595,144 +595,121 @@ mod tests {
 
     // ---- 1. Simple heading + paragraph ----
     #[test]
-    fn simple_heading_paragraph() {
-        let v = md_json("# Hello\n\nWorld.\n");
+    fn simple_heading_paragraph() -> Result<(), Box<dyn std::error::Error>> {
+        let v = md_json("# Hello\n\nWorld.\n")?;
         assert_eq!(v["type"], "document");
-        let sections = v["sections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"].as_array().ok_or("no sections")?;
         assert_eq!(sections.len(), 1);
         assert_eq!(sections[0]["heading"], "Hello");
         assert_eq!(sections[0]["level"], 1);
-        let content = sections[0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let content = sections[0]["content"].as_array().ok_or("no content")?;
         assert_eq!(content[0]["type"], "paragraph");
         assert_eq!(content[0]["text"], "World.");
+        Ok(())
     }
 
     // ---- 2. Nested headings h1 > h2 > h3 ----
     #[test]
-    fn nested_headings_hierarchy() {
+    fn nested_headings_hierarchy() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Top\n\n## Mid\n\n### Deep\n\nText here.\n";
-        let v = md_json(input);
-        let sections = v["sections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sections"));
+        let v = md_json(input)?;
+        let sections = v["sections"].as_array().ok_or("no sections")?;
         assert_eq!(sections.len(), 1);
         assert_eq!(sections[0]["heading"], "Top");
-        let sub1 = sections[0]["subsections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sub"));
+        let sub1 = sections[0]["subsections"].as_array().ok_or("no sub")?;
         assert_eq!(sub1.len(), 1);
         assert_eq!(sub1[0]["heading"], "Mid");
-        let sub2 = sub1[0]["subsections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sub2"));
+        let sub2 = sub1[0]["subsections"].as_array().ok_or("no sub2")?;
         assert_eq!(sub2.len(), 1);
         assert_eq!(sub2[0]["heading"], "Deep");
+        Ok(())
     }
 
     // ---- 3. Code block with language ----
     #[test]
-    fn code_block_with_language() {
+    fn code_block_with_language() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Code\n\n```rust\nfn main() {}\n```\n";
-        let v = md_json(input);
-        let content = v["sections"][0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let v = md_json(input)?;
+        let content = v["sections"][0]["content"].as_array().ok_or("no content")?;
         assert_eq!(content[0]["type"], "code_block");
         assert_eq!(content[0]["language"], "rust");
         assert_eq!(content[0]["code"], "fn main() {}\n");
+        Ok(())
     }
 
     // ---- 4. Unordered list ----
     #[test]
-    fn unordered_list() {
+    fn unordered_list() -> Result<(), Box<dyn std::error::Error>> {
         let input = "- apple\n- banana\n- cherry\n";
-        let v = md_json(input);
+        let v = md_json(input)?;
         // Content before first heading → root section.
-        let sections = v["sections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sections"));
-        let content = sections[0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let sections = v["sections"].as_array().ok_or("no sections")?;
+        let content = sections[0]["content"].as_array().ok_or("no content")?;
         let list = &content[0];
         assert_eq!(list["type"], "list");
         assert_eq!(list["ordered"], false);
-        let items = list["items"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no items"));
+        let items = list["items"].as_array().ok_or("no items")?;
         assert_eq!(items.len(), 3);
         assert_eq!(items[0], "apple");
+        Ok(())
     }
 
     // ---- 5. Ordered list ----
     #[test]
-    fn ordered_list() {
+    fn ordered_list() -> Result<(), Box<dyn std::error::Error>> {
         let input = "1. first\n2. second\n3. third\n";
-        let v = md_json(input);
-        let content = v["sections"][0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let v = md_json(input)?;
+        let content = v["sections"][0]["content"].as_array().ok_or("no content")?;
         let list = &content[0];
         assert_eq!(list["type"], "list");
         assert_eq!(list["ordered"], true);
-        let items = list["items"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no items"));
+        let items = list["items"].as_array().ok_or("no items")?;
         assert_eq!(items.len(), 3);
+        Ok(())
     }
 
     // ---- 6. Link ----
     #[test]
-    fn link_captured() {
+    fn link_captured() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Links\n\n[click here](https://example.com)\n";
-        let v = md_json(input);
-        let content = v["sections"][0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let v = md_json(input)?;
+        let content = v["sections"][0]["content"].as_array().ok_or("no content")?;
         // The link is inside a paragraph, but also emitted as its own content item.
         let has_link = content.iter().any(|c| c["type"] == "link");
         assert!(has_link, "expected a link content item");
         let link = content
             .iter()
             .find(|c| c["type"] == "link")
-            .unwrap_or_else(|| panic!("no link"));
+            .ok_or("no link")?;
         assert_eq!(link["text"], "click here");
         assert_eq!(link["url"], "https://example.com");
+        Ok(())
     }
 
     // ---- 7. Table ----
     #[test]
-    fn table_parsed() {
+    fn table_parsed() -> Result<(), Box<dyn std::error::Error>> {
         let input = "| Col A | Col B |\n|-------|-------|\n| 1 | 2 |\n| 3 | 4 |\n";
-        let v = md_json(input);
-        let content = v["sections"][0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let v = md_json(input)?;
+        let content = v["sections"][0]["content"].as_array().ok_or("no content")?;
         let table = content
             .iter()
             .find(|c| c["type"] == "table")
-            .unwrap_or_else(|| panic!("no table"));
-        let headers = table["headers"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no headers"));
+            .ok_or("no table")?;
+        let headers = table["headers"].as_array().ok_or("no headers")?;
         assert_eq!(headers.len(), 2);
         assert_eq!(headers[0], "Col A");
         assert_eq!(headers[1], "Col B");
-        let rows = table["rows"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no rows"));
+        let rows = table["rows"].as_array().ok_or("no rows")?;
         assert_eq!(rows.len(), 2);
         assert_eq!(rows[0][0], "1");
         assert_eq!(rows[1][1], "4");
+        Ok(())
     }
 
     // ---- 8. Mixed content ----
     #[test]
-    fn mixed_content() {
+    fn mixed_content() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"# Intro
 
 Some text here.
@@ -744,72 +721,67 @@ print("hi")
 - item a
 - item b
 "#;
-        let v = md_json(input);
-        let content = v["sections"][0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let v = md_json(input)?;
+        let content = v["sections"][0]["content"].as_array().ok_or("no content")?;
         let types: Vec<&str> = content.iter().filter_map(|c| c["type"].as_str()).collect();
         assert!(types.contains(&"paragraph"), "missing paragraph");
         assert!(types.contains(&"code_block"), "missing code_block");
         assert!(types.contains(&"list"), "missing list");
+        Ok(())
     }
 
     // ---- 9. Empty markdown ----
     #[test]
-    fn empty_markdown() {
-        let v = md_json("");
+    fn empty_markdown() -> Result<(), Box<dyn std::error::Error>> {
+        let v = md_json("")?;
         assert_eq!(v["type"], "document");
-        let sections = v["sections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"].as_array().ok_or("no sections")?;
         assert!(sections.is_empty());
+        Ok(())
     }
 
     // ---- 10. No headings ----
     #[test]
-    fn no_headings_root_section() {
-        let v = md_json("Just some text.\n\nMore text.\n");
-        let sections = v["sections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sections"));
+    fn no_headings_root_section() -> Result<(), Box<dyn std::error::Error>> {
+        let v = md_json("Just some text.\n\nMore text.\n")?;
+        let sections = v["sections"].as_array().ok_or("no sections")?;
         assert_eq!(sections.len(), 1);
         assert_eq!(sections[0]["heading"], "");
         assert_eq!(sections[0]["level"], 0);
+        Ok(())
     }
 
     // ---- 11. Multiple h1 sections ----
     #[test]
-    fn multiple_h1_sections() {
+    fn multiple_h1_sections() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# First\n\nText 1.\n\n# Second\n\nText 2.\n\n# Third\n\nText 3.\n";
-        let v = md_json(input);
-        let sections = v["sections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sections"));
+        let v = md_json(input)?;
+        let sections = v["sections"].as_array().ok_or("no sections")?;
         assert_eq!(sections.len(), 3);
         assert_eq!(sections[0]["heading"], "First");
         assert_eq!(sections[1]["heading"], "Second");
         assert_eq!(sections[2]["heading"], "Third");
+        Ok(())
     }
 
     // ---- 12. Image reference ----
     #[test]
-    fn image_captured() {
+    fn image_captured() -> Result<(), Box<dyn std::error::Error>> {
         let input = "![alt text](https://example.com/img.png)\n";
-        let v = md_json(input);
-        let content = v["sections"][0]["content"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no content"));
+        let v = md_json(input)?;
+        let content = v["sections"][0]["content"].as_array().ok_or("no content")?;
         let img = content
             .iter()
             .find(|c| c["type"] == "image")
-            .unwrap_or_else(|| panic!("no image"));
+            .ok_or("no image")?;
         assert_eq!(img["alt"], "alt text");
         assert_eq!(img["url"], "https://example.com/img.png");
+        Ok(())
     }
 
     // ---- 13. Metadata counts ----
     #[test]
-    fn metadata_counts_correct() {
+    fn metadata_counts_correct() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"# H1
 
 Paragraph one.
@@ -833,7 +805,7 @@ code
 
 ![img](http://i.png)
 "#;
-        let v = md_json(input);
+        let v = md_json(input)?;
         let m = md_meta(&v);
         assert_eq!(m["heading_count"], 2);
         // "Paragraph one.", "Paragraph two.", and the paragraph wrapping the link.
@@ -844,72 +816,74 @@ code
         assert_eq!(m["list_count"], 1);
         assert_eq!(m["table_count"], 1);
         assert_eq!(m["image_count"], 1);
+        Ok(())
     }
 
     // ---- 14. Full analysis pipeline works on markdown-derived JSON ----
     #[test]
-    fn pipeline_produces_valid_document() {
+    fn pipeline_produces_valid_document() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Test\n\nHello world.\n";
-        let doc = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_markdown(input)?;
         // Should have a valid trie and metadata.
         assert!(doc.metadata().total_nodes > 0);
         assert!(doc.metadata().distinct_paths > 0);
         assert!(doc.trie().path_count() > 0);
+        Ok(())
     }
 
     // ---- 15. Word count is reasonable ----
     #[test]
-    fn word_count_reasonable() {
+    fn word_count_reasonable() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Title\n\nOne two three four five.\n";
-        let v = md_json(input);
+        let v = md_json(input)?;
         let wc = v["metadata"]["word_count"].as_u64().unwrap_or(0);
         assert!(wc >= 5, "expected at least 5 words, got {wc}");
+        Ok(())
     }
 
     // ---- 16. Determinism: same markdown → identical Document ----
     #[test]
-    fn deterministic_output() {
+    fn deterministic_output() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Hello\n\nWorld.\n\n## Sub\n\n- a\n- b\n";
-        let reference = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let reference = parse_markdown(input)?;
         for _ in 0..10 {
-            let doc = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc = parse_markdown(input)?;
             assert_eq!(doc.value(), reference.value());
         }
+        Ok(())
     }
 
     // ---- 17. Same markdown → identical fingerprint ----
     #[test]
-    fn deterministic_fingerprint() {
+    fn deterministic_fingerprint() -> Result<(), Box<dyn std::error::Error>> {
         use vajra_fingerprint::FingerprintAnalyzer;
         use vajra_types::Analyzer;
         let input = "# Hello\n\nSome content here.\n\n## Details\n\n- one\n- two\n";
-        let doc1 = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let doc2 = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let fp1 = FingerprintAnalyzer
-            .analyze(&doc1)
-            .unwrap_or_else(|e| panic!("fp1 failed: {e}"));
-        let fp2 = FingerprintAnalyzer
-            .analyze(&doc2)
-            .unwrap_or_else(|e| panic!("fp2 failed: {e}"));
+        let doc1 = parse_markdown(input)?;
+        let doc2 = parse_markdown(input)?;
+        let fp1 = FingerprintAnalyzer.analyze(&doc1)?;
+        let fp2 = FingerprintAnalyzer.analyze(&doc2)?;
         assert_eq!(fp1.path_set, fp2.path_set);
         assert_eq!(fp1.typed_path, fp2.typed_path);
         assert_eq!(fp1.shape, fp2.shape);
+        Ok(())
     }
 
     // ---- 18. Very large markdown ----
     #[test]
-    fn large_markdown_10k_lines() {
+    fn large_markdown_10k_lines() -> Result<(), Box<dyn std::error::Error>> {
         let mut buf = String::from("# Big Document\n\n");
         for i in 0..10_000 {
             buf.push_str(&format!("Line {i} of the document with some words.\n\n"));
         }
-        let doc = parse_markdown(&buf).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_markdown(&buf)?;
         assert!(doc.metadata().total_nodes > 100);
+        Ok(())
     }
 
     // ---- 19. Deeply nested headings h1–h6 repeated ----
     #[test]
-    fn deeply_nested_headings() {
+    fn deeply_nested_headings() -> Result<(), Box<dyn std::error::Error>> {
         let mut buf = String::new();
         for cycle in 0..10 {
             for level in 1..=6 {
@@ -919,61 +893,63 @@ code
                 ));
             }
         }
-        let doc = parse_markdown(&buf).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_markdown(&buf)?;
         assert!(doc.metadata().total_nodes > 0);
+        Ok(())
     }
 
     // ---- 20. Unicode content ----
     #[test]
-    fn unicode_content() {
+    fn unicode_content() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# 日本語タイトル\n\nEmoji: 🦀🚀\n\nRTL: مرحبا\n\nCJK: 你好世界\n";
-        let v = md_json(input);
-        let sections = v["sections"]
-            .as_array()
-            .unwrap_or_else(|| panic!("no sections"));
+        let v = md_json(input)?;
+        let sections = v["sections"].as_array().ok_or("no sections")?;
         assert_eq!(sections[0]["heading"], "日本語タイトル");
+        Ok(())
     }
 
     // ---- 21. Only headings, no content ----
     #[test]
-    fn headings_only() {
+    fn headings_only() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# A\n\n## B\n\n### C\n";
-        let doc = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_markdown(input)?;
         assert!(doc.metadata().total_nodes > 0);
         let v = doc.value();
         assert_eq!(v["metadata"]["heading_count"], 3);
+        Ok(())
     }
 
     // ---- 22. Only code blocks ----
     #[test]
-    fn only_code_blocks() {
+    fn only_code_blocks() -> Result<(), Box<dyn std::error::Error>> {
         let input = "```\nline 1\nline 2\n```\n\n```python\nprint(42)\n```\n";
-        let v = md_json(input);
+        let v = md_json(input)?;
         assert_eq!(v["metadata"]["code_block_count"], 2);
+        Ok(())
     }
 
     // ---- 23. Stats pipeline on markdown doc ----
     #[test]
-    fn stats_pipeline_on_markdown() {
+    fn stats_pipeline_on_markdown() -> Result<(), Box<dyn std::error::Error>> {
         use vajra_stats::StatsAnalyzer;
         use vajra_types::Analyzer;
         let input = "# Stats Test\n\nHello world one two three.\n\n## Numbers\n\nFoo bar baz.\n";
-        let doc = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let stats = StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("stats failed: {e}"));
+        let doc = parse_markdown(input)?;
+        let stats = StatsAnalyzer.analyze(&doc)?;
         // Should produce some path stats (at least for root).
         assert!(!stats.paths.is_empty());
+        Ok(())
     }
 
     // ---- 24. Anomaly detection on markdown doc ----
     #[test]
-    fn anomaly_pipeline_on_markdown() {
+    fn anomaly_pipeline_on_markdown() -> Result<(), Box<dyn std::error::Error>> {
         use vajra_anomaly::AnomalyAnalyzer;
         use vajra_types::Analyzer;
         let input = "# Anomaly Test\n\nSome content.\n\n## Sub\n\nMore content.\n";
-        let doc = parse_markdown(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_markdown(input)?;
         // Should not panic; anomalies may or may not be found.
         let _anomalies = AnomalyAnalyzer::default().analyze(&doc);
+        Ok(())
     }
 }

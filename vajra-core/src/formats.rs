@@ -390,90 +390,99 @@ mod tests {
     // ---- NDJSON tests ----
 
     #[test]
-    fn ndjson_three_lines() {
+    fn ndjson_three_lines() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"a":1}
 {"b":2}
 {"c":3}"#;
-        let docs = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_ndjson(input)?;
         assert_eq!(docs.len(), 3);
+        Ok(())
     }
 
     #[test]
-    fn ndjson_empty_lines_skipped() {
+    fn ndjson_empty_lines_skipped() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"a":1}
 
 {"b":2}
 
 "#;
-        let docs = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_ndjson(input)?;
         assert_eq!(docs.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn ndjson_single_line() {
+    fn ndjson_single_line() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"x":"hello"}"#;
-        let docs = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_ndjson(input)?;
         assert_eq!(docs.len(), 1);
+        Ok(())
     }
 
     #[test]
-    fn ndjson_trailing_newline() {
+    fn ndjson_trailing_newline() -> Result<(), Box<dyn std::error::Error>> {
         let input = "{\"a\":1}\n{\"b\":2}\n";
-        let docs = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_ndjson(input)?;
         assert_eq!(docs.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn ndjson_error_includes_line_number() {
+    fn ndjson_error_includes_line_number() -> Result<(), Box<dyn std::error::Error>> {
         let input = "{\"a\":1}\n{bad json}\n{\"c\":3}";
-        let err = parse_ndjson(input).unwrap_err();
+        let err = parse_ndjson(input).err().ok_or("expected error")?;
         let msg = err.to_string();
         assert!(msg.contains("line 2"), "expected 'line 2' in: {msg}");
+        Ok(())
     }
 
     #[test]
-    fn ndjson_mixed_schemas() {
+    fn ndjson_mixed_schemas() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"name":"Alice","age":30}
 {"id":1,"tags":["a","b"]}
 [1,2,3]"#;
-        let docs = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_ndjson(input)?;
         assert_eq!(docs.len(), 3);
+        Ok(())
     }
 
     // ---- YAML tests ----
 
     #[test]
-    fn yaml_simple_object() {
+    fn yaml_simple_object() -> Result<(), Box<dyn std::error::Error>> {
         let input = "name: Alice\nage: 30\n";
-        let docs = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_yaml(input)?;
         assert_eq!(docs.len(), 1);
         let val = docs[0].value();
         assert_eq!(val["name"], serde_json::Value::String("Alice".to_string()));
         assert_eq!(val["age"], serde_json::json!(30));
+        Ok(())
     }
 
     #[test]
-    fn yaml_nested() {
+    fn yaml_nested() -> Result<(), Box<dyn std::error::Error>> {
         let input = "a:\n  b:\n    c: 1\n";
-        let docs = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_yaml(input)?;
         assert_eq!(docs.len(), 1);
         assert_eq!(docs[0].value()["a"]["b"]["c"], serde_json::json!(1));
         // Trie should have paths: $, $.a, $.a.b, $.a.b.c
         assert_eq!(docs[0].metadata().distinct_paths, 4);
+        Ok(())
     }
 
     #[test]
-    fn yaml_array() {
+    fn yaml_array() -> Result<(), Box<dyn std::error::Error>> {
         let input = "- 1\n- 2\n- 3\n";
-        let docs = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_yaml(input)?;
         assert_eq!(docs.len(), 1);
         assert!(docs[0].value().is_array());
+        Ok(())
     }
 
     #[test]
-    fn yaml_multi_document() {
+    fn yaml_multi_document() -> Result<(), Box<dyn std::error::Error>> {
         let input = "---\nname: Alice\n---\nname: Bob\n";
-        let docs = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_yaml(input)?;
         assert_eq!(docs.len(), 2);
         assert_eq!(
             docs[0].value()["name"],
@@ -483,20 +492,22 @@ mod tests {
             docs[1].value()["name"],
             serde_json::Value::String("Bob".to_string())
         );
+        Ok(())
     }
 
     #[test]
-    fn yaml_dates_become_strings() {
+    fn yaml_dates_become_strings() -> Result<(), Box<dyn std::error::Error>> {
         // serde_yaml serializes untagged dates as strings when going through
         // serde_json::Value
         let input = "date: 2024-01-15\n";
-        let docs = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_yaml(input)?;
         assert_eq!(docs.len(), 1);
         let date_val = &docs[0].value()["date"];
         assert!(
             date_val.is_string(),
             "expected string for date, got: {date_val:?}"
         );
+        Ok(())
     }
 
     #[test]
@@ -507,9 +518,9 @@ mod tests {
     }
 
     #[test]
-    fn yaml_anchors_aliases_resolved() {
+    fn yaml_anchors_aliases_resolved() -> Result<(), Box<dyn std::error::Error>> {
         let input = "defaults: &defaults\n  adapter: postgres\n  host: localhost\nproduction:\n  <<: *defaults\n  host: prod-server\n";
-        let docs = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_yaml(input)?;
         assert_eq!(docs.len(), 1);
         let prod = &docs[0].value()["production"];
         assert_eq!(
@@ -520,103 +531,90 @@ mod tests {
             prod["host"],
             serde_json::Value::String("prod-server".to_string())
         );
+        Ok(())
     }
 
     // ---- CSV tests ----
 
     #[test]
-    fn csv_simple() {
+    fn csv_simple() -> Result<(), Box<dyn std::error::Error>> {
         let input = "name,age,city\nAlice,30,NYC\nBob,25,LA\nCarol,35,SF\n";
-        let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(input, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert_eq!(arr.len(), 3);
         assert_eq!(
             arr[0]["name"],
             serde_json::Value::String("Alice".to_string())
         );
         assert_eq!(arr[0]["age"], serde_json::json!(30));
+        Ok(())
     }
 
     #[test]
-    fn csv_numeric_inference() {
-        let input = "int,float,string\n42,3.14,hello\n";
-        let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+    fn csv_numeric_inference() -> Result<(), Box<dyn std::error::Error>> {
+        let input = "int,float,string\n42,2.75,hello\n";
+        let doc = parse_csv(input, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert_eq!(arr[0]["int"], serde_json::json!(42));
-        assert_eq!(arr[0]["float"], serde_json::json!(3.14));
+        assert_eq!(arr[0]["float"], serde_json::json!(2.75));
         assert_eq!(
             arr[0]["string"],
             serde_json::Value::String("hello".to_string())
         );
+        Ok(())
     }
 
     #[test]
-    fn csv_empty_cells_null() {
+    fn csv_empty_cells_null() -> Result<(), Box<dyn std::error::Error>> {
         let input = "a,b,c\n1,,3\n";
-        let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(input, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert!(arr[0]["b"].is_null(), "expected null for empty cell");
+        Ok(())
     }
 
     #[test]
-    fn csv_quoted_fields() {
+    fn csv_quoted_fields() -> Result<(), Box<dyn std::error::Error>> {
         let input = "name,note\n\"Alice\",\"has a comma, here\"\n";
-        let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(input, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert_eq!(
             arr[0]["note"],
             serde_json::Value::String("has a comma, here".to_string())
         );
+        Ok(())
     }
 
     #[test]
-    fn csv_headers_only() {
+    fn csv_headers_only() -> Result<(), Box<dyn std::error::Error>> {
         let input = "a,b,c\n";
-        let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(input, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert!(arr.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn csv_single_row() {
+    fn csv_single_row() -> Result<(), Box<dyn std::error::Error>> {
         let input = "x,y\n10,20\n";
-        let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(input, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert_eq!(arr.len(), 1);
+        Ok(())
     }
 
     #[test]
-    fn tsv_works() {
+    fn tsv_works() -> Result<(), Box<dyn std::error::Error>> {
         let input = "name\tage\nAlice\t30\n";
-        let doc = parse_csv(input, b'\t').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(input, b'\t')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert_eq!(arr.len(), 1);
         assert_eq!(
             arr[0]["name"],
             serde_json::Value::String("Alice".to_string())
         );
         assert_eq!(arr[0]["age"], serde_json::json!(30));
+        Ok(())
     }
 
     // ---- Format detection tests ----
@@ -657,71 +655,73 @@ mod tests {
     // ---- Determinism tests ----
 
     #[test]
-    fn ndjson_deterministic() {
+    fn ndjson_deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"a":1,"b":2}
 {"c":3}
 {"d":4,"e":5}"#;
-        let reference = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let reference = parse_ndjson(input)?;
         for _ in 0..10 {
-            let docs = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let docs = parse_ndjson(input)?;
             assert_eq!(docs.len(), reference.len());
             for (a, b) in docs.iter().zip(reference.iter()) {
                 assert_eq!(a.value(), b.value());
             }
         }
+        Ok(())
     }
 
     #[test]
-    fn yaml_deterministic() {
+    fn yaml_deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let input = "name: Alice\nage: 30\nitems:\n  - one\n  - two\n";
-        let reference = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let reference = parse_yaml(input)?;
         for _ in 0..10 {
-            let docs = parse_yaml(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let docs = parse_yaml(input)?;
             assert_eq!(docs.len(), reference.len());
             for (a, b) in docs.iter().zip(reference.iter()) {
                 assert_eq!(a.value(), b.value());
             }
         }
+        Ok(())
     }
 
     #[test]
-    fn csv_deterministic() {
+    fn csv_deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let input = "x,y,z\n1,2,3\n4,5,6\n";
-        let reference = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let reference = parse_csv(input, b',')?;
         for _ in 0..10 {
-            let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc = parse_csv(input, b',')?;
             assert_eq!(doc.value(), reference.value());
         }
+        Ok(())
     }
 
     // ---- Chaos / stress tests ----
 
     #[test]
-    fn csv_10k_rows() {
+    fn csv_10k_rows() -> Result<(), Box<dyn std::error::Error>> {
         let mut buf = String::from("id,value\n");
         for i in 0..10_000 {
             buf.push_str(&format!("{i},val_{i}\n"));
         }
-        let doc = parse_csv(&buf, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(&buf, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert_eq!(arr.len(), 10_000);
+        Ok(())
     }
 
     #[test]
-    fn ndjson_10k_lines() {
+    fn ndjson_10k_lines() -> Result<(), Box<dyn std::error::Error>> {
         let mut buf = String::new();
         for i in 0..10_000 {
             buf.push_str(&format!("{{\"i\":{i}}}\n"));
         }
-        let docs = parse_ndjson(&buf).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_ndjson(&buf)?;
         assert_eq!(docs.len(), 10_000);
+        Ok(())
     }
 
     #[test]
-    fn yaml_deeply_nested() {
+    fn yaml_deeply_nested() -> Result<(), Box<dyn std::error::Error>> {
         // Build 50-level deep YAML
         let mut yaml = String::new();
         for i in 0..50 {
@@ -730,8 +730,9 @@ mod tests {
         }
         let indent = "  ".repeat(50);
         yaml.push_str(&format!("{indent}leaf: true\n"));
-        let docs = parse_yaml(&yaml).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_yaml(&yaml)?;
         assert_eq!(docs.len(), 1);
+        Ok(())
     }
 
     #[test]
@@ -741,10 +742,11 @@ mod tests {
     }
 
     #[test]
-    fn ndjson_all_empty_lines() {
+    fn ndjson_all_empty_lines() -> Result<(), Box<dyn std::error::Error>> {
         let input = "\n\n  \n \n\n";
-        let docs = parse_ndjson(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_ndjson(input)?;
         assert!(docs.is_empty());
+        Ok(())
     }
 
     #[test]
@@ -755,51 +757,49 @@ mod tests {
     }
 
     #[test]
-    fn csv_inconsistent_columns() {
+    fn csv_inconsistent_columns() -> Result<(), Box<dyn std::error::Error>> {
         let input = "a,b,c\n1,2\n4,5,6,7\n";
         // flexible(true) means this should not panic
-        let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc
-            .value()
-            .as_array()
-            .unwrap_or_else(|| panic!("expected array"));
+        let doc = parse_csv(input, b',')?;
+        let arr = doc.value().as_array().ok_or("expected array")?;
         assert_eq!(arr.len(), 2);
         // First row has fewer columns: missing column becomes null
         assert!(arr[0]["c"].is_null());
+        Ok(())
     }
 
     // ---- parse_auto integration tests ----
 
     #[test]
-    fn parse_auto_json() {
+    fn parse_auto_json() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"key":"value"}"#;
-        let docs = parse_auto(input, Some(InputFormat::Json))
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_auto(input, Some(InputFormat::Json))?;
         assert_eq!(docs.len(), 1);
+        Ok(())
     }
 
     #[test]
-    fn parse_auto_ndjson() {
+    fn parse_auto_ndjson() -> Result<(), Box<dyn std::error::Error>> {
         let input = "{\"a\":1}\n{\"b\":2}\n";
-        let docs = parse_auto(input, Some(InputFormat::Ndjson))
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_auto(input, Some(InputFormat::Ndjson))?;
         assert_eq!(docs.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn parse_auto_yaml() {
+    fn parse_auto_yaml() -> Result<(), Box<dyn std::error::Error>> {
         let input = "name: Alice\nage: 30\n";
-        let docs = parse_auto(input, Some(InputFormat::Yaml))
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_auto(input, Some(InputFormat::Yaml))?;
         assert_eq!(docs.len(), 1);
+        Ok(())
     }
 
     #[test]
-    fn parse_auto_csv() {
+    fn parse_auto_csv() -> Result<(), Box<dyn std::error::Error>> {
         let input = "a,b\n1,2\n";
-        let docs = parse_auto(input, Some(InputFormat::Csv))
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_auto(input, Some(InputFormat::Csv))?;
         assert_eq!(docs.len(), 1);
+        Ok(())
     }
 
     #[test]
@@ -839,12 +839,12 @@ mod tests {
     }
 
     #[test]
-    fn parse_auto_markdown() {
+    fn parse_auto_markdown() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Hello\n\nWorld.\n";
-        let docs = parse_auto(input, Some(InputFormat::Markdown))
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_auto(input, Some(InputFormat::Markdown))?;
         assert_eq!(docs.len(), 1);
         assert_eq!(docs[0].value()["type"], "document");
+        Ok(())
     }
 
     #[test]
@@ -855,10 +855,11 @@ mod tests {
     }
 
     #[test]
-    fn parse_auto_sniff_detects_markdown() {
+    fn parse_auto_sniff_detects_markdown() -> Result<(), Box<dyn std::error::Error>> {
         let input = "# Heading\n\nParagraph content.\n";
-        let docs = parse_auto(input, None).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_auto(input, None)?;
         assert_eq!(docs.len(), 1);
         assert_eq!(docs[0].value()["type"], "document");
+        Ok(())
     }
 }

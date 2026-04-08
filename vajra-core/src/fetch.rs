@@ -93,7 +93,7 @@ pub fn fetch_url_with_limits(
         };
         VajraError::Io {
             path: PathBuf::from(url),
-            source: std::io::Error::new(std::io::ErrorKind::Other, message),
+            source: std::io::Error::other(message),
         }
     })?;
 

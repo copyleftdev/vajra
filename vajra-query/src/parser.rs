@@ -219,104 +219,95 @@ mod tests {
     use crate::expr::{CompareOp, Expr, PatternSegment};
 
     #[test]
-    fn parse_simple_path() {
-        let expr = parse_expr("$.a.b").unwrap();
-        match expr {
-            Expr::Path(p) => {
-                assert_eq!(p.segments.len(), 3);
-                assert_eq!(p.segments[0], PatternSegment::Root);
-                assert_eq!(p.segments[1], PatternSegment::Key("a".to_owned()));
-                assert_eq!(p.segments[2], PatternSegment::Key("b".to_owned()));
-            }
-            other => panic!("expected Path, got {other:?}"),
-        }
+    fn parse_simple_path() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("$.a.b")?;
+        let Expr::Path(p) = expr else {
+            return Err("expected Path".into());
+        };
+        assert_eq!(p.segments.len(), 3);
+        assert_eq!(p.segments[0], PatternSegment::Root);
+        assert_eq!(p.segments[1], PatternSegment::Key("a".to_owned()));
+        assert_eq!(p.segments[2], PatternSegment::Key("b".to_owned()));
+        Ok(())
     }
 
     #[test]
-    fn parse_array_wildcard() {
-        let expr = parse_expr("$.items[*].name").unwrap();
-        match expr {
-            Expr::Path(p) => {
-                assert_eq!(p.segments.len(), 4);
-                assert_eq!(p.segments[0], PatternSegment::Root);
-                assert_eq!(p.segments[1], PatternSegment::Key("items".to_owned()));
-                assert_eq!(p.segments[2], PatternSegment::ArrayWildcard);
-                assert_eq!(p.segments[3], PatternSegment::Key("name".to_owned()));
-            }
-            other => panic!("expected Path, got {other:?}"),
-        }
+    fn parse_array_wildcard() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("$.items[*].name")?;
+        let Expr::Path(p) = expr else {
+            return Err("expected Path".into());
+        };
+        assert_eq!(p.segments.len(), 4);
+        assert_eq!(p.segments[0], PatternSegment::Root);
+        assert_eq!(p.segments[1], PatternSegment::Key("items".to_owned()));
+        assert_eq!(p.segments[2], PatternSegment::ArrayWildcard);
+        assert_eq!(p.segments[3], PatternSegment::Key("name".to_owned()));
+        Ok(())
     }
 
     #[test]
-    fn parse_function_call() {
-        let expr = parse_expr("entropy($.status)").unwrap();
-        match expr {
-            Expr::Function(fc) => {
-                assert_eq!(fc.name, "entropy");
-                assert_eq!(fc.args.len(), 1);
-                match &fc.args[0] {
-                    Expr::Path(p) => {
-                        assert_eq!(p.segments.len(), 2);
-                        assert_eq!(p.segments[1], PatternSegment::Key("status".to_owned()));
-                    }
-                    other => panic!("expected Path arg, got {other:?}"),
-                }
-            }
-            other => panic!("expected Function, got {other:?}"),
-        }
+    fn parse_function_call() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("entropy($.status)")?;
+        let Expr::Function(fc) = expr else {
+            return Err("expected Function".into());
+        };
+        assert_eq!(fc.name, "entropy");
+        assert_eq!(fc.args.len(), 1);
+        let Expr::Path(p) = &fc.args[0] else {
+            return Err("expected Path arg".into());
+        };
+        assert_eq!(p.segments.len(), 2);
+        assert_eq!(p.segments[1], PatternSegment::Key("status".to_owned()));
+        Ok(())
     }
 
     #[test]
-    fn parse_comparison() {
-        let expr = parse_expr("entropy($.x) > 0.5").unwrap();
-        match expr {
-            Expr::Compare(lhs, op, rhs) => {
-                assert_eq!(op, CompareOp::Gt);
-                match lhs.as_ref() {
-                    Expr::Function(fc) => assert_eq!(fc.name, "entropy"),
-                    other => panic!("expected Function on LHS, got {other:?}"),
-                }
-                match rhs.as_ref() {
-                    Expr::Literal(v) => assert!((v - 0.5).abs() < f64::EPSILON),
-                    other => panic!("expected Literal on RHS, got {other:?}"),
-                }
-            }
-            other => panic!("expected Compare, got {other:?}"),
-        }
+    fn parse_comparison() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("entropy($.x) > 0.5")?;
+        let Expr::Compare(lhs, op, rhs) = expr else {
+            return Err("expected Compare".into());
+        };
+        assert_eq!(op, CompareOp::Gt);
+        let Expr::Function(fc) = lhs.as_ref() else {
+            return Err("expected Function on LHS".into());
+        };
+        assert_eq!(fc.name, "entropy");
+        let Expr::Literal(v) = rhs.as_ref() else {
+            return Err("expected Literal on RHS".into());
+        };
+        assert!((v - 0.5).abs() < f64::EPSILON);
+        Ok(())
     }
 
     #[test]
-    fn parse_literal() {
-        let expr = parse_expr("3.14").unwrap();
-        match expr {
-            Expr::Literal(v) => assert!((v - 3.14).abs() < f64::EPSILON),
-            other => panic!("expected Literal, got {other:?}"),
-        }
+    fn parse_literal() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("2.75")?;
+        let Expr::Literal(v) = expr else {
+            return Err("expected Literal".into());
+        };
+        assert!((v - 2.75).abs() < f64::EPSILON);
+        Ok(())
     }
 
     #[test]
-    fn parse_error_invalid_path() {
+    fn parse_error_invalid_path() -> Result<(), Box<dyn std::error::Error>> {
         let result = parse_expr("$..invalid");
         assert!(result.is_err());
-        match result {
-            Err(QueryError::Parse { position, .. }) => {
-                // Position should be at the second dot (after "$.")
-                assert!(position > 0);
-            }
-            other => panic!("expected Parse error, got {other:?}"),
-        }
+        let Err(QueryError::Parse { position, .. }) = result else {
+            return Err("expected Parse error".into());
+        };
+        assert!(position > 0);
+        Ok(())
     }
 
     #[test]
     fn parse_error_no_args_ident_not_followed_by_paren() {
-        // An identifier not followed by '(' is an error at top level
-        // because it looks like a function call but has no parens.
         let result = parse_expr("unknownfunc");
         assert!(result.is_err());
     }
 
     #[test]
-    fn parse_all_comparison_ops() {
+    fn parse_all_comparison_ops() -> Result<(), Box<dyn std::error::Error>> {
         for (input, expected_op) in &[
             ("$.x >= 1", CompareOp::Gte),
             ("$.x <= 1", CompareOp::Lte),
@@ -325,71 +316,70 @@ mod tests {
             ("$.x > 1", CompareOp::Gt),
             ("$.x < 1", CompareOp::Lt),
         ] {
-            let expr = parse_expr(input).unwrap();
-            match expr {
-                Expr::Compare(_, op, _) => assert_eq!(op, *expected_op, "failed for {input}"),
-                other => panic!("expected Compare for {input}, got {other:?}"),
-            }
+            let expr = parse_expr(input)?;
+            let Expr::Compare(_, op, _) = expr else {
+                return Err(format!("expected Compare for {input}").into());
+            };
+            assert_eq!(op, *expected_op, "failed for {input}");
         }
+        Ok(())
     }
 
     #[test]
-    fn parse_glob_pattern() {
-        let expr = parse_expr("$.**").unwrap();
-        match expr {
-            Expr::Path(p) => {
-                assert_eq!(p.segments.len(), 2);
-                assert_eq!(p.segments[1], PatternSegment::Glob);
-            }
-            other => panic!("expected Path with Glob, got {other:?}"),
-        }
+    fn parse_glob_pattern() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("$.**")?;
+        let Expr::Path(p) = expr else {
+            return Err("expected Path with Glob".into());
+        };
+        assert_eq!(p.segments.len(), 2);
+        assert_eq!(p.segments[1], PatternSegment::Glob);
+        Ok(())
     }
 
     #[test]
-    fn parse_function_with_two_args() {
-        let expr = parse_expr("rarity($.code, 3.0)").unwrap();
-        match expr {
-            Expr::Function(fc) => {
-                assert_eq!(fc.name, "rarity");
-                assert_eq!(fc.args.len(), 2);
-            }
-            other => panic!("expected Function, got {other:?}"),
-        }
+    fn parse_function_with_two_args() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("rarity($.code, 3.0)")?;
+        let Expr::Function(fc) = expr else {
+            return Err("expected Function".into());
+        };
+        assert_eq!(fc.name, "rarity");
+        assert_eq!(fc.args.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn parse_integer_literal() {
-        let expr = parse_expr("42").unwrap();
-        match expr {
-            Expr::Literal(v) => assert!((v - 42.0).abs() < f64::EPSILON),
-            other => panic!("expected Literal, got {other:?}"),
-        }
+    fn parse_integer_literal() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("42")?;
+        let Expr::Literal(v) = expr else {
+            return Err("expected Literal".into());
+        };
+        assert!((v - 42.0).abs() < f64::EPSILON);
+        Ok(())
     }
 
     #[test]
-    fn parse_whitespace_tolerance() {
-        let expr = parse_expr("  entropy( $.x )  >  0.5  ").unwrap();
-        match expr {
-            Expr::Compare(_, CompareOp::Gt, _) => {}
-            other => panic!("expected Compare with Gt, got {other:?}"),
-        }
+    fn parse_whitespace_tolerance() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("  entropy( $.x )  >  0.5  ")?;
+        let Expr::Compare(_, CompareOp::Gt, _) = expr else {
+            return Err("expected Compare with Gt".into());
+        };
+        Ok(())
     }
 
     #[test]
-    fn parse_nested_path_with_multiple_arrays() {
-        let expr = parse_expr("$.a[*].b[*].c").unwrap();
-        match expr {
-            Expr::Path(p) => {
-                assert_eq!(p.segments.len(), 6);
-                assert_eq!(p.segments[0], PatternSegment::Root);
-                assert_eq!(p.segments[1], PatternSegment::Key("a".to_owned()));
-                assert_eq!(p.segments[2], PatternSegment::ArrayWildcard);
-                assert_eq!(p.segments[3], PatternSegment::Key("b".to_owned()));
-                assert_eq!(p.segments[4], PatternSegment::ArrayWildcard);
-                assert_eq!(p.segments[5], PatternSegment::Key("c".to_owned()));
-            }
-            other => panic!("expected Path, got {other:?}"),
-        }
+    fn parse_nested_path_with_multiple_arrays() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("$.a[*].b[*].c")?;
+        let Expr::Path(p) = expr else {
+            return Err("expected Path".into());
+        };
+        assert_eq!(p.segments.len(), 6);
+        assert_eq!(p.segments[0], PatternSegment::Root);
+        assert_eq!(p.segments[1], PatternSegment::Key("a".to_owned()));
+        assert_eq!(p.segments[2], PatternSegment::ArrayWildcard);
+        assert_eq!(p.segments[3], PatternSegment::Key("b".to_owned()));
+        assert_eq!(p.segments[4], PatternSegment::ArrayWildcard);
+        assert_eq!(p.segments[5], PatternSegment::Key("c".to_owned()));
+        Ok(())
     }
 
     #[test]
@@ -399,14 +389,13 @@ mod tests {
     }
 
     #[test]
-    fn parse_root_path_only() {
-        let expr = parse_expr("$").unwrap();
-        match expr {
-            Expr::Path(p) => {
-                assert_eq!(p.segments.len(), 1);
-                assert_eq!(p.segments[0], PatternSegment::Root);
-            }
-            other => panic!("expected Path, got {other:?}"),
-        }
+    fn parse_root_path_only() -> Result<(), Box<dyn std::error::Error>> {
+        let expr = parse_expr("$")?;
+        let Expr::Path(p) = expr else {
+            return Err("expected Path".into());
+        };
+        assert_eq!(p.segments.len(), 1);
+        assert_eq!(p.segments[0], PatternSegment::Root);
+        Ok(())
     }
 }

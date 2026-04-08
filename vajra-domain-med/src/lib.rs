@@ -127,4 +127,53 @@ mod tests {
         assert!(names.contains(&"adjudication"));
         assert!(names.contains(&"denial_reason"));
     }
+
+    #[test]
+    fn determinism_recognizers_10_runs() {
+        let test_values = [
+            "E11.9",
+            "99213",
+            "J0120",
+            "12345-6789-01",
+            "1234567890",
+            "0BJ08ZZ",
+            "not-a-code",
+            "",
+        ];
+        let mut results: Vec<Vec<Vec<bool>>> = Vec::new();
+        for _ in 0..10 {
+            let p = MedicalPlugin;
+            let recognizers = p.type_recognizers();
+            let run: Vec<Vec<bool>> = test_values
+                .iter()
+                .map(|v| recognizers.iter().map(|r| r.matches(v)).collect())
+                .collect();
+            results.push(run);
+        }
+        for (i, run) in results.iter().enumerate().skip(1) {
+            assert_eq!(
+                &results[0], run,
+                "run 0 and run {} produced different recognizer results",
+                i
+            );
+        }
+    }
+
+    #[test]
+    fn determinism_hints_10_runs() {
+        let mut results: Vec<Vec<String>> = Vec::new();
+        for _ in 0..10 {
+            let p = MedicalPlugin;
+            let hints = p.relationship_hints();
+            let names: Vec<String> = hints.iter().map(|h| h.name.clone()).collect();
+            results.push(names);
+        }
+        for (i, run) in results.iter().enumerate().skip(1) {
+            assert_eq!(
+                &results[0], run,
+                "run 0 and run {} produced different hint names",
+                i
+            );
+        }
+    }
 }

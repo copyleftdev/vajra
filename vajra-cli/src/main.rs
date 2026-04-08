@@ -360,13 +360,37 @@ struct DomainHintView {
     recognized_type: String,
 }
 
+/// Collect all type recognizers from enabled domain plugins.
+fn collect_recognizers() -> Vec<Box<dyn vajra_types::traits::TypeRecognizer>> {
+    let mut recognizers: Vec<Box<dyn vajra_types::traits::TypeRecognizer>> = Vec::new();
+
+    #[cfg(feature = "medical")]
+    {
+        let plugin = vajra_domain_med::MedicalPlugin;
+        recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
+    }
+
+    #[cfg(feature = "security")]
+    {
+        let plugin = vajra_domain_sec::SecurityPlugin;
+        recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
+    }
+
+    #[cfg(feature = "devops")]
+    {
+        let plugin = vajra_domain_devops::DevOpsPlugin;
+        recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
+    }
+
+    recognizers
+}
+
 /// Try to match document values against domain-specific type recognizers
 /// using statistics top_values as the source of sample data.
 fn detect_domain_hints(stats: &StatsResult) -> Vec<DomainHintView> {
     let mut hints = Vec::new();
 
-    let med_plugin = vajra_domain_med::MedicalPlugin;
-    let recognizers = vajra_types::traits::VajraPlugin::type_recognizers(&med_plugin);
+    let recognizers = collect_recognizers();
 
     if recognizers.is_empty() {
         return hints;

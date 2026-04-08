@@ -1,0 +1,129 @@
+{
+  "numeric_outliers": [
+    {
+      "mad": 390.0,
+      "median": 443.0,
+      "path": "$.events[*].dst_port",
+      "value": 5432.0,
+      "z_mad": 8.628411538461538
+    },
+    {
+      "mad": 390.0,
+      "median": 443.0,
+      "path": "$.events[*].dst_port",
+      "value": 8443.0,
+      "z_mad": 13.835897435897436
+    }
+  ],
+  "rare_values": [],
+  "type_instabilities": [
+    {
+      "dominant_type": "string",
+      "instability": 0.25,
+      "path": "$.events[*].alert_name",
+      "type_distribution": {
+        "null": 2,
+        "string": 6
+      }
+    },
+    {
+      "dominant_type": "null",
+      "instability": 0.375,
+      "path": "$.events[*].auth_result",
+      "type_distribution": {
+        "null": 5,
+        "string": 3
+      }
+    },
+    {
+      "dominant_type": "null",
+      "instability": 0.25,
+      "path": "$.events[*].cve",
+      "type_distribution": {
+        "null": 6,
+        "string": 2
+      }
+    },
+    {
+      "dominant_type": "null",
+      "instability": 0.25,
+      "path": "$.events[*].cvss",
+      "type_distribution": {
+        "null": 6,
+        "string": 2
+      }
+    },
+    {
+      "dominant_type": "string",
+      "instability": 0.125,
+      "path": "$.events[*].dst_ip",
+      "type_distribution": {
+        "null": 1,
+        "string": 7
+      }
+    },
+    {
+      "dominant_type": "integer",
+      "instability": 0.125,
+      "path": "$.events[*].dst_port",
+      "type_distribution": {
+        "integer": 7,
+        "null": 1
+      }
+    },
+    {
+      "dominant_type": "null",
+      "instability": 0.375,
+      "path": "$.events[*].hash_ioc",
+      "type_distribution": {
+        "null": 5,
+        "string": 3
+      }
+    },
+    {
+      "dominant_type": "string",
+      "instability": 0.125,
+      "path": "$.events[*].protocol",
+      "type_distribution": {
+        "null": 1,
+        "string": 7
+      }
+    },
+    {
+      "dominant_type": "integer",
+      "instability": 0.25,
+      "path": "$.events[*].src_port",
+      "type_distribution": {
+        "integer": 6,
+        "null": 2
+      }
+    },
+    {
+      "dominant_type": "string",
+      "instability": 0.375,
+      "path": "$.events[*].tactic",
+      "type_distribution": {
+        "null": 3,
+        "string": 5
+      }
+    },
+    {
+      "dominant_type": "string",
+      "instability": 0.375,
+      "path": "$.events[*].technique",
+      "type_distribution": {
+        "null": 3,
+        "string": 5
+      }
+    },
+    {
+      "dominant_type": "string",
+      "instability": 0.375,
+      "path": "$.events[*].user",
+      "type_distribution": {
+        "null": 3,
+        "string": 5
+      }
+    }
+  ]
+}

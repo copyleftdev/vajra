@@ -1125,7 +1125,9 @@ vajra/
 ├── vajra-essence/       # concern profiles, scoring, ranking, rendering, templates
 ├── vajra-query/         # expression parsing, path filtering, analysis functions
 ├── vajra-cli/           # CLI argument parsing, command dispatch, output formatting
-└── vajra-domain-med/    # optional: medical/EDI pattern recognizers, domain concern profiles
+├── vajra-domain-med/    # optional: medical/EDI pattern recognizers, domain concern profiles
+├── vajra-domain-sec/    # optional: security plugin (CVE, MITRE ATT&CK, IPs, hashes, JWT)
+└── vajra-domain-devops/ # optional: DevOps plugin (K8s, Docker, Terraform, AWS ARNs, semver)
 ```
 
 Each crate has a single responsibility. Dependencies flow downward: `vajra-cli` depends on everything; `vajra-core` and `vajra-types` depend on nothing internal.

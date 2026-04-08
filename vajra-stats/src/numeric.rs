@@ -147,28 +147,25 @@ mod tests {
 
     #[test]
     fn stats_empty() {
-        assert!(compute_numeric_stats(&mut vec![]).is_none());
+        assert!(compute_numeric_stats(&mut []).is_none());
     }
 
     #[test]
-    fn stats_single_value() {
-        let stats = compute_numeric_stats(&mut vec![42.0]);
-        let s = stats
-            .as_ref()
-            .map_or_else(|| panic!("expected Some"), |v| v);
+    fn stats_single_value() -> Result<(), Box<dyn std::error::Error>> {
+        let s = compute_numeric_stats(&mut [42.0]).ok_or("expected Some")?;
         assert!((s.min - 42.0).abs() < EPS);
         assert!((s.max - 42.0).abs() < EPS);
         assert!((s.mean - 42.0).abs() < EPS);
         assert!((s.median - 42.0).abs() < EPS);
         assert!((s.mad - 0.0).abs() < EPS);
         assert_eq!(s.count, 1);
+        Ok(())
     }
 
     #[test]
-    fn stats_known_dataset() {
+    fn stats_known_dataset() -> Result<(), Box<dyn std::error::Error>> {
         let mut data = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        let s = compute_numeric_stats(&mut data);
-        let s = s.as_ref().map_or_else(|| panic!("expected Some"), |v| v);
+        let s = compute_numeric_stats(&mut data).ok_or("expected Some")?;
 
         assert!((s.min - 1.0).abs() < EPS);
         assert!((s.max - 5.0).abs() < EPS);
@@ -176,39 +173,39 @@ mod tests {
         assert!((s.median - 3.0).abs() < EPS);
         assert!((s.mad - 1.0).abs() < EPS);
         assert_eq!(s.count, 5);
+        Ok(())
     }
 
     #[test]
-    fn stats_all_identical() {
+    fn stats_all_identical() -> Result<(), Box<dyn std::error::Error>> {
         let mut data = vec![7.0, 7.0, 7.0, 7.0];
-        let s = compute_numeric_stats(&mut data);
-        let s = s.as_ref().map_or_else(|| panic!("expected Some"), |v| v);
+        let s = compute_numeric_stats(&mut data).ok_or("expected Some")?;
 
         assert!((s.min - 7.0).abs() < EPS);
         assert!((s.max - 7.0).abs() < EPS);
         assert!((s.mean - 7.0).abs() < EPS);
         assert!((s.median - 7.0).abs() < EPS);
         assert!((s.mad - 0.0).abs() < EPS);
+        Ok(())
     }
 
     #[test]
-    fn stats_unsorted_input() {
+    fn stats_unsorted_input() -> Result<(), Box<dyn std::error::Error>> {
         let mut data = vec![5.0, 1.0, 4.0, 2.0, 3.0];
-        let s = compute_numeric_stats(&mut data);
-        let s = s.as_ref().map_or_else(|| panic!("expected Some"), |v| v);
+        let s = compute_numeric_stats(&mut data).ok_or("expected Some")?;
 
         assert!((s.min - 1.0).abs() < EPS);
         assert!((s.max - 5.0).abs() < EPS);
         assert!((s.mean - 3.0).abs() < EPS);
         assert!((s.median - 3.0).abs() < EPS);
+        Ok(())
     }
 
     #[test]
-    fn stats_percentiles() {
+    fn stats_percentiles() -> Result<(), Box<dyn std::error::Error>> {
         // 10 values: 1..=10
         let mut data: Vec<f64> = (1..=10).map(|x| x as f64).collect();
-        let s = compute_numeric_stats(&mut data);
-        let s = s.as_ref().map_or_else(|| panic!("expected Some"), |v| v);
+        let s = compute_numeric_stats(&mut data).ok_or("expected Some")?;
 
         // p05: idx=0.05*9=0.45 -> lerp(1,2,0.45) = 1.45
         assert!((s.p05 - 1.45).abs() < EPS);
@@ -218,17 +215,18 @@ mod tests {
         assert!((s.p75 - 7.75).abs() < EPS);
         // p95: idx=0.95*9=8.55 -> lerp(9,10,0.55) = 9.55
         assert!((s.p95 - 9.55).abs() < EPS);
+        Ok(())
     }
 
     #[test]
-    fn stats_two_values() {
+    fn stats_two_values() -> Result<(), Box<dyn std::error::Error>> {
         let mut data = vec![10.0, 20.0];
-        let s = compute_numeric_stats(&mut data);
-        let s = s.as_ref().map_or_else(|| panic!("expected Some"), |v| v);
+        let s = compute_numeric_stats(&mut data).ok_or("expected Some")?;
 
         assert!((s.min - 10.0).abs() < EPS);
         assert!((s.max - 20.0).abs() < EPS);
         assert!((s.mean - 15.0).abs() < EPS);
         assert!((s.median - 15.0).abs() < EPS);
+        Ok(())
     }
 }

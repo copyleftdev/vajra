@@ -12,6 +12,8 @@ members = [
     "vajra-query",
     "vajra-cli",
     "vajra-domain-med",
+    "vajra-domain-sec",
+    "vajra-domain-devops",
 ]
 
 [workspace.package]
@@ -85,6 +87,8 @@ vajra-motif = { path = "vajra-motif" }
 vajra-essence = { path = "vajra-essence" }
 vajra-query = { path = "vajra-query" }
 vajra-domain-med = { path = "vajra-domain-med" }
+vajra-domain-sec = { path = "vajra-domain-sec" }
+vajra-domain-devops = { path = "vajra-domain-devops" }
 
 [workspace.lints.clippy]
 unwrap_used = "deny"

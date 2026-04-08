@@ -32,7 +32,9 @@ vajra/
 ├── vajra-essence/       # concern profiles, scoring, ranking, rendering, templates
 ├── vajra-query/         # path expressions, analysis functions
 ├── vajra-cli/           # CLI commands, argument parsing, output formatting
-└── vajra-domain-med/    # optional medical/EDI plugin
+├── vajra-domain-med/    # optional medical/EDI plugin
+├── vajra-domain-sec/    # optional security plugin (CVE, MITRE, IPs, hashes, JWT)
+└── vajra-domain-devops/ # optional DevOps plugin (K8s, Docker, Terraform, ARN, semver)
 ```
 
 Dependencies flow downward. `vajra-core` and `vajra-types` depend on nothing internal. `vajra-cli` depends on everything.
@@ -71,6 +73,8 @@ Skills activate automatically when the work matches. No need to invoke them — 
 | **vajra-streaming** | "handle large files", "streaming mode", "bounded memory" — two-pass architecture, accumulator design |
 | **vajra-essence-profile** | "create profile", "customize essence", "tune weights" — scoring, rendering, TOML config |
 | **vajra-plugin-dev** | "create plugin", "add domain plugin", "extend Vajra" — VajraPlugin trait, isolation, testing |
+| **vajra-domain-sec** | "security plugin", "CVE detection", "MITRE ATT&CK types", "detect JWT" — security type recognizers, hints, profiles |
+| **vajra-domain-devops** | "devops plugin", "K8s recognizers", "detect container IDs", "Terraform" — infrastructure type recognizers, hints, profiles |
 | **vajra-cli-command** | "add CLI command", "implement inspect", "add subcommand" — clap patterns, output modes, error style |
 
 ## Hooks

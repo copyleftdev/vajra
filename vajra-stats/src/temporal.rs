@@ -289,10 +289,10 @@ fn parse_u32(s: &str) -> Option<u32> {
 /// Returns `None` for invalid dates (bad month/day, year out of range).
 #[allow(clippy::cast_possible_wrap)]
 fn date_to_epoch(year: u32, month: u32, day: u32) -> Option<i64> {
-    if month < 1 || month > 12 || day < 1 {
+    if !(1..=12).contains(&month) || day < 1 {
         return None;
     }
-    if year < 1970 || year > 2100 {
+    if !(1970..=2100).contains(&year) {
         return None;
     }
 
@@ -344,7 +344,7 @@ fn days_in_month(year: u32, month: u32) -> u32 {
 
 /// Whether a year is a leap year.
 fn is_leap_year(year: u32) -> bool {
-    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+    (year.is_multiple_of(4) && !year.is_multiple_of(100)) || year.is_multiple_of(400)
 }
 
 #[cfg(test)]

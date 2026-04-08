@@ -19,7 +19,9 @@ vajra-stats = { workspace = true }
 vajra-anomaly = { workspace = true }
 vajra-drift = { workspace = true }
 vajra-essence = { workspace = true }
-vajra-domain-med = { workspace = true }
+vajra-domain-med = { workspace = true, optional = true }
+vajra-domain-sec = { workspace = true, optional = true }
+vajra-domain-devops = { workspace = true, optional = true }
 vajra-query = { workspace = true }
 clap = { workspace = true }
 serde = { workspace = true }
@@ -27,6 +29,13 @@ serde_json = { workspace = true }
 anyhow = { workspace = true }
 toml = { workspace = true }
 rayon = { workspace = true }
+
+[features]
+default = ["medical", "security", "devops"]
+medical = ["vajra-domain-med"]
+security = ["vajra-domain-sec"]
+devops = ["vajra-domain-devops"]
+all-plugins = ["medical", "security", "devops"]
 
 [dev-dependencies]
 tempfile = "3"

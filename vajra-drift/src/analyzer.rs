@@ -326,15 +326,13 @@ pub fn full_drift(lhs: &Document, rhs: &Document) -> FullDriftReport {
 mod tests {
     use super::*;
 
-    fn parse(json: &str) -> Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse(json: &str) -> Result<Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     #[test]
-    fn identical_docs_no_drift() {
-        let doc = parse(r#"{"name": "Alice", "age": 30}"#);
+    fn identical_docs_no_drift() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse(r#"{"name": "Alice", "age": 30}"#)?;
         let report = full_drift(&doc, &doc);
 
         assert!(report.path_diff.added.is_empty());
@@ -342,45 +340,49 @@ mod tests {
         assert!(report.type_changes.is_empty());
         assert!(report.distributional_drifts.is_empty());
         assert_eq!(report.severity, DriftSeverity::None);
+        Ok(())
     }
 
     #[test]
-    fn identical_docs_similarity_one() {
-        let doc = parse(r#"{"a": 1, "b": 2}"#);
+    fn identical_docs_similarity_one() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse(r#"{"a": 1, "b": 2}"#)?;
         let report = full_drift(&doc, &doc);
         assert!(
             (report.structural_similarity - 1.0).abs() < f64::EPSILON,
             "identical docs should have similarity 1.0, got {}",
             report.structural_similarity
         );
+        Ok(())
     }
 
     #[test]
-    fn added_field_medium_severity() {
-        let lhs = parse(r#"{"a": 1}"#);
-        let rhs = parse(r#"{"a": 1, "b": 2}"#);
+    fn added_field_medium_severity() -> Result<(), Box<dyn std::error::Error>> {
+        let lhs = parse(r#"{"a": 1}"#)?;
+        let rhs = parse(r#"{"a": 1, "b": 2}"#)?;
         let report = full_drift(&lhs, &rhs);
 
         assert_eq!(report.path_diff.added.len(), 1);
         assert!(report.path_diff.removed.is_empty());
         assert_eq!(report.severity, DriftSeverity::Medium);
+        Ok(())
     }
 
     #[test]
-    fn removed_field_critical_severity() {
-        let lhs = parse(r#"{"a": 1, "b": 2}"#);
-        let rhs = parse(r#"{"a": 1}"#);
+    fn removed_field_critical_severity() -> Result<(), Box<dyn std::error::Error>> {
+        let lhs = parse(r#"{"a": 1, "b": 2}"#)?;
+        let rhs = parse(r#"{"a": 1}"#)?;
         let report = full_drift(&lhs, &rhs);
 
         assert!(report.path_diff.added.is_empty());
         assert_eq!(report.path_diff.removed.len(), 1);
         assert_eq!(report.severity, DriftSeverity::Critical);
+        Ok(())
     }
 
     #[test]
-    fn type_change_high_severity() {
-        let lhs = parse(r#"{"x": 42}"#);
-        let rhs = parse(r#"{"x": "hello"}"#);
+    fn type_change_high_severity() -> Result<(), Box<dyn std::error::Error>> {
+        let lhs = parse(r#"{"x": 42}"#)?;
+        let rhs = parse(r#"{"x": "hello"}"#)?;
         let report = full_drift(&lhs, &rhs);
 
         assert_eq!(report.type_changes.len(), 1);
@@ -388,13 +390,14 @@ mod tests {
         assert_eq!(report.type_changes[0].from, "integer");
         assert_eq!(report.type_changes[0].to, "string");
         assert_eq!(report.severity, DriftSeverity::High);
+        Ok(())
     }
 
     #[test]
-    fn disjoint_docs_similarity_low() {
+    fn disjoint_docs_similarity_low() -> Result<(), Box<dyn std::error::Error>> {
         // Both have root ($) in common, but all other paths differ.
-        let lhs = parse(r#"{"a": 1}"#);
-        let rhs = parse(r#"{"b": 2}"#);
+        let lhs = parse(r#"{"a": 1}"#)?;
+        let rhs = parse(r#"{"b": 2}"#)?;
         let report = full_drift(&lhs, &rhs);
 
         // Paths: lhs has {$, $.a}, rhs has {$, $.b}
@@ -405,24 +408,26 @@ mod tests {
             "expected ~0.333, got {}",
             report.structural_similarity
         );
+        Ok(())
     }
 
     #[test]
-    fn drift_detector_trait_impl() {
+    fn drift_detector_trait_impl() -> Result<(), Box<dyn std::error::Error>> {
         let analyzer = DriftAnalyzer;
-        let lhs = parse(r#"{"a": 1, "b": 2}"#);
-        let rhs = parse(r#"{"a": 1, "c": 3}"#);
+        let lhs = parse(r#"{"a": 1, "b": 2}"#)?;
+        let rhs = parse(r#"{"a": 1, "c": 3}"#)?;
         let report = analyzer.compare(&lhs, &rhs);
 
         assert_eq!(report.added_paths, vec!["$.c"]);
         assert_eq!(report.removed_paths, vec!["$.b"]);
+        Ok(())
     }
 
     #[test]
-    fn distributional_drift_jsd_categorical() {
+    fn distributional_drift_jsd_categorical() -> Result<(), Box<dyn std::error::Error>> {
         // Two arrays with different value distributions.
-        let lhs = parse(r#"["a", "a", "a", "b"]"#);
-        let rhs = parse(r#"["b", "b", "b", "a"]"#);
+        let lhs = parse(r#"["a", "a", "a", "b"]"#)?;
+        let rhs = parse(r#"["b", "b", "b", "a"]"#)?;
         let report = full_drift(&lhs, &rhs);
 
         // The distributions at $[*] are [0.75, 0.25] vs [0.25, 0.75] (for "a", "b").
@@ -437,20 +442,22 @@ mod tests {
             !jsd_drifts.is_empty(),
             "should detect JSD drift for different categorical distributions"
         );
+        Ok(())
     }
 
     #[test]
-    fn no_distributional_drift_identical_values() {
-        let doc = parse(r#"["x", "y", "z"]"#);
+    fn no_distributional_drift_identical_values() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse(r#"["x", "y", "z"]"#)?;
         let report = full_drift(&doc, &doc);
         assert!(report.distributional_drifts.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn numeric_wasserstein_drift() {
+    fn numeric_wasserstein_drift() -> Result<(), Box<dyn std::error::Error>> {
         // Numeric values shifted significantly.
-        let lhs = parse(r#"[1, 2, 3, 4, 5]"#);
-        let rhs = parse(r#"[101, 102, 103, 104, 105]"#);
+        let lhs = parse(r#"[1, 2, 3, 4, 5]"#)?;
+        let rhs = parse(r#"[101, 102, 103, 104, 105]"#)?;
         let report = full_drift(&lhs, &rhs);
 
         let w_drifts: Vec<_> = report
@@ -469,6 +476,7 @@ mod tests {
             "expected large Wasserstein distance, got {}",
             w_drifts[0].value
         );
+        Ok(())
     }
 
     #[test]
@@ -499,16 +507,17 @@ mod tests {
     }
 
     #[test]
-    fn empty_docs_no_crash() {
-        let lhs = parse("{}");
-        let rhs = parse("{}");
+    fn empty_docs_no_crash() -> Result<(), Box<dyn std::error::Error>> {
+        let lhs = parse("{}")?;
+        let rhs = parse("{}")?;
         let report = full_drift(&lhs, &rhs);
         assert_eq!(report.severity, DriftSeverity::None);
         assert!((report.structural_similarity - 1.0).abs() < f64::EPSILON);
+        Ok(())
     }
 
     #[test]
-    fn complex_nested_drift() {
+    fn complex_nested_drift() -> Result<(), Box<dyn std::error::Error>> {
         let lhs = parse(
             r#"{
                 "users": [
@@ -516,7 +525,7 @@ mod tests {
                     {"name": "Bob", "score": 88}
                 ]
             }"#,
-        );
+        )?;
         let rhs = parse(
             r#"{
                 "users": [
@@ -525,7 +534,7 @@ mod tests {
                 ],
                 "version": 2
             }"#,
-        );
+        )?;
         let report = full_drift(&lhs, &rhs);
 
         // $.version is added
@@ -534,6 +543,7 @@ mod tests {
 
         // Severity should be at least Medium (added paths)
         assert!(report.severity >= DriftSeverity::Medium);
+        Ok(())
     }
 
     #[test]

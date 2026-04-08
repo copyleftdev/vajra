@@ -313,10 +313,8 @@ mod tests {
 
     const EPS: f64 = 1e-6;
 
-    fn parse_doc(json: &str) -> Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(json: &str) -> Result<Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     // ---- conditional entropy ----
@@ -399,7 +397,7 @@ mod tests {
     // ---- discover_relationships ----
 
     #[test]
-    fn discover_correlated_fields() {
+    fn discover_correlated_fields() -> Result<(), Box<dyn std::error::Error>> {
         // city determines country perfectly.
         let doc = parse_doc(
             r#"[
@@ -410,7 +408,7 @@ mod tests {
                 {"city": "Tokyo", "country": "Japan"},
                 {"city": "Tokyo", "country": "Japan"}
             ]"#,
-        );
+        )?;
         let rels = discover_relationships(&doc, 50);
         assert!(!rels.is_empty());
         // The top relationship should have high strength.
@@ -419,10 +417,11 @@ mod tests {
             "expected strong relationship, got {}",
             rels[0].relationship_strength
         );
+        Ok(())
     }
 
     #[test]
-    fn discover_independent_fields() {
+    fn discover_independent_fields() -> Result<(), Box<dyn std::error::Error>> {
         // Interleave values so that fields are roughly independent.
         let doc = parse_doc(
             r#"[
@@ -435,7 +434,7 @@ mod tests {
                 {"x": "a", "y": "2"},
                 {"x": "b", "y": "1"}
             ]"#,
-        );
+        )?;
         let rels = discover_relationships(&doc, 50);
         assert!(!rels.is_empty());
         // Independence → low strength.
@@ -444,29 +443,32 @@ mod tests {
             "expected weak relationship, got {}",
             rels[0].relationship_strength
         );
+        Ok(())
     }
 
     #[test]
-    fn discover_empty_document() {
-        let doc = parse_doc("{}");
+    fn discover_empty_document() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc("{}")?;
         let rels = discover_relationships(&doc, 50);
         assert!(rels.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn discover_single_field() {
-        let doc = parse_doc(r#"[{"a": 1}, {"a": 2}]"#);
+    fn discover_single_field() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[{"a": 1}, {"a": 2}]"#)?;
         let rels = discover_relationships(&doc, 50);
         assert!(
             rels.is_empty(),
             "single field should produce no relationships"
         );
+        Ok(())
     }
 
     #[test]
-    fn discover_single_object_record() {
+    fn discover_single_object_record() -> Result<(), Box<dyn std::error::Error>> {
         // Single object is treated as one record.
-        let doc = parse_doc(r#"{"x": "hello", "y": "world"}"#);
+        let doc = parse_doc(r#"{"x": "hello", "y": "world"}"#)?;
         let rels = discover_relationships(&doc, 50);
         // With only one record, H(Y|X)=0 and H(Y)=0, so strength = 1.0.
         assert!(!rels.is_empty());
@@ -475,17 +477,19 @@ mod tests {
             "expected strength 1.0 for single record, got {}",
             rels[0].relationship_strength
         );
+        Ok(())
     }
 
     #[test]
-    fn discover_array_of_scalars_returns_empty() {
-        let doc = parse_doc(r#"[1, 2, 3]"#);
+    fn discover_array_of_scalars_returns_empty() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[1, 2, 3]"#)?;
         let rels = discover_relationships(&doc, 50);
         assert!(rels.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn discover_sorted_by_strength() {
+    fn discover_sorted_by_strength() -> Result<(), Box<dyn std::error::Error>> {
         // Three fields: city->country is strong, size is independent.
         let doc = parse_doc(
             r#"[
@@ -494,7 +498,7 @@ mod tests {
                 {"city": "Berlin", "country": "Germany", "size": "big"},
                 {"city": "Berlin", "country": "Germany", "size": "small"}
             ]"#,
-        );
+        )?;
         let rels = discover_relationships(&doc, 50);
         // Results should be sorted descending by strength.
         for w in rels.windows(2) {
@@ -503,18 +507,20 @@ mod tests {
                 "results not sorted by strength"
             );
         }
+        Ok(())
     }
 
     #[test]
-    fn discover_respects_top_k_limit() {
+    fn discover_respects_top_k_limit() -> Result<(), Box<dyn std::error::Error>> {
         // With top_k=1, only one field is considered → no pairs.
         let doc = parse_doc(
             r#"[
                 {"a": 1, "b": 2, "c": 3},
                 {"a": 4, "b": 5, "c": 6}
             ]"#,
-        );
+        )?;
         let rels = discover_relationships(&doc, 1);
         assert!(rels.is_empty());
+        Ok(())
     }
 }

@@ -447,15 +447,13 @@ mod tests {
     use super::*;
     use crate::profiles::{EngineerProfile, StaffProfile};
 
-    fn parse_doc(json: &str) -> Document {
-        vajra_core::parse_str(json).unwrap_or_else(|e| {
-            panic!("parse failed: {e}");
-        })
+    fn parse_doc(json: &str) -> Result<Document, Box<dyn std::error::Error>> {
+        Ok(vajra_core::parse_str(json)?)
     }
 
     #[test]
-    fn builder_deterministic_output() {
-        let doc = parse_doc(r#"{"a": 1, "b": 2, "c": [1, 2, 3]}"#);
+    fn builder_deterministic_output() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1, "b": 2, "c": [1, 2, 3]}"#)?;
         let profile = EngineerProfile;
 
         let e1 = EssenceBuilder::new(&doc, &profile).build();
@@ -467,11 +465,12 @@ mod tests {
             assert_eq!(a.observation.description, b.observation.description);
             assert!((a.score - b.score).abs() < f64::EPSILON);
         }
+        Ok(())
     }
 
     #[test]
-    fn higher_scored_observations_first() {
-        let doc = parse_doc(r#"{"a": 1, "b": 2}"#);
+    fn higher_scored_observations_first() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1, "b": 2}"#)?;
         let profile = EngineerProfile;
 
         let essence = EssenceBuilder::new(&doc, &profile).build();
@@ -484,17 +483,16 @@ mod tests {
                 window[1].score
             );
         }
+        Ok(())
     }
 
     #[test]
-    fn tiebreaking_shallower_path_first() {
-        // Create observations with same score but different depths
-        let doc = parse_doc(r#"{"a": {"b": {"c": null}}, "x": null}"#);
+    fn tiebreaking_shallower_path_first() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": {"b": {"c": null}}, "x": null}"#)?;
         let profile = StaffProfile;
 
         let essence = EssenceBuilder::new(&doc, &profile).build();
 
-        // Among observations with the same score, shallower paths come first
         for window in essence.observations.windows(2) {
             if (window[0].score - window[1].score).abs() < f64::EPSILON {
                 let depth_a = path_depth(&window[0].observation.path);
@@ -507,7 +505,6 @@ mod tests {
                     window[1].observation.path,
                     depth_b
                 );
-                // If same depth, check lexicographic
                 if depth_a == depth_b {
                     assert!(
                         window[0].observation.path <= window[1].observation.path,
@@ -516,52 +513,53 @@ mod tests {
                 }
             }
         }
+        Ok(())
     }
 
     #[test]
-    fn empty_document_produces_valid_essence() {
-        let doc = parse_doc("{}");
+    fn empty_document_produces_valid_essence() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc("{}")?;
         let profile = StaffProfile;
 
         let essence = EssenceBuilder::new(&doc, &profile).build();
 
         assert!(essence.observations.is_empty());
         assert!(!essence.document_identity.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn with_stats_generates_observations() {
-        let doc = parse_doc(r#"["a", "b", "a", "b", "a"]"#);
+    fn with_stats_generates_observations() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"["a", "b", "a", "b", "a"]"#)?;
 
-        // Run actual stats analysis
         use vajra_stats::StatsAnalyzer;
         use vajra_types::traits::Analyzer;
         let analyzer = StatsAnalyzer;
-        let stats = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let stats = analyzer.analyze(&doc)?;
 
         let profile = EngineerProfile;
         let essence = EssenceBuilder::new(&doc, &profile)
             .with_stats(&stats)
             .build();
 
-        // Should have at least the enum-like observation for $[*]
         let has_enum = essence
             .observations
             .iter()
             .any(|o| o.observation.description.contains("enum-like"));
         assert!(has_enum, "should detect enum-like field from stats");
+        Ok(())
     }
 
     #[test]
-    fn with_anomalies_generates_observations() {
+    fn with_anomalies_generates_observations() -> Result<(), Box<dyn std::error::Error>> {
         let doc = parse_doc(
             r#"{"values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 1000]}"#,
-        );
+        )?;
 
         use vajra_anomaly::AnomalyAnalyzer;
         use vajra_types::traits::Analyzer;
         let analyzer = AnomalyAnalyzer::default();
-        let report = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let report = analyzer.analyze(&doc)?;
 
         let profile = StaffProfile;
         let essence = EssenceBuilder::new(&doc, &profile)
@@ -573,31 +571,29 @@ mod tests {
             .iter()
             .any(|o| o.observation.anomaly_strength > 0.0);
         assert!(has_anomaly, "should have anomaly observations");
+        Ok(())
     }
 
     #[test]
-    fn with_fingerprint_generates_motif_observations() {
-        // A document with repeated structure
-        let doc = parse_doc(r#"[{"a": 1, "b": 2}, {"a": 3, "b": 4}, {"a": 5, "b": 6}]"#);
+    fn with_fingerprint_generates_motif_observations() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"[{"a": 1, "b": 2}, {"a": 3, "b": 4}, {"a": 5, "b": 6}]"#)?;
 
         use vajra_fingerprint::FingerprintAnalyzer;
         use vajra_types::traits::Analyzer;
         let analyzer = FingerprintAnalyzer;
-        let fp = analyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let fp = analyzer.analyze(&doc)?;
 
         let profile = EngineerProfile;
         let essence = EssenceBuilder::new(&doc, &profile)
             .with_fingerprint(&fp)
             .build();
 
-        // Check if any repeated structure observations were generated
         let has_motif = essence
             .observations
             .iter()
             .any(|o| o.observation.description.contains("repeated structure"));
-        // This may or may not produce motifs depending on the hash structure;
-        // the test validates the path works without error.
         let _ = has_motif;
+        Ok(())
     }
 
     #[test]
@@ -618,22 +614,17 @@ mod tests {
     }
 
     #[test]
-    fn budget_limits_observations() {
-        // Create a document that produces multiple observations via stats + anomalies + trie
+    fn budget_limits_observations() -> Result<(), Box<dyn std::error::Error>> {
         let doc = parse_doc(
             r#"{"values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 1000]}"#,
-        );
+        )?;
         let profile = EngineerProfile;
 
         use vajra_anomaly::AnomalyAnalyzer;
         use vajra_stats::StatsAnalyzer;
         use vajra_types::traits::Analyzer;
-        let stats = StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
-        let anomalies = AnomalyAnalyzer::default()
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let stats = StatsAnalyzer.analyze(&doc)?;
+        let anomalies = AnomalyAnalyzer::default().analyze(&doc)?;
 
         // Build without budget
         let no_budget = EssenceBuilder::new(&doc, &profile)
@@ -656,25 +647,21 @@ mod tests {
             total_obs
         );
         assert!(with_budget.truncated, "should be truncated");
+        Ok(())
     }
 
     #[test]
-    fn budget_selects_by_score_per_token_ratio() {
-        // Verify that budget selection favors high score-per-token ratio observations
+    fn budget_selects_by_score_per_token_ratio() -> Result<(), Box<dyn std::error::Error>> {
         let doc = parse_doc(
             r#"{"values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 1000]}"#,
-        );
+        )?;
 
         use vajra_anomaly::AnomalyAnalyzer;
         use vajra_stats::StatsAnalyzer;
         use vajra_types::traits::Analyzer;
 
-        let stats = StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
-        let anomalies = AnomalyAnalyzer::default()
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let stats = StatsAnalyzer.analyze(&doc)?;
+        let anomalies = AnomalyAnalyzer::default().analyze(&doc)?;
 
         let profile = EngineerProfile;
 
@@ -702,11 +689,12 @@ mod tests {
 
         // Budget result should never exceed the non-budget result
         assert!(with_budget.observations.len() <= no_budget.observations.len());
+        Ok(())
     }
 
     #[test]
-    fn budget_metadata_set_correctly() {
-        let doc = parse_doc(r#"{"a": 1}"#);
+    fn budget_metadata_set_correctly() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1}"#)?;
         let profile = EngineerProfile;
 
         let essence = EssenceBuilder::new(&doc, &profile)
@@ -715,13 +703,13 @@ mod tests {
 
         assert_eq!(essence.budget_limit, Some(1000));
         assert!(essence.budget_used.is_some());
-        // With a large budget, should not be truncated
         assert!(!essence.truncated);
+        Ok(())
     }
 
     #[test]
-    fn no_budget_leaves_fields_default() {
-        let doc = parse_doc(r#"{"a": 1}"#);
+    fn no_budget_leaves_fields_default() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1}"#)?;
         let profile = EngineerProfile;
 
         let essence = EssenceBuilder::new(&doc, &profile).build();
@@ -729,5 +717,6 @@ mod tests {
         assert_eq!(essence.budget_limit, None);
         assert_eq!(essence.budget_used, None);
         assert!(!essence.truncated);
+        Ok(())
     }
 }

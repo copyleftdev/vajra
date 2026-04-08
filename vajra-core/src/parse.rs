@@ -115,72 +115,75 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_simple_object() {
+    fn parse_simple_object() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"name": "Alice", "age": 30}"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 3); // root object + 2 scalars
         assert_eq!(doc.metadata().max_depth, 1);
         assert_eq!(doc.metadata().distinct_paths, 3); // $, $.name, $.age
+        Ok(())
     }
 
     #[test]
-    fn parse_nested_object() {
+    fn parse_nested_object() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"a": {"b": {"c": 1}}}"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 4); // $, $.a, $.a.b, $.a.b.c
         assert_eq!(doc.metadata().max_depth, 3);
         assert_eq!(doc.metadata().distinct_paths, 4); // $, $.a, $.a.b, $.a.b.c
+        Ok(())
     }
 
     #[test]
-    fn parse_array() {
+    fn parse_array() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"[1, 2, 3]"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         // root array + 3 elements
         assert_eq!(doc.metadata().total_nodes, 4);
         assert_eq!(doc.metadata().max_depth, 1);
         // $, $[*] (all three elements share this path)
         assert_eq!(doc.metadata().distinct_paths, 2);
+        Ok(())
     }
 
     #[test]
-    fn parse_mixed_types_array() {
+    fn parse_mixed_types_array() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"[1, "two", true, null]"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 5); // root + 4 elements
         assert_eq!(doc.metadata().distinct_paths, 2); // $, $[*]
 
         // The $[*] trie node should have count=4 with mixed types
         let wildcard_path = WildcardPath::root().push_array_wildcard();
-        let node = doc
-            .trie()
-            .get(&wildcard_path)
-            .unwrap_or_else(|| panic!("node not found"));
+        let node = doc.trie().get(&wildcard_path).ok_or("node not found")?;
         assert_eq!(node.metadata.count, 4);
+        Ok(())
     }
 
     #[test]
-    fn parse_empty_object() {
+    fn parse_empty_object() -> Result<(), Box<dyn std::error::Error>> {
         let input = "{}";
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 1);
         assert_eq!(doc.metadata().max_depth, 0);
         assert_eq!(doc.metadata().distinct_paths, 1); // just root
+        Ok(())
     }
 
     #[test]
-    fn parse_empty_array() {
+    fn parse_empty_array() -> Result<(), Box<dyn std::error::Error>> {
         let input = "[]";
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 1);
         assert_eq!(doc.metadata().max_depth, 0);
         assert_eq!(doc.metadata().distinct_paths, 1);
+        Ok(())
     }
 
     #[test]
-    fn parse_null_root() {
+    fn parse_null_root() -> Result<(), Box<dyn std::error::Error>> {
         let input = "null";
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 1);
         assert_eq!(doc.metadata().max_depth, 0);
         assert_eq!(doc.metadata().distinct_paths, 1);
@@ -189,38 +192,42 @@ mod tests {
         let root = doc.trie().root();
         assert_eq!(root.metadata.count, 1);
         assert_eq!(root.metadata.null_count, 1);
+        Ok(())
     }
 
     #[test]
-    fn parse_boolean_root() {
+    fn parse_boolean_root() -> Result<(), Box<dyn std::error::Error>> {
         let input = "true";
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 1);
+        Ok(())
     }
 
     #[test]
-    fn parse_string_root() {
+    fn parse_string_root() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#""hello world""#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 1);
+        Ok(())
     }
 
     #[test]
-    fn parse_number_root() {
+    fn parse_number_root() -> Result<(), Box<dyn std::error::Error>> {
         let input = "42";
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().total_nodes, 1);
+        Ok(())
     }
 
     #[test]
-    fn trie_records_all_paths_with_wildcards() {
+    fn trie_records_all_paths_with_wildcards() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{
             "users": [
                 {"name": "Alice", "scores": [100, 95]},
                 {"name": "Bob", "scores": [88]}
             ]
         }"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
 
         let paths: Vec<String> = doc
             .trie()
@@ -240,34 +247,33 @@ mod tests {
         // Exactly 6 distinct paths
         assert_eq!(paths.len(), 6);
         assert_eq!(doc.metadata().distinct_paths, 6);
+        Ok(())
     }
 
     #[test]
-    fn array_indices_collapsed_to_wildcard() {
+    fn array_indices_collapsed_to_wildcard() -> Result<(), Box<dyn std::error::Error>> {
         // Two array elements with the same key should produce one wildcard path
         let input = r#"[{"id": 1}, {"id": 2}, {"id": 3}]"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
 
         // Paths: $, $[*], $[*].id
         assert_eq!(doc.metadata().distinct_paths, 3);
 
         // $[*].id should have count=3 (one per array element)
         let id_path = WildcardPath::root().push_array_wildcard().push_key("id");
-        let node = doc
-            .trie()
-            .get(&id_path)
-            .unwrap_or_else(|| panic!("node not found"));
+        let node = doc.trie().get(&id_path).ok_or("node not found")?;
         assert_eq!(node.metadata.count, 3);
+        Ok(())
     }
 
     #[test]
-    fn metadata_counts_correct_complex() {
+    fn metadata_counts_correct_complex() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{
             "a": 1,
             "b": [2, 3],
             "c": {"d": true, "e": null}
         }"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
 
         // Nodes: root{}, a:1, b:[], 2, 3, c:{}, d:true, e:null = 8
         assert_eq!(doc.metadata().total_nodes, 8);
@@ -275,38 +281,42 @@ mod tests {
         assert_eq!(doc.metadata().max_depth, 2);
         // Paths: $, $.a, $.b, $.b[*], $.c, $.c.d, $.c.e = 7
         assert_eq!(doc.metadata().distinct_paths, 7);
+        Ok(())
     }
 
     #[test]
-    fn root_node_observed() {
+    fn root_node_observed() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"key": "value"}"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
 
         let root = doc.trie().root();
         assert_eq!(root.metadata.count, 1);
         // Root is an object
         assert_eq!(root.metadata.type_counts[JsonType::Object.index()], 1);
+        Ok(())
     }
 
     #[test]
-    fn invalid_json_returns_parse_error() {
+    fn invalid_json_returns_parse_error() -> Result<(), Box<dyn std::error::Error>> {
         let result = parse_str("{invalid json}");
         assert!(result.is_err());
         match result {
             Err(VajraError::Parse { .. }) => {} // expected
-            other => panic!("expected Parse error, got {other:?}"),
+            other => return Err(format!("expected Parse error, got {other:?}").into()),
         }
+        Ok(())
     }
 
     #[test]
-    fn raw_size_bytes_recorded() {
+    fn raw_size_bytes_recorded() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"a": 1}"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         assert_eq!(doc.metadata().raw_size_bytes, input.len() as u64);
+        Ok(())
     }
 
     #[test]
-    fn parse_deeply_nested_within_limit() {
+    fn parse_deeply_nested_within_limit() -> Result<(), Box<dyn std::error::Error>> {
         // serde_json has a default recursion limit of 128, so we test at 127 levels
         // (127 nested objects + 1 innermost integer = depth 127).
         // Our walk function allows up to 256 which is beyond serde_json's limit.
@@ -319,17 +329,19 @@ mod tests {
         for _ in 0..depth {
             json.push('}');
         }
-        let doc = parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(&json)?;
         assert_eq!(doc.metadata().max_depth, depth as u32);
+        Ok(())
     }
 
     #[test]
-    fn parse_file_nonexistent() {
+    fn parse_file_nonexistent() -> Result<(), Box<dyn std::error::Error>> {
         let result = parse_file(Path::new("/nonexistent/path/file.json"));
         assert!(result.is_err());
         match result {
             Err(VajraError::Io { .. }) => {} // expected
-            other => panic!("expected Io error, got {other:?}"),
+            other => return Err(format!("expected Io error, got {other:?}").into()),
         }
+        Ok(())
     }
 }

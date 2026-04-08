@@ -49,43 +49,41 @@ mod tests {
     use vajra_core::parse::parse_str;
 
     #[test]
-    fn deterministic() {
+    fn deterministic() -> Result<(), Box<dyn std::error::Error>> {
         let input = r#"{"a": 1, "b": "hello"}"#;
-        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(input)?;
         let h1 = typed_path_fingerprint(&doc);
         let h2 = typed_path_fingerprint(&doc);
         assert_eq!(h1, h2);
+        Ok(())
     }
 
     #[test]
-    fn changes_when_types_change() {
-        // Same keys, different value types.
-        let doc_a =
-            parse_str(r#"{"a": 1, "b": 2}"#).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let doc_b = parse_str(r#"{"a": "one", "b": "two"}"#)
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+    fn changes_when_types_change() -> Result<(), Box<dyn std::error::Error>> {
+        let doc_a = parse_str(r#"{"a": 1, "b": 2}"#)?;
+        let doc_b = parse_str(r#"{"a": "one", "b": "two"}"#)?;
         assert_ne!(
             typed_path_fingerprint(&doc_a),
             typed_path_fingerprint(&doc_b)
         );
+        Ok(())
     }
 
     #[test]
-    fn same_types_same_hash() {
-        // Same structure and types, different values.
-        let doc_a =
-            parse_str(r#"{"a": 1, "b": 2}"#).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let doc_b =
-            parse_str(r#"{"a": 99, "b": 42}"#).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    fn same_types_same_hash() -> Result<(), Box<dyn std::error::Error>> {
+        let doc_a = parse_str(r#"{"a": 1, "b": 2}"#)?;
+        let doc_b = parse_str(r#"{"a": 99, "b": 42}"#)?;
         assert_eq!(
             typed_path_fingerprint(&doc_a),
             typed_path_fingerprint(&doc_b)
         );
+        Ok(())
     }
 
     #[test]
-    fn hash_is_32_bytes() {
-        let doc = parse_str(r#"{"x": 1}"#).unwrap_or_else(|e| panic!("parse failed: {e}"));
+    fn hash_is_32_bytes() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_str(r#"{"x": 1}"#)?;
         assert_eq!(typed_path_fingerprint(&doc).len(), 32);
+        Ok(())
     }
 }

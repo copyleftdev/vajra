@@ -373,7 +373,7 @@ pub fn load_profiles_from_toml(content: &str) -> Result<Vec<CustomProfile>, Vajr
 
     let mut profiles = Vec::new();
 
-    for (_key, config) in &doc.profile {
+    for config in doc.profile.values() {
         // Validate: name must not be empty
         if config.name.is_empty() {
             return Err(VajraError::Config {
@@ -475,14 +475,14 @@ max_observations = 20
     }
 
     #[test]
-    fn valid_toml_parses_correctly() {
+    fn valid_toml_parses_correctly() -> Result<(), Box<dyn std::error::Error>> {
         let profiles = load_profiles_from_toml(sample_toml());
         assert!(
             profiles.is_ok(),
             "should parse valid TOML: {:?}",
             profiles.err()
         );
-        let profiles = profiles.unwrap_or_else(|e| panic!("{e}"));
+        let profiles = profiles?;
         assert_eq!(profiles.len(), 1);
 
         let p = &profiles[0];
@@ -492,10 +492,11 @@ max_observations = 20
         assert!(!p.rendering.show_paths);
         assert_eq!(p.rendering.motif_collapse_threshold, 3);
         assert_eq!(p.rendering.max_observations, 20);
+        Ok(())
     }
 
     #[test]
-    fn missing_name_field_errors() {
+    fn missing_name_field_errors() -> Result<(), Box<dyn std::error::Error>> {
         let toml = r#"
 [profile.bad]
 description = "no name"
@@ -510,16 +511,15 @@ concern_relevance = 0.20
 "#;
         let result = load_profiles_from_toml(toml);
         assert!(result.is_err());
-        let err = result.unwrap_err();
-        match err {
-            VajraError::Config { message } => {
-                assert!(
-                    message.contains("missing field") || message.contains("TOML parse error"),
-                    "unexpected error: {message}"
-                );
-            }
-            other => panic!("expected Config error, got: {other}"),
-        }
+        let err = result.err().ok_or("expected error")?;
+        let VajraError::Config { message } = err else {
+            return Err(format!("expected Config error, got: {err}").into());
+        };
+        assert!(
+            message.contains("missing field") || message.contains("TOML parse error"),
+            "unexpected error: {message}"
+        );
+        Ok(())
     }
 
     #[test]
@@ -537,7 +537,7 @@ rarity = 0.15
     }
 
     #[test]
-    fn weights_not_summing_to_one_is_warning_not_error() {
+    fn weights_not_summing_to_one_is_warning_not_error() -> Result<(), Box<dyn std::error::Error>> {
         let toml = r#"
 [profile.wonky]
 name = "wonky"
@@ -554,14 +554,15 @@ concern_relevance = 0.50
         // Sum = 3.0 — should warn but not error
         let profiles = load_profiles_from_toml(toml);
         assert!(profiles.is_ok(), "non-unit weights should not be an error");
-        let profiles = profiles.unwrap_or_else(|e| panic!("{e}"));
+        let profiles = profiles?;
         assert_eq!(profiles.len(), 1);
         assert_eq!(profiles[0].name(), "wonky");
+        Ok(())
     }
 
     #[test]
-    fn custom_profile_scoring_works() {
-        let profiles = load_profiles_from_toml(sample_toml()).unwrap_or_else(|e| panic!("{e}"));
+    fn custom_profile_scoring_works() -> Result<(), Box<dyn std::error::Error>> {
+        let profiles = load_profiles_from_toml(sample_toml())?;
         let profile = &profiles[0];
 
         let candidate = CandidateObservation {
@@ -598,17 +599,16 @@ concern_relevance = 0.50
             score2.abs() < f64::EPSILON,
             "expected score 0.0 for all-zeros candidate, got {score2}"
         );
+        Ok(())
     }
 
     #[test]
-    fn custom_profile_rendering_plain_vocabulary() {
-        let profiles = load_profiles_from_toml(sample_toml()).unwrap_or_else(|e| panic!("{e}"));
+    fn custom_profile_rendering_plain_vocabulary() -> Result<(), Box<dyn std::error::Error>> {
+        let profiles = load_profiles_from_toml(sample_toml())?;
         let profile = &profiles[0];
 
         let essence = make_essence(5);
-        let rendered = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let rendered = profile.render(&essence, OutputFormat::Text)?;
 
         // Plain vocabulary: should have narrative sections
         assert!(
@@ -625,10 +625,11 @@ concern_relevance = 0.50
             rendered.contains("observation 0"),
             "should have observation text"
         );
+        Ok(())
     }
 
     #[test]
-    fn custom_profile_rendering_technical_vocabulary() {
+    fn custom_profile_rendering_technical_vocabulary() -> Result<(), Box<dyn std::error::Error>> {
         let toml = r#"
 [profile.tech]
 name = "tech"
@@ -646,13 +647,11 @@ vocabulary = "technical"
 show_paths = true
 max_observations = 50
 "#;
-        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml)?;
         let profile = &profiles[0];
 
         let essence = make_essence(3);
-        let rendered = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let rendered = profile.render(&essence, OutputFormat::Text)?;
 
         // Technical: shows paths and scores
         assert!(
@@ -663,10 +662,11 @@ max_observations = 50
             rendered.contains("Essence (tech)"),
             "should show profile name header"
         );
+        Ok(())
     }
 
     #[test]
-    fn custom_profile_rendering_formal_vocabulary() {
+    fn custom_profile_rendering_formal_vocabulary() -> Result<(), Box<dyn std::error::Error>> {
         let toml = r#"
 [profile.formal]
 name = "formal"
@@ -683,13 +683,11 @@ concern_relevance = 0.20
 vocabulary = "formal"
 max_observations = 50
 "#;
-        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml)?;
         let profile = &profiles[0];
 
         let essence = make_essence(3);
-        let rendered = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let rendered = profile.render(&essence, OutputFormat::Text)?;
 
         // Formal: full sentences with "the analysis identified"
         assert!(
@@ -700,10 +698,11 @@ max_observations = 50
             rendered.contains("Profile: formal"),
             "should show profile header"
         );
+        Ok(())
     }
 
     #[test]
-    fn max_observations_respected() {
+    fn max_observations_respected() -> Result<(), Box<dyn std::error::Error>> {
         let toml = r#"
 [profile.limited]
 name = "limited"
@@ -721,13 +720,11 @@ vocabulary = "technical"
 show_paths = true
 max_observations = 3
 "#;
-        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml)?;
         let profile = &profiles[0];
 
         let essence = make_essence(10);
-        let rendered = profile
-            .render(&essence, OutputFormat::Text)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let rendered = profile.render(&essence, OutputFormat::Text)?;
 
         // Should only have 3 observations
         assert!(rendered.contains("observation 0"));
@@ -737,27 +734,26 @@ max_observations = 3
             !rendered.contains("observation 3"),
             "should respect max_observations=3"
         );
+        Ok(())
     }
 
     #[test]
-    fn json_rendering_works_for_custom_profile() {
-        let profiles = load_profiles_from_toml(sample_toml()).unwrap_or_else(|e| panic!("{e}"));
+    fn json_rendering_works_for_custom_profile() -> Result<(), Box<dyn std::error::Error>> {
+        let profiles = load_profiles_from_toml(sample_toml())?;
         let profile = &profiles[0];
 
         let essence = make_essence(3);
-        let json_str = profile
-            .render(&essence, OutputFormat::Json)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let json_str = profile.render(&essence, OutputFormat::Json)?;
 
-        let parsed: serde_json::Value =
-            serde_json::from_str(&json_str).unwrap_or_else(|e| panic!("{e}"));
+        let parsed: serde_json::Value = serde_json::from_str(&json_str)?;
         assert!(parsed.is_object());
         assert!(parsed.get("identity").is_some());
         assert!(parsed.get("observations").is_some());
+        Ok(())
     }
 
     #[test]
-    fn multiple_profiles_in_one_file() {
+    fn multiple_profiles_in_one_file() -> Result<(), Box<dyn std::error::Error>> {
         let toml = r#"
 [profile.alpha]
 name = "alpha"
@@ -783,17 +779,19 @@ structural_coverage = 0.10
 anomaly_strength = 0.10
 concern_relevance = 0.30
 "#;
-        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml)?;
         assert_eq!(profiles.len(), 2);
         let names: Vec<&str> = profiles.iter().map(|p| p.name()).collect();
         assert!(names.contains(&"alpha"));
         assert!(names.contains(&"beta"));
+        Ok(())
     }
 
     #[test]
-    fn empty_toml_returns_no_profiles() {
-        let profiles = load_profiles_from_toml("").unwrap_or_else(|e| panic!("{e}"));
+    fn empty_toml_returns_no_profiles() -> Result<(), Box<dyn std::error::Error>> {
+        let profiles = load_profiles_from_toml("")?;
         assert!(profiles.is_empty());
+        Ok(())
     }
 
     #[test]
@@ -803,7 +801,7 @@ concern_relevance = 0.30
     }
 
     #[test]
-    fn default_rendering_config() {
+    fn default_rendering_config() -> Result<(), Box<dyn std::error::Error>> {
         let toml = r#"
 [profile.minimal]
 name = "minimal"
@@ -816,12 +814,13 @@ structural_coverage = 0.10
 anomaly_strength = 0.25
 concern_relevance = 0.20
 "#;
-        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml)?;
         let p = &profiles[0];
         // Should use defaults
         assert_eq!(p.rendering.vocabulary, Vocabulary::Technical);
         assert!(p.rendering.show_paths);
         assert_eq!(p.rendering.motif_collapse_threshold, 3);
         assert_eq!(p.rendering.max_observations, 50);
+        Ok(())
     }
 }

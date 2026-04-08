@@ -24,10 +24,10 @@ const N: usize = 10;
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_parse_10_runs() {
+fn determinism_parse_10_runs() -> Result<(), Box<dyn std::error::Error>> {
     let mut serialized: Vec<String> = Vec::with_capacity(N);
     for _ in 0..N {
-        let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(COMPLEX_JSON)?;
         let paths: Vec<String> = doc
             .trie()
             .all_paths()
@@ -42,6 +42,7 @@ fn determinism_parse_10_runs() {
             "parse run 0 vs run {i} differ"
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -49,11 +50,11 @@ fn determinism_parse_10_runs() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_canonicalization_10_runs() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+fn determinism_canonicalization_10_runs() -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
     let mut outputs: Vec<Vec<u8>> = Vec::with_capacity(N);
     for _ in 0..N {
-        let canon = canonicalize(doc.value()).unwrap_or_else(|e| panic!("canon failed: {e}"));
+        let canon = canonicalize(doc.value())?;
         outputs.push(canon);
     }
     for i in 1..N {
@@ -62,6 +63,7 @@ fn determinism_canonicalization_10_runs() {
             "canonicalization run 0 vs run {i} differ"
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -69,15 +71,13 @@ fn determinism_canonicalization_10_runs() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_fingerprint_10_runs() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+fn determinism_fingerprint_10_runs() -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
     let analyzer = FingerprintAnalyzer;
 
     let mut results: Vec<String> = Vec::with_capacity(N);
     for _ in 0..N {
-        let fp = analyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("fingerprint failed: {e}"));
+        let fp = analyzer.analyze(&doc)?;
         // Serialize all fields to a canonical debug string.
         let serialized = format!(
             "path_set={:?} typed_path={:?} shape={:?} subtree_freqs={:?}",
@@ -91,6 +91,7 @@ fn determinism_fingerprint_10_runs() {
             "fingerprint run 0 vs run {i} differ"
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -98,15 +99,13 @@ fn determinism_fingerprint_10_runs() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_stats_10_runs() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+fn determinism_stats_10_runs() -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
     let analyzer = StatsAnalyzer;
 
     let mut results: Vec<String> = Vec::with_capacity(N);
     for _ in 0..N {
-        let stats = analyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("stats failed: {e}"));
+        let stats = analyzer.analyze(&doc)?;
         // Serialize every path's entropy and cardinality deterministically.
         let mut entries: Vec<String> = stats
             .paths
@@ -125,6 +124,7 @@ fn determinism_stats_10_runs() {
     for i in 1..N {
         assert_eq!(results[0], results[i], "stats run 0 vs run {i} differ");
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -132,15 +132,13 @@ fn determinism_stats_10_runs() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_anomaly_10_runs() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+fn determinism_anomaly_10_runs() -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
     let analyzer = AnomalyAnalyzer::default();
 
     let mut results: Vec<String> = Vec::with_capacity(N);
     for _ in 0..N {
-        let report = analyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("anomaly failed: {e}"));
+        let report = analyzer.analyze(&doc)?;
         let serialized = format!(
             "numeric_outliers={:?}\nrare_values={:?}\ntype_instabilities={:?}",
             report.numeric_outliers, report.rare_values, report.type_instabilities
@@ -150,6 +148,7 @@ fn determinism_anomaly_10_runs() {
     for i in 1..N {
         assert_eq!(results[0], results[i], "anomaly run 0 vs run {i} differ");
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -157,17 +156,11 @@ fn determinism_anomaly_10_runs() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_essence_10_runs() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
-    let stats = StatsAnalyzer
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("stats failed: {e}"));
-    let anomalies = AnomalyAnalyzer::default()
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("anomaly failed: {e}"));
-    let fp = FingerprintAnalyzer
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("fingerprint failed: {e}"));
+fn determinism_essence_10_runs() -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
+    let stats = StatsAnalyzer.analyze(&doc)?;
+    let anomalies = AnomalyAnalyzer::default().analyze(&doc)?;
+    let fp = FingerprintAnalyzer.analyze(&doc)?;
     let profile = EngineerProfile;
 
     let mut rendered_texts: Vec<String> = Vec::with_capacity(N);
@@ -194,6 +187,7 @@ fn determinism_essence_10_runs() {
             "essence JSON run 0 vs run {i} differ"
         );
     }
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -202,17 +196,12 @@ fn determinism_essence_10_runs() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_essence_different_profiles_internally_deterministic() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
-    let stats = StatsAnalyzer
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("stats failed: {e}"));
-    let anomalies = AnomalyAnalyzer::default()
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("anomaly failed: {e}"));
-    let fp = FingerprintAnalyzer
-        .analyze(&doc)
-        .unwrap_or_else(|e| panic!("fingerprint failed: {e}"));
+fn determinism_essence_different_profiles_internally_deterministic(
+) -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
+    let stats = StatsAnalyzer.analyze(&doc)?;
+    let anomalies = AnomalyAnalyzer::default().analyze(&doc)?;
+    let fp = FingerprintAnalyzer.analyze(&doc)?;
 
     let profiles: Vec<(&str, &dyn ConcernProfile)> = vec![
         ("staff", &StaffProfile),
@@ -233,9 +222,7 @@ fn determinism_essence_different_profiles_internally_deterministic() {
                 .with_anomalies(&anomalies)
                 .with_fingerprint(&fp)
                 .build();
-            let text = profile
-                .render(&essence, OutputFormat::Text)
-                .unwrap_or_else(|e| panic!("render failed for {name}: {e}"));
+            let text = profile.render(&essence, OutputFormat::Text)?;
             pair.push(text);
         }
         assert_eq!(
@@ -262,6 +249,7 @@ fn determinism_essence_different_profiles_internally_deterministic() {
         any_differ,
         "expected at least some profiles to produce different output"
     );
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -269,8 +257,8 @@ fn determinism_essence_different_profiles_internally_deterministic() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_minhash_same_seed_identical() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+fn determinism_minhash_same_seed_identical() -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
     let paths = doc.trie().all_paths();
     let k = 128;
     let seed = 42;
@@ -286,11 +274,13 @@ fn determinism_minhash_same_seed_identical() {
             "minhash seed={seed} run 0 vs run {i} differ"
         );
     }
+    Ok(())
 }
 
 #[test]
-fn determinism_minhash_different_seeds_produce_different_signatures() {
-    let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+fn determinism_minhash_different_seeds_produce_different_signatures(
+) -> Result<(), Box<dyn std::error::Error>> {
+    let doc = parse_str(COMPLEX_JSON)?;
     let paths = doc.trie().all_paths();
     let k = 128;
 
@@ -310,6 +300,7 @@ fn determinism_minhash_different_seeds_produce_different_signatures() {
         cross_sim < 1.0,
         "different seeds should produce different signatures, got similarity {cross_sim}"
     );
+    Ok(())
 }
 
 // -----------------------------------------------------------------------
@@ -317,29 +308,23 @@ fn determinism_minhash_different_seeds_produce_different_signatures() {
 // -----------------------------------------------------------------------
 
 #[test]
-fn determinism_full_pipeline_10_runs() {
+fn determinism_full_pipeline_10_runs() -> Result<(), Box<dyn std::error::Error>> {
     let mut serialized: Vec<String> = Vec::with_capacity(N);
 
     for _ in 0..N {
-        let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc = parse_str(COMPLEX_JSON)?;
 
         // Canonicalize
-        let canon = canonicalize(doc.value()).unwrap_or_else(|e| panic!("canon failed: {e}"));
+        let canon = canonicalize(doc.value())?;
 
         // Stats
-        let stats = StatsAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("stats failed: {e}"));
+        let stats = StatsAnalyzer.analyze(&doc)?;
 
         // Anomalies
-        let anomalies = AnomalyAnalyzer::default()
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("anomaly failed: {e}"));
+        let anomalies = AnomalyAnalyzer::default().analyze(&doc)?;
 
         // Fingerprints
-        let fp = FingerprintAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("fingerprint failed: {e}"));
+        let fp = FingerprintAnalyzer.analyze(&doc)?;
 
         // Essence (with all analysis results)
         let profile = EngineerProfile;
@@ -370,4 +355,5 @@ fn determinism_full_pipeline_10_runs() {
             "full pipeline run 0 vs run {i} differ"
         );
     }
+    Ok(())
 }

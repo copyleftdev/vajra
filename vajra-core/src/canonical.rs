@@ -332,118 +332,129 @@ mod tests {
     use serde_json::json;
 
     // Helper to canonicalize and return a String for comparison
-    fn canon_str(value: &serde_json::Value) -> String {
-        let bytes = canonicalize(value).unwrap_or_else(|e| panic!("canonicalize failed: {e}"));
-        String::from_utf8(bytes).unwrap_or_else(|e| panic!("invalid utf8: {e}"))
+    fn canon_str(value: &serde_json::Value) -> Result<String, Box<dyn std::error::Error>> {
+        let bytes = canonicalize(value)?;
+        Ok(String::from_utf8(bytes)?)
     }
 
     #[test]
-    fn canonicalize_null() {
-        assert_eq!(canon_str(&json!(null)), "null");
+    fn canonicalize_null() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!(null))?, "null");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_bool() {
-        assert_eq!(canon_str(&json!(true)), "true");
-        assert_eq!(canon_str(&json!(false)), "false");
+    fn canonicalize_bool() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!(true))?, "true");
+        assert_eq!(canon_str(&json!(false))?, "false");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_integer() {
-        assert_eq!(canon_str(&json!(42)), "42");
-        assert_eq!(canon_str(&json!(0)), "0");
-        assert_eq!(canon_str(&json!(-1)), "-1");
-        assert_eq!(canon_str(&json!(1000000)), "1000000");
+    fn canonicalize_integer() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!(42))?, "42");
+        assert_eq!(canon_str(&json!(0))?, "0");
+        assert_eq!(canon_str(&json!(-1))?, "-1");
+        assert_eq!(canon_str(&json!(1000000))?, "1000000");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_float() {
-        assert_eq!(canon_str(&json!(3.14)), "3.14");
-        assert_eq!(canon_str(&json!(1.0)), "1");
-        assert_eq!(canon_str(&json!(0.5)), "0.5");
+    fn canonicalize_float() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!(2.75))?, "2.75");
+        assert_eq!(canon_str(&json!(1.0))?, "1");
+        assert_eq!(canon_str(&json!(0.5))?, "0.5");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_negative_zero() {
+    fn canonicalize_negative_zero() -> Result<(), Box<dyn std::error::Error>> {
         // JCS rule: -0 should be serialized as "0"
-        let neg_zero: serde_json::Value =
-            serde_json::from_str("-0.0").unwrap_or_else(|e| panic!("parse failed: {e}"));
-        assert_eq!(canon_str(&neg_zero), "0");
+        let neg_zero: serde_json::Value = serde_json::from_str("-0.0")?;
+        assert_eq!(canon_str(&neg_zero)?, "0");
 
-        let neg_zero2: serde_json::Value =
-            serde_json::from_str("-0").unwrap_or_else(|e| panic!("parse failed: {e}"));
-        assert_eq!(canon_str(&neg_zero2), "0");
+        let neg_zero2: serde_json::Value = serde_json::from_str("-0")?;
+        assert_eq!(canon_str(&neg_zero2)?, "0");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_string() {
-        assert_eq!(canon_str(&json!("hello")), r#""hello""#);
-        assert_eq!(canon_str(&json!("")), r#""""#);
+    fn canonicalize_string() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!("hello"))?, r#""hello""#);
+        assert_eq!(canon_str(&json!(""))?, r#""""#);
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_string_escaping() {
+    fn canonicalize_string_escaping() -> Result<(), Box<dyn std::error::Error>> {
         // Backslash and quote
-        assert_eq!(canon_str(&json!("a\"b")), r#""a\"b""#);
-        assert_eq!(canon_str(&json!("a\\b")), r#""a\\b""#);
+        assert_eq!(canon_str(&json!("a\"b"))?, r#""a\"b""#);
+        assert_eq!(canon_str(&json!("a\\b"))?, r#""a\\b""#);
 
         // Control characters
-        assert_eq!(canon_str(&json!("a\nb")), r#""a\nb""#);
-        assert_eq!(canon_str(&json!("a\tb")), r#""a\tb""#);
-        assert_eq!(canon_str(&json!("a\rb")), r#""a\rb""#);
+        assert_eq!(canon_str(&json!("a\nb"))?, r#""a\nb""#);
+        assert_eq!(canon_str(&json!("a\tb"))?, r#""a\tb""#);
+        assert_eq!(canon_str(&json!("a\rb"))?, r#""a\rb""#);
 
         // Forward slash should NOT be escaped per JCS
-        assert_eq!(canon_str(&json!("a/b")), r#""a/b""#);
+        assert_eq!(canon_str(&json!("a/b"))?, r#""a/b""#);
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_empty_array() {
-        assert_eq!(canon_str(&json!([])), "[]");
+    fn canonicalize_empty_array() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!([]))?, "[]");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_array() {
-        assert_eq!(canon_str(&json!([1, 2, 3])), "[1,2,3]");
+    fn canonicalize_array() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!([1, 2, 3]))?, "[1,2,3]");
         assert_eq!(
-            canon_str(&json!([1, "two", true, null])),
+            canon_str(&json!([1, "two", true, null]))?,
             r#"[1,"two",true,null]"#
         );
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_empty_object() {
-        assert_eq!(canon_str(&json!({})), "{}");
+    fn canonicalize_empty_object() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!({}))?, "{}");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_object_sorted_keys() {
+    fn canonicalize_object_sorted_keys() -> Result<(), Box<dyn std::error::Error>> {
         // Keys must be sorted per UTF-16 code unit comparison
         let obj = json!({"b": 2, "a": 1, "c": 3});
-        assert_eq!(canon_str(&obj), r#"{"a":1,"b":2,"c":3}"#);
+        assert_eq!(canon_str(&obj)?, r#"{"a":1,"b":2,"c":3}"#);
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_object_no_whitespace() {
+    fn canonicalize_object_no_whitespace() -> Result<(), Box<dyn std::error::Error>> {
         let obj = json!({"key": "value"});
-        let result = canon_str(&obj);
+        let result = canon_str(&obj)?;
         // No spaces around colon or after comma
         assert!(!result.contains(": "));
         assert!(!result.contains(", "));
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_nested() {
+    fn canonicalize_nested() -> Result<(), Box<dyn std::error::Error>> {
         let obj = json!({"a": {"b": [1, 2]}, "c": true});
-        assert_eq!(canon_str(&obj), r#"{"a":{"b":[1,2]},"c":true}"#);
+        assert_eq!(canon_str(&obj)?, r#"{"a":{"b":[1,2]},"c":true}"#);
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_idempotent() {
+    fn canonicalize_idempotent() -> Result<(), Box<dyn std::error::Error>> {
         // canon(parse(canon(x))) == canon(x)
         let values = vec![
             json!(null),
             json!(42),
-            json!(3.14),
+            json!(2.75),
             json!("hello"),
             json!(true),
             json!([1, "two", null]),
@@ -452,13 +463,10 @@ mod tests {
         ];
 
         for value in values {
-            let first = canonicalize(&value).unwrap_or_else(|e| panic!("first canon failed: {e}"));
-            let first_str =
-                String::from_utf8(first.clone()).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
-            let reparsed: serde_json::Value =
-                serde_json::from_str(&first_str).unwrap_or_else(|e| panic!("reparse failed: {e}"));
-            let second =
-                canonicalize(&reparsed).unwrap_or_else(|e| panic!("second canon failed: {e}"));
+            let first = canonicalize(&value)?;
+            let first_str = String::from_utf8(first.clone())?;
+            let reparsed: serde_json::Value = serde_json::from_str(&first_str)?;
+            let second = canonicalize(&reparsed)?;
             assert_eq!(
                 first,
                 second,
@@ -466,10 +474,11 @@ mod tests {
                 String::from_utf8_lossy(&second)
             );
         }
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_utf16_key_sorting() {
+    fn canonicalize_utf16_key_sorting() -> Result<(), Box<dyn std::error::Error>> {
         // RFC 8785 requires sorting by UTF-16 code units, not byte order.
         // Example: the key "\u{1D11E}" (U+1D11E, MUSICAL SYMBOL G CLEF) is a
         // surrogate pair in UTF-16 (D834 DD1E), which sorts differently from
@@ -480,11 +489,12 @@ mod tests {
         let obj = json!({"z": 1, "a": 2, "A": 3, "Z": 4});
         // UTF-16 ordering: uppercase letters (0x41-0x5A) come before
         // lowercase letters (0x61-0x7A)
-        assert_eq!(canon_str(&obj), r#"{"A":3,"Z":4,"a":2,"z":1}"#);
+        assert_eq!(canon_str(&obj)?, r#"{"A":3,"Z":4,"a":2,"z":1}"#);
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_utf16_surrogate_pair_ordering() {
+    fn canonicalize_utf16_surrogate_pair_ordering() -> Result<(), Box<dyn std::error::Error>> {
         // Characters outside BMP have different UTF-16 vs UTF-8 ordering.
         // U+00E9 (e with accent, 1 UTF-16 unit: 00E9) vs U+1D11E (G clef, 2 UTF-16 units: D834 DD1E)
         // In UTF-16 code unit order: 00E9 < D834, so the accent char sorts first
@@ -493,10 +503,9 @@ mod tests {
         // UTF-8: EF BF BF vs F0 90 80 80, so EF < F0, meaning U+FFFF < U+10000 in byte order
         // This is where UTF-16 sorting differs from byte order!
         let obj_str = format!("{{\"\\uFFFF\": 1, \"{}\" : 2}}", '\u{10000}');
-        let val: serde_json::Value =
-            serde_json::from_str(&obj_str).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let result = canonicalize(&val).unwrap_or_else(|e| panic!("canon failed: {e}"));
-        let result_str = String::from_utf8(result).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
+        let val: serde_json::Value = serde_json::from_str(&obj_str)?;
+        let result = canonicalize(&val)?;
+        let result_str = String::from_utf8(result)?;
 
         // In UTF-16 order: U+10000 (D800 DC00) < U+FFFF (FFFF)
         // So the key for U+10000 should come first
@@ -514,98 +523,104 @@ mod tests {
             p2 < p1,
             "expected U+10000 key before U+FFFF key in UTF-16 order, got: {result_str}"
         );
+        Ok(())
     }
 
     #[test]
-    fn number_format_integer_42() {
-        assert_eq!(canon_str(&json!(42)), "42");
+    fn number_format_integer_42() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!(42))?, "42");
+        Ok(())
     }
 
     #[test]
-    fn number_format_float_3_14() {
-        assert_eq!(canon_str(&json!(3.14)), "3.14");
+    fn number_format_float_3_14() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!(2.75))?, "2.75");
+        Ok(())
     }
 
     #[test]
-    fn number_format_large_integer() {
-        assert_eq!(canon_str(&json!(9007199254740992_i64)), "9007199254740992");
+    fn number_format_large_integer() -> Result<(), Box<dyn std::error::Error>> {
+        assert_eq!(canon_str(&json!(9007199254740992_i64))?, "9007199254740992");
+        Ok(())
     }
 
     #[test]
-    fn number_format_small_float() {
+    fn number_format_small_float() -> Result<(), Box<dyn std::error::Error>> {
         // 0.000001 should not use exponential notation (exponent = -6, not <= -7)
-        assert_eq!(canon_str(&json!(0.000001)), "0.000001");
+        assert_eq!(canon_str(&json!(0.000001))?, "0.000001");
+        Ok(())
     }
 
     #[test]
-    fn number_format_very_small_float() {
+    fn number_format_very_small_float() -> Result<(), Box<dyn std::error::Error>> {
         // 1e-7 should use exponential notation per ES6 rules
-        let val: serde_json::Value =
-            serde_json::from_str("1e-7").unwrap_or_else(|e| panic!("parse failed: {e}"));
-        assert_eq!(canon_str(&val), "1e-7");
+        let val: serde_json::Value = serde_json::from_str("1e-7")?;
+        assert_eq!(canon_str(&val)?, "1e-7");
+        Ok(())
     }
 
     #[test]
-    fn number_format_large_float_exponent() {
+    fn number_format_large_float_exponent() -> Result<(), Box<dyn std::error::Error>> {
         // Very large numbers use exponential notation
-        let val: serde_json::Value =
-            serde_json::from_str("1e21").unwrap_or_else(|e| panic!("parse failed: {e}"));
-        assert_eq!(canon_str(&val), "1e+21");
+        let val: serde_json::Value = serde_json::from_str("1e21")?;
+        assert_eq!(canon_str(&val)?, "1e+21");
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_complex_document() {
+    fn canonicalize_complex_document() -> Result<(), Box<dyn std::error::Error>> {
         let doc = json!({
-            "numbers": [333333333.33333329, 1e30, 4.50, 2e-3, 0.000000000000000000000000001],
+            "numbers": [333_333_333.333_333_3, 1e30, 4.50, 2e-3, 0.000000000000000000000000001],
             "string": "\u{0019}",
             "bool": true,
             "null": null
         });
         // Just ensure it doesn't error and is valid JSON
-        let result = canonicalize(&doc).unwrap_or_else(|e| panic!("canon failed: {e}"));
-        let result_str = String::from_utf8(result).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
+        let result = canonicalize(&doc)?;
+        let result_str = String::from_utf8(result)?;
         // Re-parse to validate it's valid JSON
-        let _: serde_json::Value = serde_json::from_str(&result_str)
-            .unwrap_or_else(|e| panic!("result is not valid JSON: {e}\nresult: {result_str}"));
+        let _: serde_json::Value = serde_json::from_str(&result_str)?;
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_control_character_escaping() {
+    fn canonicalize_control_character_escaping() -> Result<(), Box<dyn std::error::Error>> {
         // Control characters U+0000..U+001F should be escaped
         let s = String::from('\u{0001}');
         let val = json!(s);
-        assert_eq!(canon_str(&val), r#""\u0001""#);
+        assert_eq!(canon_str(&val)?, r#""\u0001""#);
 
         let s = String::from('\u{001F}');
         let val = json!(s);
-        assert_eq!(canon_str(&val), r#""\u001f""#);
+        assert_eq!(canon_str(&val)?, r#""\u001f""#);
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_unicode_passthrough() {
+    fn canonicalize_unicode_passthrough() -> Result<(), Box<dyn std::error::Error>> {
         // Non-ASCII characters should pass through without escaping
         let val = json!("Hello, 世界!");
-        assert_eq!(canon_str(&val), r#""Hello, 世界!""#);
+        assert_eq!(canon_str(&val)?, r#""Hello, 世界!""#);
+        Ok(())
     }
 
     #[test]
-    fn canonicalize_float_idempotence_regression() {
+    fn canonicalize_float_idempotence_regression() -> Result<(), Box<dyn std::error::Error>> {
         // Regression: this f64 value triggered idempotence failure because
         // serde_json's float parser produces a different f64 than Rust's
         // native parser for the ryu-formatted string "91137.58076482713".
         // The fix ensures we round-trip through serde_json's parser.
         let val = json!(91137.58076482713_f64);
-        let first = canonicalize(&val).unwrap_or_else(|e| panic!("first canon failed: {e}"));
-        let first_str =
-            String::from_utf8(first.clone()).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
-        let reparsed: serde_json::Value =
-            serde_json::from_str(&first_str).unwrap_or_else(|e| panic!("reparse failed: {e}"));
-        let second = canonicalize(&reparsed).unwrap_or_else(|e| panic!("second canon failed: {e}"));
+        let first = canonicalize(&val)?;
+        let first_str = String::from_utf8(first.clone())?;
+        let reparsed: serde_json::Value = serde_json::from_str(&first_str)?;
+        let second = canonicalize(&reparsed)?;
         assert_eq!(
             first,
             second,
             "idempotency failed: first={first_str}, second={}",
             String::from_utf8_lossy(&second)
         );
+        Ok(())
     }
 }

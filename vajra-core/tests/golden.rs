@@ -365,53 +365,51 @@ fn analyze_essence(doc: &Document) -> serde_json::Value {
 // ---------------------------------------------------------------------------
 
 #[test]
-fn golden_inspect() {
-    run_golden_suite("inspect", analyze_inspect);
+fn golden_inspect() -> Result<(), Box<dyn std::error::Error>> {
+    run_golden_suite("inspect", analyze_inspect)
 }
 
 #[test]
-fn golden_stats() {
-    run_golden_suite("stats", analyze_stats);
+fn golden_stats() -> Result<(), Box<dyn std::error::Error>> {
+    run_golden_suite("stats", analyze_stats)
 }
 
 #[test]
-fn golden_fingerprint() {
-    run_golden_suite("fingerprint", analyze_fingerprint);
+fn golden_fingerprint() -> Result<(), Box<dyn std::error::Error>> {
+    run_golden_suite("fingerprint", analyze_fingerprint)
 }
 
 #[test]
-fn golden_anomalies() {
-    run_golden_suite("anomalies", analyze_anomalies);
+fn golden_anomalies() -> Result<(), Box<dyn std::error::Error>> {
+    run_golden_suite("anomalies", analyze_anomalies)
 }
 
 #[test]
-fn golden_essence() {
-    run_golden_suite("essence", analyze_essence);
+fn golden_essence() -> Result<(), Box<dyn std::error::Error>> {
+    run_golden_suite("essence", analyze_essence)
 }
 
 #[test]
-fn golden_drift() {
+fn golden_drift() -> Result<(), Box<dyn std::error::Error>> {
     let corpus = corpus_dir();
     let golden = golden_dir();
 
     if !corpus.exists() || !golden.exists() {
         eprintln!("Corpus not generated. Run: cargo run -p vajra-cli --bin generate-corpus");
-        return;
+        return Ok(());
     }
 
     let golden_path = golden.join("drift.golden.json");
     if !golden_path.exists() {
         eprintln!("Drift golden file not found, skipping");
-        return;
+        return Ok(());
     }
 
     let v1_path = corpus.join("api").join("schema_drift.json");
     let v2_path = corpus.join("api").join("schema_drift_v2.json");
 
-    let v1_docs =
-        parse_file_auto(&v1_path, None).unwrap_or_else(|e| panic!("failed to parse v1: {e}"));
-    let v2_docs =
-        parse_file_auto(&v2_path, None).unwrap_or_else(|e| panic!("failed to parse v2: {e}"));
+    let v1_docs = parse_file_auto(&v1_path, None)?;
+    let v2_docs = parse_file_auto(&v2_path, None)?;
 
     let report = full_drift(&v1_docs[0], &v2_docs[0]);
 
@@ -432,27 +430,30 @@ fn golden_drift() {
         })).collect::<Vec<_>>(),
     });
 
-    let golden_content = fs::read_to_string(&golden_path)
-        .unwrap_or_else(|e| panic!("failed to read golden file: {e}"));
-    let golden_value: serde_json::Value = serde_json::from_str(&golden_content)
-        .unwrap_or_else(|e| panic!("failed to parse golden JSON: {e}"));
+    let golden_content = fs::read_to_string(&golden_path)?;
+    let golden_value: serde_json::Value = serde_json::from_str(&golden_content)?;
 
     if let Some(diff) = json_diff(&golden_value, &actual) {
-        panic!(
+        return Err(format!(
             "Drift golden test FAILED\n  golden: {}\n\n{}",
             golden_path.display(),
             diff
-        );
+        )
+        .into());
     }
+    Ok(())
 }
 
-fn run_golden_suite(analysis_name: &str, analyzer: fn(&Document) -> serde_json::Value) {
+fn run_golden_suite(
+    analysis_name: &str,
+    analyzer: fn(&Document) -> serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
     let corpus = corpus_dir();
     let golden = golden_dir();
 
     if !corpus.exists() || !golden.exists() {
         eprintln!("Corpus not generated. Run: cargo run -p vajra-cli --bin generate-corpus");
-        return;
+        return Ok(());
     }
 
     let files = collect_corpus_files(&corpus);
@@ -506,14 +507,16 @@ fn run_golden_suite(analysis_name: &str, analyzer: fn(&Document) -> serde_json::
 
     if failed > 0 {
         let report = failures.join("\n");
-        panic!(
+        return Err(format!(
             "Golden {} tests: {tested} tested, {failed} FAILED\n\n{report}",
             analysis_name
-        );
+        )
+        .into());
     }
 
     eprintln!(
         "Golden {} tests: {tested} tested, all passed",
         analysis_name
     );
+    Ok(())
 }

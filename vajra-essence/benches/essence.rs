@@ -75,6 +75,9 @@ fn generate_json(node_count: usize) -> String {
     buf
 }
 
+// Benchmark setup must abort on failure — there's no way to propagate
+// errors from a Criterion benchmark function, so `expect` is appropriate here.
+#[allow(clippy::expect_used)]
 fn bench_essence(c: &mut Criterion) {
     let sizes = [
         ("10_nodes", 10),
@@ -95,16 +98,16 @@ fn bench_essence(c: &mut Criterion) {
         .iter()
         .map(|(name, size)| {
             let json = generate_json(*size);
-            let doc = vajra_core::parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc = vajra_core::parse_str(&json).expect("bench setup: parse failed");
             let stats = StatsAnalyzer
                 .analyze(&doc)
-                .unwrap_or_else(|e| panic!("stats failed: {e}"));
+                .expect("bench setup: stats failed");
             let anomalies = AnomalyAnalyzer::default()
                 .analyze(&doc)
-                .unwrap_or_else(|e| panic!("anomaly failed: {e}"));
+                .expect("bench setup: anomaly failed");
             let fingerprint = FingerprintAnalyzer
                 .analyze(&doc)
-                .unwrap_or_else(|e| panic!("fingerprint failed: {e}"));
+                .expect("bench setup: fingerprint failed");
             (*name, doc, stats, anomalies, fingerprint)
         })
         .collect();

@@ -102,7 +102,7 @@ mod tests {
             JsonType::Integer
         );
         assert_eq!(
-            JsonType::from_value(&serde_json::json!(3.14)),
+            JsonType::from_value(&serde_json::json!(std::f64::consts::PI)),
             JsonType::Float
         );
         assert_eq!(

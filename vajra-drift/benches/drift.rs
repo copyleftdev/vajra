@@ -145,6 +145,9 @@ fn generate_json_variant(node_count: usize) -> String {
     buf
 }
 
+// Benchmark setup must abort on failure — there's no way to propagate
+// errors from a Criterion benchmark function, so `expect` is appropriate here.
+#[allow(clippy::expect_used)]
 fn bench_drift(c: &mut Criterion) {
     let sizes = [
         ("10_nodes", 10),
@@ -158,10 +161,8 @@ fn bench_drift(c: &mut Criterion) {
         .map(|(name, size)| {
             let json_a = generate_json(*size);
             let json_b = generate_json_variant(*size);
-            let doc_a =
-                vajra_core::parse_str(&json_a).unwrap_or_else(|e| panic!("parse failed: {e}"));
-            let doc_b =
-                vajra_core::parse_str(&json_b).unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc_a = vajra_core::parse_str(&json_a).expect("bench setup: parse failed");
+            let doc_b = vajra_core::parse_str(&json_b).expect("bench setup: parse failed");
             (*name, doc_a, doc_b)
         })
         .collect();

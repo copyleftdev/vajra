@@ -1731,7 +1731,9 @@ dependencies = [
  "toml",
  "vajra-anomaly",
  "vajra-core",
+ "vajra-domain-devops",
  "vajra-domain-med",
+ "vajra-domain-sec",
  "vajra-drift",
  "vajra-essence",
  "vajra-fingerprint",
@@ -1771,11 +1773,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "vajra-domain-devops"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "regex",
+ "serde_json",
+ "vajra-types",
+]
+
+[[package]]
 name = "vajra-domain-med"
 version = "0.1.0"
 dependencies = [
  "proptest",
  "regex",
+ "vajra-types",
+]
+
+[[package]]
+name = "vajra-domain-sec"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "regex",
+ "serde_json",
  "vajra-types",
 ]
 

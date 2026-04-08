@@ -48,33 +48,27 @@ mod tests {
     use vajra_core::parse::parse_str;
 
     #[test]
-    fn analyzer_produces_result() {
-        let doc =
-            parse_str(r#"{"a": 1, "b": [2, 3]}"#).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let result = FingerprintAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("analyze failed: {e}"));
+    fn analyzer_produces_result() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_str(r#"{"a": 1, "b": [2, 3]}"#)?;
+        let result = FingerprintAnalyzer.analyze(&doc)?;
 
         assert_eq!(result.path_set.len(), 32);
         assert_eq!(result.typed_path.len(), 32);
         assert_eq!(result.shape.len(), 32);
         assert!(!result.subtree_frequencies.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn analyzer_is_deterministic() {
-        let doc = parse_str(r#"{"x": [1, 2], "y": {"z": true}}"#)
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let r1 = FingerprintAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("analyze failed: {e}"));
-        let r2 = FingerprintAnalyzer
-            .analyze(&doc)
-            .unwrap_or_else(|e| panic!("analyze failed: {e}"));
+    fn analyzer_is_deterministic() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_str(r#"{"x": [1, 2], "y": {"z": true}}"#)?;
+        let r1 = FingerprintAnalyzer.analyze(&doc)?;
+        let r2 = FingerprintAnalyzer.analyze(&doc)?;
 
         assert_eq!(r1.path_set, r2.path_set);
         assert_eq!(r1.typed_path, r2.typed_path);
         assert_eq!(r1.shape, r2.shape);
         assert_eq!(r1.subtree_frequencies, r2.subtree_frequencies);
+        Ok(())
     }
 }

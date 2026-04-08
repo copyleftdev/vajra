@@ -246,52 +246,51 @@ mod tests {
     // -----------------------------------------------------------------------
 
     #[test]
-    fn load_json_file() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_json_file() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.json");
-        std::fs::write(&path, r#"{"name":"Alice","age":30}"#)
-            .unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, r#"{"name":"Alice","age":30}"#)?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
         let docs = docs.unwrap_or_default();
         assert_eq!(docs.len(), 1);
         assert_eq!(docs[0].metadata().total_nodes, 3); // root + name + age
+        Ok(())
     }
 
     #[test]
-    fn load_ndjson_file() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_ndjson_file() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.ndjson");
-        std::fs::write(&path, "{\"a\":1}\n{\"b\":2}\n{\"c\":3}\n")
-            .unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, "{\"a\":1}\n{\"b\":2}\n{\"c\":3}\n")?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
         let docs = docs.unwrap_or_default();
         assert_eq!(docs.len(), 3);
+        Ok(())
     }
 
     #[test]
-    fn load_yaml_file() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_yaml_file() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.yaml");
-        std::fs::write(&path, "name: Alice\nage: 30\ncity: NYC\n")
-            .unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, "name: Alice\nage: 30\ncity: NYC\n")?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
         let docs = docs.unwrap_or_default();
         assert_eq!(docs.len(), 1);
         assert_eq!(docs[0].metadata().total_nodes, 4); // root + 3 fields
+        Ok(())
     }
 
     #[test]
-    fn load_csv_file() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_csv_file() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.csv");
-        std::fs::write(&path, "name,age\nAlice,30\nBob,25\n")
-            .unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, "name,age\nAlice,30\nBob,25\n")?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
@@ -300,77 +299,73 @@ mod tests {
         // CSV becomes array of objects: [{"name":"Alice","age":30},{"name":"Bob","age":25}]
         // root array + 2 objects + 2 fields each = 1 + 2 + 4 = 7
         assert_eq!(docs[0].metadata().total_nodes, 7);
+        Ok(())
     }
 
     #[test]
-    fn load_compressed_json_gz() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_compressed_json_gz() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.json.gz");
         let original = r#"{"compressed":"gzip"}"#;
 
         let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
-        encoder
-            .write_all(original.as_bytes())
-            .unwrap_or_else(|e| panic!("gz write: {e}"));
-        let compressed = encoder
-            .finish()
-            .unwrap_or_else(|e| panic!("gz finish: {e}"));
-        std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
+        encoder.write_all(original.as_bytes())?;
+        let compressed = encoder.finish()?;
+        std::fs::write(&path, &compressed)?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
         let docs = docs.unwrap_or_default();
         assert_eq!(docs.len(), 1);
+        Ok(())
     }
 
     #[test]
-    fn load_compressed_json_zst() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_compressed_json_zst() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.json.zst");
         let original = r#"{"compressed":"zstd"}"#;
 
-        let compressed =
-            zstd::encode_all(original.as_bytes(), 3).unwrap_or_else(|e| panic!("zstd: {e}"));
-        std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
+        let compressed = zstd::encode_all(original.as_bytes(), 3)?;
+        std::fs::write(&path, &compressed)?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
         let docs = docs.unwrap_or_default();
         assert_eq!(docs.len(), 1);
+        Ok(())
     }
 
     #[test]
-    fn load_compressed_ndjson_gz() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_compressed_ndjson_gz() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("test.ndjson.gz");
         let original = "{\"a\":1}\n{\"b\":2}\n";
 
         let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
-        encoder
-            .write_all(original.as_bytes())
-            .unwrap_or_else(|e| panic!("gz write: {e}"));
-        let compressed = encoder
-            .finish()
-            .unwrap_or_else(|e| panic!("gz finish: {e}"));
-        std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
+        encoder.write_all(original.as_bytes())?;
+        let compressed = encoder.finish()?;
+        std::fs::write(&path, &compressed)?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
         let docs = docs.unwrap_or_default();
         assert_eq!(docs.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn load_with_format_override() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn load_with_format_override() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         // Write NDJSON content but with .txt extension
         let path = dir.path().join("data.txt");
-        std::fs::write(&path, "{\"a\":1}\n{\"b\":2}\n").unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, "{\"a\":1}\n{\"b\":2}\n")?;
 
         let docs = load_documents(path.to_str().unwrap_or(""), Some(InputFormat::Ndjson));
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
         let docs = docs.unwrap_or_default();
         assert_eq!(docs.len(), 2);
+        Ok(())
     }
 
     #[test]
@@ -380,14 +375,14 @@ mod tests {
     }
 
     #[test]
-    fn binary_garbage_as_json_returns_parse_error() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn binary_garbage_as_json_returns_parse_error() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("garbage.json");
-        std::fs::write(&path, "this is not { valid json at all !!!")
-            .unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, "this is not { valid json at all !!!")?;
 
         let result = load_documents(path.to_str().unwrap_or(""), None);
         assert!(result.is_err());
+        Ok(())
     }
 
     // -----------------------------------------------------------------------
@@ -395,26 +390,20 @@ mod tests {
     // -----------------------------------------------------------------------
 
     #[test]
-    fn deterministic_gzip_parse() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn deterministic_gzip_parse() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("det.json.gz");
         let original = r#"{"items":[1,2,3],"name":"deterministic"}"#;
 
         let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
-        encoder
-            .write_all(original.as_bytes())
-            .unwrap_or_else(|e| panic!("gz write: {e}"));
-        let compressed = encoder
-            .finish()
-            .unwrap_or_else(|e| panic!("gz finish: {e}"));
-        std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
+        encoder.write_all(original.as_bytes())?;
+        let compressed = encoder.finish()?;
+        std::fs::write(&path, &compressed)?;
 
         let path_str = path.to_str().unwrap_or("");
         let mut prev_nodes = None;
         for _ in 0..10 {
-            let docs = load_documents(path_str, None).unwrap_or_else(|e| {
-                panic!("load failed: {e}");
-            });
+            let docs = load_documents(path_str, None)?;
             assert_eq!(docs.len(), 1);
             let nodes = docs[0].metadata().total_nodes;
             if let Some(prev) = prev_nodes {
@@ -422,24 +411,22 @@ mod tests {
             }
             prev_nodes = Some(nodes);
         }
+        Ok(())
     }
 
     #[test]
-    fn deterministic_zstd_parse() {
-        let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
+    fn deterministic_zstd_parse() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
         let path = dir.path().join("det.json.zst");
         let original = r#"{"items":[4,5,6],"name":"zstd_det"}"#;
 
-        let compressed =
-            zstd::encode_all(original.as_bytes(), 3).unwrap_or_else(|e| panic!("zstd: {e}"));
-        std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
+        let compressed = zstd::encode_all(original.as_bytes(), 3)?;
+        std::fs::write(&path, &compressed)?;
 
         let path_str = path.to_str().unwrap_or("");
         let mut prev_nodes = None;
         for _ in 0..10 {
-            let docs = load_documents(path_str, None).unwrap_or_else(|e| {
-                panic!("load failed: {e}");
-            });
+            let docs = load_documents(path_str, None)?;
             assert_eq!(docs.len(), 1);
             let nodes = docs[0].metadata().total_nodes;
             if let Some(prev) = prev_nodes {
@@ -447,6 +434,7 @@ mod tests {
             }
             prev_nodes = Some(nodes);
         }
+        Ok(())
     }
 
     // -----------------------------------------------------------------------
