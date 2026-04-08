@@ -48,9 +48,7 @@ impl<'a> Parser<'a> {
     }
 
     fn skip_whitespace(&mut self) {
-        while self.pos < self.input.len()
-            && self.input.as_bytes()[self.pos].is_ascii_whitespace()
-        {
+        while self.pos < self.input.len() && self.input.as_bytes()[self.pos].is_ascii_whitespace() {
             self.pos += 1;
         }
     }
@@ -151,9 +149,7 @@ impl<'a> Parser<'a> {
         }
         if self.pos < self.input.len() && self.input.as_bytes()[self.pos] == b'.' {
             self.pos += 1;
-            while self.pos < self.input.len()
-                && self.input.as_bytes()[self.pos].is_ascii_digit()
-            {
+            while self.pos < self.input.len() && self.input.as_bytes()[self.pos].is_ascii_digit() {
                 self.pos += 1;
             }
         }

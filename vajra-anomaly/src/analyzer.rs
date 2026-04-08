@@ -128,23 +128,33 @@ fn collect_values(
         }
         serde_json::Value::Array(arr) => {
             let child_path = current_path.push_array_wildcard();
-            let child_node = trie_node
-                .children
-                .get(&PathSegment::ArrayWildcard);
+            let child_node = trie_node.children.get(&PathSegment::ArrayWildcard);
             for item in arr {
                 if let Some(node) = child_node {
-                    collect_values(item, &child_path, node, numeric_values, string_counts, string_totals);
+                    collect_values(
+                        item,
+                        &child_path,
+                        node,
+                        numeric_values,
+                        string_counts,
+                        string_totals,
+                    );
                 }
             }
         }
         serde_json::Value::Object(obj) => {
             for (key, val) in obj {
                 let child_path = current_path.push_key(key);
-                let child_node = trie_node
-                    .children
-                    .get(&PathSegment::Key(key.clone()));
+                let child_node = trie_node.children.get(&PathSegment::Key(key.clone()));
                 if let Some(node) = child_node {
-                    collect_values(val, &child_path, node, numeric_values, string_counts, string_totals);
+                    collect_values(
+                        val,
+                        &child_path,
+                        node,
+                        numeric_values,
+                        string_counts,
+                        string_totals,
+                    );
                 }
             }
         }
@@ -261,7 +271,10 @@ mod tests {
         let report = analyzer.analyze(&doc);
         assert!(report.is_ok());
         let report = report.unwrap_or_default();
-        let has_outlier = report.numeric_outliers.iter().any(|o| (o.value - 1000.0).abs() < 0.1);
+        let has_outlier = report
+            .numeric_outliers
+            .iter()
+            .any(|o| (o.value - 1000.0).abs() < 0.1);
         assert!(has_outlier, "should detect 1000 as numeric outlier");
     }
 }

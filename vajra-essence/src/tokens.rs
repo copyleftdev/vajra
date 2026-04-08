@@ -43,7 +43,10 @@ mod tests {
     #[test]
     fn single_word() {
         let tokens = estimate_tokens("hello");
-        assert!(tokens >= 1, "single word should be at least 1 token, got {tokens}");
+        assert!(
+            tokens >= 1,
+            "single word should be at least 1 token, got {tokens}"
+        );
     }
 
     #[test]

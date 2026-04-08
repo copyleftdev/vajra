@@ -75,7 +75,11 @@ fn build_motifs(observations: &[ScoredObservation]) -> Vec<serde_json::Value> {
             || obs.observation.path.starts_with("subtree:")
         {
             let hash = if obs.observation.path.starts_with("subtree:") {
-                obs.observation.path.strip_prefix("subtree:").unwrap_or("").to_string()
+                obs.observation
+                    .path
+                    .strip_prefix("subtree:")
+                    .unwrap_or("")
+                    .to_string()
             } else {
                 // Fallback: use a hash of the description
                 format!("{:08x}", simple_hash(&obs.observation.description))
@@ -179,10 +183,7 @@ fn build_notable(observations: &[ScoredObservation]) -> Vec<serde_json::Value> {
             }
 
             // Add score
-            obj.insert(
-                "s".to_string(),
-                serde_json::json!(round_f64(obs.score, 4)),
-            );
+            obj.insert("s".to_string(), serde_json::json!(round_f64(obs.score, 4)));
 
             serde_json::Value::Object(obj)
         })
@@ -394,7 +395,10 @@ mod tests {
     fn compact_ai_output_is_valid_json() {
         let essence = make_test_essence();
         let result = render_compact_ai(&essence, false);
-        assert!(result.is_object(), "compact-AI output should be a JSON object");
+        assert!(
+            result.is_object(),
+            "compact-AI output should be a JSON object"
+        );
     }
 
     #[test]
@@ -432,7 +436,10 @@ mod tests {
             let first = anomalies[0].as_object().unwrap();
             assert!(first.contains_key("p"), "anomaly should use 'p' for path");
             assert!(first.contains_key("t"), "anomaly should use 't' for type");
-            assert!(first.contains_key("s"), "anomaly should use 's' for score/strength");
+            assert!(
+                first.contains_key("s"),
+                "anomaly should use 's' for score/strength"
+            );
         }
     }
 
@@ -475,14 +482,17 @@ mod tests {
         let result = render_compact_ai(&essence, false);
         let motifs = result["motifs"].as_array().unwrap();
         // We have one motif observation; it should be collapsed
-        assert!(
-            !motifs.is_empty(),
-            "should have at least one motif entry"
-        );
+        assert!(!motifs.is_empty(), "should have at least one motif entry");
         let first_motif = motifs[0].as_object().unwrap();
         assert!(first_motif.contains_key("hash"), "motif should have 'hash'");
-        assert!(first_motif.contains_key("count"), "motif should have 'count'");
-        assert!(first_motif.contains_key("fields"), "motif should have 'fields'");
+        assert!(
+            first_motif.contains_key("count"),
+            "motif should have 'count'"
+        );
+        assert!(
+            first_motif.contains_key("fields"),
+            "motif should have 'fields'"
+        );
     }
 
     #[test]
@@ -494,25 +504,13 @@ mod tests {
         let notable = result["notable"].as_array().unwrap();
 
         // The type_instability and numeric_outlier should be in anomalies
-        assert!(
-            !anomalies.is_empty(),
-            "should have anomaly entries"
-        );
+        assert!(!anomalies.is_empty(), "should have anomaly entries");
         // The enum-like should be in notable
-        assert!(
-            !notable.is_empty(),
-            "should have notable entries"
-        );
+        assert!(!notable.is_empty(), "should have notable entries");
 
         // Verify no overlap: anomaly paths should not appear in notable
-        let anomaly_paths: Vec<&str> = anomalies
-            .iter()
-            .filter_map(|a| a["p"].as_str())
-            .collect();
-        let notable_paths: Vec<&str> = notable
-            .iter()
-            .filter_map(|n| n["p"].as_str())
-            .collect();
+        let anomaly_paths: Vec<&str> = anomalies.iter().filter_map(|a| a["p"].as_str()).collect();
+        let notable_paths: Vec<&str> = notable.iter().filter_map(|n| n["p"].as_str()).collect();
 
         for ap in &anomaly_paths {
             // A path CAN appear in both if it has both anomaly and non-anomaly observations

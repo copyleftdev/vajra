@@ -44,9 +44,7 @@ impl FrequencyCounter {
     /// Returns the cardinality (number of distinct values) at a path.
     #[must_use]
     pub fn cardinality(&self, path: &WildcardPath) -> u64 {
-        self.counts
-            .get(path)
-            .map_or(0, |m| m.len() as u64)
+        self.counts.get(path).map_or(0, |m| m.len() as u64)
     }
 
     /// Returns the raw count slice for a path (values of the inner map),
@@ -65,10 +63,7 @@ impl FrequencyCounter {
         let Some(map) = self.counts.get(path) else {
             return Vec::new();
         };
-        let mut entries: Vec<(String, u64)> = map
-            .iter()
-            .map(|(k, &v)| (k.clone(), v))
-            .collect();
+        let mut entries: Vec<(String, u64)> = map.iter().map(|(k, &v)| (k.clone(), v)).collect();
         // Sort by descending count, then ascending key for stability.
         entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         entries.truncate(k);

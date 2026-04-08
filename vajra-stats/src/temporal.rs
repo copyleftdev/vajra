@@ -620,13 +620,7 @@ mod tests {
 
     #[test]
     fn detect_dates_mixed_formats() {
-        let values = &[
-            "2024-01-15",
-            "not a date",
-            "01/20/2024",
-            "1705334400",
-            "",
-        ];
+        let values = &["2024-01-15", "not a date", "01/20/2024", "1705334400", ""];
         let results = detect_dates(values);
         // Should detect index 0 (ISO), 2 (US), 3 (epoch)
         assert_eq!(results.len(), 3);

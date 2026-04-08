@@ -110,10 +110,12 @@ fn load_from_stdin() -> Result<LoadedInput, VajraError> {
     use std::io::Read;
 
     let mut buf = Vec::new();
-    std::io::stdin().read_to_end(&mut buf).map_err(|e| VajraError::Io {
-        path: PathBuf::from("<stdin>"),
-        source: e,
-    })?;
+    std::io::stdin()
+        .read_to_end(&mut buf)
+        .map_err(|e| VajraError::Io {
+            path: PathBuf::from("<stdin>"),
+            source: e,
+        })?;
 
     if buf.is_empty() {
         return Err(VajraError::Parse {
@@ -167,15 +169,12 @@ fn detect_format_for_path(path: &Path, content: &str) -> InputFormat {
     let ext_format = formats::detect_format(path);
     // detect_format defaults to Json for unknown extensions, so we confirm
     // there actually is a known extension before trusting it.
-    let has_known_ext = path
-        .extension()
-        .and_then(|e| e.to_str())
-        .is_some_and(|e| {
-            matches!(
-                e,
-                "json" | "ndjson" | "jsonl" | "yaml" | "yml" | "csv" | "tsv"
-            )
-        });
+    let has_known_ext = path.extension().and_then(|e| e.to_str()).is_some_and(|e| {
+        matches!(
+            e,
+            "json" | "ndjson" | "jsonl" | "yaml" | "yml" | "csv" | "tsv"
+        )
+    });
 
     if has_known_ext {
         ext_format
@@ -309,8 +308,7 @@ mod tests {
         let path = dir.path().join("test.json.gz");
         let original = r#"{"compressed":"gzip"}"#;
 
-        let mut encoder =
-            flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
         encoder
             .write_all(original.as_bytes())
             .unwrap_or_else(|e| panic!("gz write: {e}"));
@@ -331,8 +329,8 @@ mod tests {
         let path = dir.path().join("test.json.zst");
         let original = r#"{"compressed":"zstd"}"#;
 
-        let compressed = zstd::encode_all(original.as_bytes(), 3)
-            .unwrap_or_else(|e| panic!("zstd: {e}"));
+        let compressed =
+            zstd::encode_all(original.as_bytes(), 3).unwrap_or_else(|e| panic!("zstd: {e}"));
         std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
 
         let docs = load_documents(path.to_str().unwrap_or(""), None);
@@ -347,8 +345,7 @@ mod tests {
         let path = dir.path().join("test.ndjson.gz");
         let original = "{\"a\":1}\n{\"b\":2}\n";
 
-        let mut encoder =
-            flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
         encoder
             .write_all(original.as_bytes())
             .unwrap_or_else(|e| panic!("gz write: {e}"));
@@ -368,8 +365,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir: {e}"));
         // Write NDJSON content but with .txt extension
         let path = dir.path().join("data.txt");
-        std::fs::write(&path, "{\"a\":1}\n{\"b\":2}\n")
-            .unwrap_or_else(|e| panic!("write: {e}"));
+        std::fs::write(&path, "{\"a\":1}\n{\"b\":2}\n").unwrap_or_else(|e| panic!("write: {e}"));
 
         let docs = load_documents(path.to_str().unwrap_or(""), Some(InputFormat::Ndjson));
         assert!(docs.is_ok(), "load_documents failed: {docs:?}");
@@ -404,8 +400,7 @@ mod tests {
         let path = dir.path().join("det.json.gz");
         let original = r#"{"items":[1,2,3],"name":"deterministic"}"#;
 
-        let mut encoder =
-            flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
         encoder
             .write_all(original.as_bytes())
             .unwrap_or_else(|e| panic!("gz write: {e}"));
@@ -435,8 +430,8 @@ mod tests {
         let path = dir.path().join("det.json.zst");
         let original = r#"{"items":[4,5,6],"name":"zstd_det"}"#;
 
-        let compressed = zstd::encode_all(original.as_bytes(), 3)
-            .unwrap_or_else(|e| panic!("zstd: {e}"));
+        let compressed =
+            zstd::encode_all(original.as_bytes(), 3).unwrap_or_else(|e| panic!("zstd: {e}"));
         std::fs::write(&path, &compressed).unwrap_or_else(|e| panic!("write: {e}"));
 
         let path_str = path.to_str().unwrap_or("");
@@ -493,10 +488,7 @@ mod tests {
     #[test]
     fn detect_format_from_url_no_extension_sniffs() {
         assert_eq!(
-            detect_format_for_url(
-                "https://api.example.com/v1/data",
-                r#"{"sniffed":"json"}"#
-            ),
+            detect_format_for_url("https://api.example.com/v1/data", r#"{"sniffed":"json"}"#),
             InputFormat::Json
         );
     }

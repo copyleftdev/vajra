@@ -153,7 +153,9 @@ mod tests {
     #[test]
     fn stats_single_value() {
         let stats = compute_numeric_stats(&mut vec![42.0]);
-        let s = stats.as_ref().map_or_else(|| panic!("expected Some"), |v| v);
+        let s = stats
+            .as_ref()
+            .map_or_else(|| panic!("expected Some"), |v| v);
         assert!((s.min - 42.0).abs() < EPS);
         assert!((s.max - 42.0).abs() < EPS);
         assert!((s.mean - 42.0).abs() < EPS);

@@ -49,7 +49,11 @@ pub fn conditional_entropy(joint_counts: &BTreeMap<(String, String), u64>, total
         h -= p_xy * p_y_given_x.log2();
     }
 
-    if h < 0.0 { 0.0 } else { h }
+    if h < 0.0 {
+        0.0
+    } else {
+        h
+    }
 }
 
 /// Compute pointwise mutual information for a single (x, y) co-occurrence.
@@ -219,10 +223,8 @@ pub fn discover_relationships(doc: &Document, top_k: usize) -> Vec<FieldRelation
 fn extract_records(value: &serde_json::Value) -> Vec<&serde_json::Value> {
     match value {
         serde_json::Value::Array(arr) => {
-            let obj_records: Vec<&serde_json::Value> = arr
-                .iter()
-                .filter(|v| v.is_object())
-                .collect();
+            let obj_records: Vec<&serde_json::Value> =
+                arr.iter().filter(|v| v.is_object()).collect();
             if !obj_records.is_empty() {
                 return obj_records;
             }
@@ -246,8 +248,7 @@ fn find_deepest_object_array(value: &serde_json::Value) -> Option<Vec<&serde_jso
     if let serde_json::Value::Object(map) = value {
         for child in map.values() {
             if let serde_json::Value::Array(arr) = child {
-                let objs: Vec<&serde_json::Value> =
-                    arr.iter().filter(|v| v.is_object()).collect();
+                let objs: Vec<&serde_json::Value> = arr.iter().filter(|v| v.is_object()).collect();
                 if !objs.is_empty() {
                     return Some(objs);
                 }
@@ -341,10 +342,7 @@ mod tests {
         joint.insert(("b".to_owned(), "1".to_owned()), 25u64);
         joint.insert(("b".to_owned(), "2".to_owned()), 25u64);
         let h = conditional_entropy(&joint, 100);
-        assert!(
-            (h - 1.0).abs() < EPS,
-            "expected ~1.0 (= H(Y)), got {h}"
-        );
+        assert!((h - 1.0).abs() < EPS, "expected ~1.0 (= H(Y)), got {h}");
     }
 
     #[test]
@@ -358,10 +356,7 @@ mod tests {
         joint.insert(("b".to_owned(), "1".to_owned()), 25u64);
         joint.insert(("b".to_owned(), "2".to_owned()), 25u64);
         let h = conditional_entropy(&joint, 100);
-        assert!(
-            (h - 0.5).abs() < EPS,
-            "expected ~0.5, got {h}"
-        );
+        assert!((h - 0.5).abs() < EPS, "expected ~0.5, got {h}");
     }
 
     #[test]
@@ -462,7 +457,10 @@ mod tests {
     fn discover_single_field() {
         let doc = parse_doc(r#"[{"a": 1}, {"a": 2}]"#);
         let rels = discover_relationships(&doc, 50);
-        assert!(rels.is_empty(), "single field should produce no relationships");
+        assert!(
+            rels.is_empty(),
+            "single field should produce no relationships"
+        );
     }
 
     #[test]

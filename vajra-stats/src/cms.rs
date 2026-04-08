@@ -46,16 +46,15 @@ impl CountMinSketch {
             epsilon > 0.0 && epsilon < 1.0,
             "epsilon must be in (0.0, 1.0)"
         );
-        assert!(
-            delta > 0.0 && delta < 1.0,
-            "delta must be in (0.0, 1.0)"
-        );
+        assert!(delta > 0.0 && delta < 1.0, "delta must be in (0.0, 1.0)");
 
         let width = (std::f64::consts::E / epsilon).ceil() as usize;
         let depth = (1.0_f64 / delta).ln().ceil() as usize;
 
         // Deterministic seeds derived from row index.
-        let seeds: Vec<u64> = (0..depth).map(|i| 0x9e37_79b9_7f4a_7c15_u64.wrapping_mul(i as u64 + 1)).collect();
+        let seeds: Vec<u64> = (0..depth)
+            .map(|i| 0x9e37_79b9_7f4a_7c15_u64.wrapping_mul(i as u64 + 1))
+            .collect();
 
         Self {
             width,
@@ -213,10 +212,7 @@ mod tests {
         cms.add(b"heavy", 500);
         let est = cms.estimate(b"heavy");
         let bound = 500 + (epsilon * cms.total() as f64).ceil() as u64;
-        assert!(
-            est <= bound,
-            "estimate={est}, bound={bound}"
-        );
+        assert!(est <= bound, "estimate={est}, bound={bound}");
         assert!(est >= 500, "estimate={est}, expected >= 500");
     }
 

@@ -446,17 +446,11 @@ mod tests {
 
         // p50 ~ 5000
         let p50 = sk.quantile(0.5).unwrap();
-        assert!(
-            (p50 - 5000.0).abs() / 5000.0 <= alpha + 0.02,
-            "p50={p50}"
-        );
+        assert!((p50 - 5000.0).abs() / 5000.0 <= alpha + 0.02, "p50={p50}");
 
         // p99 ~ 9900
         let p99 = sk.quantile(0.99).unwrap();
-        assert!(
-            (p99 - 9900.0).abs() / 9900.0 <= alpha + 0.02,
-            "p99={p99}"
-        );
+        assert!((p99 - 9900.0).abs() / 9900.0 <= alpha + 0.02, "p99={p99}");
     }
 
     #[test]
@@ -482,10 +476,7 @@ mod tests {
         let q0 = sk.quantile(0.0).unwrap();
         let q1 = sk.quantile(1.0).unwrap();
         // q(0) should be near min, q(1) near max
-        assert!(
-            (q0 - 1.0).abs() / 1.0 <= 0.02,
-            "q(0)={q0}, expected ~1.0"
-        );
+        assert!((q0 - 1.0).abs() / 1.0 <= 0.02, "q(0)={q0}, expected ~1.0");
         assert!(
             (q1 - 100.0).abs() / 100.0 <= 0.02,
             "q(1)={q1}, expected ~100.0"

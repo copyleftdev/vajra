@@ -77,12 +77,7 @@ fn pattern_matches(pattern: &PathPattern, path: &WildcardPath) -> bool {
     match_segments(pat_segs, 0, path_segs, 0)
 }
 
-fn match_segments(
-    pat: &[PatternSegment],
-    pi: usize,
-    path: &[PathSegment],
-    si: usize,
-) -> bool {
+fn match_segments(pat: &[PatternSegment], pi: usize, path: &[PathSegment], si: usize) -> bool {
     // Both exhausted: match.
     if pi == pat.len() && si == path.len() {
         return true;
@@ -187,9 +182,12 @@ fn eval_stats_fn(
 
     // Find the matching wildcard path in the stats result.
     let wp = resolve_path_pattern(&path, ctx)?;
-    let path_stats = stats.paths.get(&wp).ok_or_else(|| QueryError::PathNotFound {
-        path: path.as_str(),
-    })?;
+    let path_stats = stats
+        .paths
+        .get(&wp)
+        .ok_or_else(|| QueryError::PathNotFound {
+            path: path.as_str(),
+        })?;
 
     Ok(QueryResult::Scalar(extractor(path_stats)))
 }
@@ -203,18 +201,19 @@ fn eval_trie_fn(
     let path = require_path_arg(fc)?;
     let wp = resolve_path_pattern(&path, ctx)?;
 
-    let node = ctx.doc.trie().get(&wp).ok_or_else(|| QueryError::PathNotFound {
-        path: path.as_str(),
-    })?;
+    let node = ctx
+        .doc
+        .trie()
+        .get(&wp)
+        .ok_or_else(|| QueryError::PathNotFound {
+            path: path.as_str(),
+        })?;
 
     Ok(QueryResult::Scalar(extractor(&node.metadata)))
 }
 
 /// Evaluate the depth() function.
-fn eval_depth_fn(
-    fc: &FunctionCall,
-    ctx: &QueryContext<'_>,
-) -> Result<QueryResult, QueryError> {
+fn eval_depth_fn(fc: &FunctionCall, ctx: &QueryContext<'_>) -> Result<QueryResult, QueryError> {
     let path = require_path_arg(fc)?;
     let wp = resolve_path_pattern(&path, ctx)?;
     Ok(QueryResult::Scalar(f64::from(wp.depth())))
@@ -323,10 +322,7 @@ mod tests {
         vajra_core::parse_str(json).unwrap()
     }
 
-    fn make_ctx_with_stats<'a>(
-        doc: &'a Document,
-        stats: &'a StatsResult,
-    ) -> QueryContext<'a> {
+    fn make_ctx_with_stats<'a>(doc: &'a Document, stats: &'a StatsResult) -> QueryContext<'a> {
         QueryContext {
             doc,
             stats: Some(stats),
@@ -334,10 +330,7 @@ mod tests {
     }
 
     fn make_ctx<'a>(doc: &'a Document) -> QueryContext<'a> {
-        QueryContext {
-            doc,
-            stats: None,
-        }
+        QueryContext { doc, stats: None }
     }
 
     #[test]

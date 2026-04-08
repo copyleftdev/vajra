@@ -89,13 +89,34 @@ mod tests {
 
     #[test]
     fn classify_json_values() {
-        assert_eq!(JsonType::from_value(&serde_json::Value::Null), JsonType::Null);
-        assert_eq!(JsonType::from_value(&serde_json::json!(true)), JsonType::Bool);
-        assert_eq!(JsonType::from_value(&serde_json::json!(42)), JsonType::Integer);
-        assert_eq!(JsonType::from_value(&serde_json::json!(3.14)), JsonType::Float);
-        assert_eq!(JsonType::from_value(&serde_json::json!("hello")), JsonType::String);
-        assert_eq!(JsonType::from_value(&serde_json::json!([1, 2])), JsonType::Array);
-        assert_eq!(JsonType::from_value(&serde_json::json!({"a": 1})), JsonType::Object);
+        assert_eq!(
+            JsonType::from_value(&serde_json::Value::Null),
+            JsonType::Null
+        );
+        assert_eq!(
+            JsonType::from_value(&serde_json::json!(true)),
+            JsonType::Bool
+        );
+        assert_eq!(
+            JsonType::from_value(&serde_json::json!(42)),
+            JsonType::Integer
+        );
+        assert_eq!(
+            JsonType::from_value(&serde_json::json!(3.14)),
+            JsonType::Float
+        );
+        assert_eq!(
+            JsonType::from_value(&serde_json::json!("hello")),
+            JsonType::String
+        );
+        assert_eq!(
+            JsonType::from_value(&serde_json::json!([1, 2])),
+            JsonType::Array
+        );
+        assert_eq!(
+            JsonType::from_value(&serde_json::json!({"a": 1})),
+            JsonType::Object
+        );
     }
 
     #[test]
@@ -113,7 +134,11 @@ mod tests {
         for (i, idx) in indices.iter().enumerate() {
             for (j, jdx) in indices.iter().enumerate() {
                 if i != j {
-                    assert_ne!(idx, jdx, "types {:?} and {:?} share index", types[i], types[j]);
+                    assert_ne!(
+                        idx, jdx,
+                        "types {:?} and {:?} share index",
+                        types[i], types[j]
+                    );
                 }
             }
         }

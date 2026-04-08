@@ -12,12 +12,11 @@ use vajra_core::input::load_documents;
 use vajra_core::{parse_file, InputFormat};
 use vajra_drift::full_drift;
 use vajra_essence::{
-    AiProfile, AuditorProfile, CustomProfile, EssenceBuilder, EngineerProfile, FraudProfile,
+    AiProfile, AuditorProfile, CustomProfile, EngineerProfile, EssenceBuilder, FraudProfile,
     StaffProfile,
 };
 use vajra_fingerprint::{
-    cluster_documents, FingerprintAnalyzer, FingerprintResult,
-    StreamingFingerprintAccumulator,
+    cluster_documents, FingerprintAnalyzer, FingerprintResult, StreamingFingerprintAccumulator,
 };
 use vajra_stats::{StatsAnalyzer, StatsResult, StreamingStatsAccumulator};
 use vajra_types::traits::{ConcernProfile, OutputFormat};
@@ -202,8 +201,7 @@ fn to_input_format(arg: Option<InputFormatArg>) -> Option<InputFormat> {
 /// Load a single document (first document if multi-doc format like NDJSON/YAML).
 fn load_document(input: &str, cli: &Cli) -> Result<Document> {
     let fmt = to_input_format(cli.input_format);
-    let mut docs = load_documents(input, fmt)
-        .map_err(|e| anyhow::anyhow!("{e}"))?;
+    let mut docs = load_documents(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))?;
     if docs.is_empty() {
         anyhow::bail!("no documents found in input: {input}");
     }
@@ -213,8 +211,7 @@ fn load_document(input: &str, cli: &Cli) -> Result<Document> {
 /// Load all documents from input (supports NDJSON, multi-doc YAML, etc.).
 fn load_all_documents(input: &str, cli: &Cli) -> Result<Vec<Document>> {
     let fmt = to_input_format(cli.input_format);
-    load_documents(input, fmt)
-        .map_err(|e| anyhow::anyhow!("{e}"))
+    load_documents(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))
 }
 
 fn hex(bytes: &[u8; 32]) -> String {
@@ -257,11 +254,26 @@ fn maybe_redact(output: &str, cli: &Cli) -> String {
 
 fn cmd_profiles(cli: &Cli) -> Result<()> {
     let builtin_profiles: Vec<(&str, &str)> = vec![
-        ("staff", "Plain vocabulary, narrative rendering; emphasizes anomalies and structural coverage"),
-        ("engineer", "Technical vocabulary, list-based rendering; balanced scoring"),
-        ("auditor", "Formal vocabulary, completeness-focused; emphasizes instability and concern relevance"),
-        ("ai", "Compact terse rendering optimized for machine consumption"),
-        ("fraud", "Investigative framing; emphasizes outliers, rarity, and suspicious patterns"),
+        (
+            "staff",
+            "Plain vocabulary, narrative rendering; emphasizes anomalies and structural coverage",
+        ),
+        (
+            "engineer",
+            "Technical vocabulary, list-based rendering; balanced scoring",
+        ),
+        (
+            "auditor",
+            "Formal vocabulary, completeness-focused; emphasizes instability and concern relevance",
+        ),
+        (
+            "ai",
+            "Compact terse rendering optimized for machine consumption",
+        ),
+        (
+            "fraud",
+            "Investigative framing; emphasizes outliers, rarity, and suspicious patterns",
+        ),
     ];
 
     let custom_profiles = load_custom_profiles(cli)?;
@@ -452,12 +464,7 @@ fn cmd_inspect(input: &str, cli: &Cli) -> Result<()> {
 
             println!("=== Wildcard Paths ===");
             // Compute column widths
-            let max_path = output
-                .paths
-                .iter()
-                .map(|p| p.path.len())
-                .max()
-                .unwrap_or(4);
+            let max_path = output.paths.iter().map(|p| p.path.len()).max().unwrap_or(4);
             let max_type = output
                 .paths
                 .iter()
@@ -728,9 +735,7 @@ fn build_anomaly_output(report: &AnomalyReport) -> AnomalyOutput {
 fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
     let doc = load_document(input, cli)?;
     let analyzer = AnomalyAnalyzer::default();
-    let report = analyzer
-        .analyze(&doc)
-        .context("anomaly analysis failed")?;
+    let report = analyzer.analyze(&doc).context("anomaly analysis failed")?;
     let output = build_anomaly_output(&report);
 
     match cli.format {
@@ -892,10 +897,7 @@ fn cmd_fingerprint(input: &str, cli: &Cli) -> Result<()> {
                 if output.repeated_motifs.is_empty() {
                     println!("  (no repeated subtree shapes found)");
                 } else {
-                    println!(
-                        "  {:<66}  {:>5}",
-                        "HASH", "COUNT"
-                    );
+                    println!("  {:<66}  {:>5}", "HASH", "COUNT");
                     for m in &output.repeated_motifs {
                         println!("  {:<66}  {:>5}", m.hash, m.count);
                     }
@@ -1045,14 +1047,12 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
                     }))
                     .collect::<Vec<_>>()),
             );
-            let json_str = serde_json::to_string_pretty(&json)
-                .context("JSON serialization failed")?;
+            let json_str =
+                serde_json::to_string_pretty(&json).context("JSON serialization failed")?;
             println!("{json_str}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!(
-                "Drift Report: {baseline} -> {candidate}"
-            );
+            println!("Drift Report: {baseline} -> {candidate}");
             println!(
                 "Structural similarity: {:.4} (Jaccard)",
                 report.structural_similarity
@@ -1060,10 +1060,7 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
             println!("Severity: {:?}", report.severity);
             println!();
 
-            println!(
-                "Added paths ({}):",
-                report.path_diff.added.len()
-            );
+            println!("Added paths ({}):", report.path_diff.added.len());
             if report.path_diff.added.is_empty() {
                 println!("  (none)");
             } else {
@@ -1073,10 +1070,7 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
             }
             println!();
 
-            println!(
-                "Removed paths ({}):",
-                report.path_diff.removed.len()
-            );
+            println!("Removed paths ({}):", report.path_diff.removed.len());
             if report.path_diff.removed.is_empty() {
                 println!("  (none)");
             } else {
@@ -1087,10 +1081,7 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
             println!();
 
             if !report.type_changes.is_empty() {
-                println!(
-                    "Type changes ({}):",
-                    report.type_changes.len()
-                );
+                println!("Type changes ({}):", report.type_changes.len());
                 for tc in &report.type_changes {
                     println!("  {} : {} -> {}", tc.path, tc.from, tc.to);
                 }
@@ -1103,10 +1094,7 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
                     report.distributional_drifts.len()
                 );
                 for dd in &report.distributional_drifts {
-                    println!(
-                        "  {} : {:?} = {:.4}",
-                        dd.path, dd.metric, dd.value
-                    );
+                    println!("  {} : {:?} = {:.4}", dd.path, dd.metric, dd.value);
                 }
             }
         }
@@ -1129,23 +1117,18 @@ fn cmd_cluster(inputs: &[String], cli: &Cli) -> Result<()> {
             let mut entries: Vec<_> = std::fs::read_dir(path)
                 .with_context(|| format!("failed to read directory {input}"))?
                 .filter_map(|e| e.ok())
-                .filter(|e| {
-                    e.path()
-                        .extension()
-                        .is_some_and(|ext| ext == "json")
-                })
+                .filter(|e| e.path().extension().is_some_and(|ext| ext == "json"))
                 .collect();
             entries.sort_by_key(|e| e.path());
             for entry in entries {
                 let p = entry.path();
-                let doc = parse_file(&p)
-                    .with_context(|| format!("failed to parse {}", p.display()))?;
+                let doc =
+                    parse_file(&p).with_context(|| format!("failed to parse {}", p.display()))?;
                 names.push(p.display().to_string());
                 docs.push(doc);
             }
         } else {
-            let doc = parse_file(path)
-                .with_context(|| format!("failed to parse {input}"))?;
+            let doc = parse_file(path).with_context(|| format!("failed to parse {input}"))?;
             names.push(input.clone());
             docs.push(doc);
         }
@@ -1183,14 +1166,8 @@ fn cmd_cluster(inputs: &[String], cli: &Cli) -> Result<()> {
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!(
-                "=== Clustering {} documents ===",
-                docs.len()
-            );
-            println!(
-                "Similarity threshold: {:.2}",
-                result.similarity_threshold
-            );
+            println!("=== Clustering {} documents ===", docs.len());
+            println!("Similarity threshold: {:.2}", result.similarity_threshold);
             println!("Clusters found: {}", result.clusters.len());
             println!();
 
@@ -1228,15 +1205,17 @@ fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
                     })
                 })
                 .collect();
-            let json = serde_json::to_string_pretty(&rels_json)
-                .context("JSON serialization failed")?;
+            let json =
+                serde_json::to_string_pretty(&rels_json).context("JSON serialization failed")?;
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             println!("=== Cross-Field Relationships ===");
             if relationships.is_empty() {
                 println!("  (no significant relationships discovered)");
-                println!("  Hint: relationships require repeated objects (e.g., arrays of records).");
+                println!(
+                    "  Hint: relationships require repeated objects (e.g., arrays of records)."
+                );
             } else {
                 println!(
                     "  {:<40}  {:<40}  {:>8}  {:>8}  {:>10}",
@@ -1245,7 +1224,11 @@ fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
                 for r in &relationships {
                     println!(
                         "  {:<40}  {:<40}  {:>8.4}  {:>8.4}  {:>10.4}",
-                        r.field_x, r.field_y, r.conditional_entropy, r.mean_pmi, r.relationship_strength,
+                        r.field_x,
+                        r.field_y,
+                        r.conditional_entropy,
+                        r.mean_pmi,
+                        r.relationship_strength,
                     );
                 }
             }
@@ -1263,8 +1246,7 @@ fn cmd_query(input: &str, expression: &str, cli: &Cli) -> Result<()> {
     let doc = load_document(input, cli)?;
 
     // Parse the expression
-    let expr =
-        vajra_query::parse_expr(expression).map_err(|e| anyhow::anyhow!("{e}"))?;
+    let expr = vajra_query::parse_expr(expression).map_err(|e| anyhow::anyhow!("{e}"))?;
 
     // Build query context with stats if available
     let stats = StatsAnalyzer.analyze(&doc).ok();
@@ -1274,8 +1256,7 @@ fn cmd_query(input: &str, expression: &str, cli: &Cli) -> Result<()> {
     };
 
     // Evaluate
-    let result =
-        vajra_query::evaluate(&expr, &ctx).map_err(|e| anyhow::anyhow!("{e}"))?;
+    let result = vajra_query::evaluate(&expr, &ctx).map_err(|e| anyhow::anyhow!("{e}"))?;
 
     // Render based on result type
     let _ = &cli.format; // acknowledge format (query output is always plain)
@@ -1402,9 +1383,7 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
             println!();
 
             // Common paths
-            println!(
-                "=== Common Paths (>50% of documents) ===",
-            );
+            println!("=== Common Paths (>50% of documents) ===",);
             if result.aggregate.common_paths.is_empty() {
                 println!("  (none)");
             } else {
@@ -1421,9 +1400,7 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
             println!();
 
             // Rare paths
-            println!(
-                "=== Rare Paths (<10% of documents) ===",
-            );
+            println!("=== Rare Paths (<10% of documents) ===",);
             if result.aggregate.rare_paths.is_empty() {
                 println!("  (none)");
             } else {
@@ -1441,10 +1418,7 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
             // Errors
             if !result.errors.is_empty() {
                 println!();
-                println!(
-                    "=== Errors ({}) ===",
-                    result.errors.len()
-                );
+                println!("=== Errors ({}) ===", result.errors.len());
                 for (name, err) in &result.errors {
                     println!("  {name}: {err}");
                 }

@@ -72,10 +72,8 @@ impl Redactor {
         //   +1XXXXXXXXXX
         r.add_rule(RedactionRule {
             name: "PHONE".into(),
-            pattern: Regex::new(
-                r"(?:\(\d{3}\)\s*\d{3}-\d{4}|\b\d{3}-\d{3}-\d{4}\b|\+1\d{10}\b)",
-            )
-            .unwrap_or_else(|e| unreachable!("PHONE regex is valid: {e}")),
+            pattern: Regex::new(r"(?:\(\d{3}\)\s*\d{3}-\d{4}|\b\d{3}-\d{3}-\d{4}\b|\+1\d{10}\b)")
+                .unwrap_or_else(|e| unreachable!("PHONE regex is valid: {e}")),
             replacement: RedactionReplacement::Label,
             validator: None,
         });
@@ -178,9 +176,7 @@ impl Redactor {
             if rule.name == "DATE_OF_BIRTH" {
                 if let Some(key) = key_hint {
                     let lower = key.to_lowercase();
-                    if !lower.contains("dob")
-                        && !lower.contains("birth")
-                        && !lower.contains("born")
+                    if !lower.contains("dob") && !lower.contains("birth") && !lower.contains("born")
                     {
                         continue;
                     }
@@ -226,7 +222,12 @@ impl Redactor {
     }
 
     /// Produce the replacement string for a single matched span.
-    fn replacement_for(&self, matched: &str, name: &str, replacement: &RedactionReplacement) -> String {
+    fn replacement_for(
+        &self,
+        matched: &str,
+        name: &str,
+        replacement: &RedactionReplacement,
+    ) -> String {
         match replacement {
             RedactionReplacement::Label => {
                 format!("[REDACTED:{name}]")
@@ -370,8 +371,7 @@ mod tests {
         let mut r = Redactor::new();
         r.add_rule(RedactionRule {
             name: "TEST".into(),
-            pattern: Regex::new(r"\bsecret\b")
-                .unwrap_or_else(|e| unreachable!("{e}")),
+            pattern: Regex::new(r"\bsecret\b").unwrap_or_else(|e| unreachable!("{e}")),
             replacement: RedactionReplacement::DeterministicHash,
             validator: None,
         });
@@ -459,19 +459,13 @@ mod tests {
     #[test]
     fn luhn_valid() {
         // 4111111111111111 is valid
-        let digits: Vec<u8> = "4111111111111111"
-            .bytes()
-            .map(|b| b - b'0')
-            .collect();
+        let digits: Vec<u8> = "4111111111111111".bytes().map(|b| b - b'0').collect();
         assert!(luhn_check(&digits));
     }
 
     #[test]
     fn luhn_invalid() {
-        let digits: Vec<u8> = "1234567890123"
-            .bytes()
-            .map(|b| b - b'0')
-            .collect();
+        let digits: Vec<u8> = "1234567890123".bytes().map(|b| b - b'0').collect();
         assert!(!luhn_check(&digits));
     }
 
@@ -487,8 +481,7 @@ mod tests {
         let mut r = Redactor::new();
         r.add_rule(RedactionRule {
             name: "TOKEN".into(),
-            pattern: Regex::new(r"tok_[a-zA-Z0-9]+")
-                .unwrap_or_else(|e| unreachable!("{e}")),
+            pattern: Regex::new(r"tok_[a-zA-Z0-9]+").unwrap_or_else(|e| unreachable!("{e}")),
             replacement: RedactionReplacement::Fixed("***".into()),
             validator: None,
         });
@@ -510,10 +503,7 @@ mod tests {
     fn ssn_embedded_in_text() {
         let r = Redactor::with_builtins();
         let result = r.redact_value("My SSN is 123-45-6789 please");
-        assert_eq!(
-            result,
-            Some("My SSN is [REDACTED:SSN] please".into())
-        );
+        assert_eq!(result, Some("My SSN is [REDACTED:SSN] please".into()));
     }
 
     #[test]

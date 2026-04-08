@@ -49,8 +49,8 @@ mod tests {
 
     #[test]
     fn analyzer_produces_result() {
-        let doc = parse_str(r#"{"a": 1, "b": [2, 3]}"#)
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let doc =
+            parse_str(r#"{"a": 1, "b": [2, 3]}"#).unwrap_or_else(|e| panic!("parse failed: {e}"));
         let result = FingerprintAnalyzer
             .analyze(&doc)
             .unwrap_or_else(|e| panic!("analyze failed: {e}"));

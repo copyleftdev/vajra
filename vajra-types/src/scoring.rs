@@ -149,6 +149,9 @@ mod tests {
             concern_relevance: 1.0,
         };
         let score = weights.score(&obs);
-        assert!((score - 0.7).abs() < 1e-10, "expected 0.5*0.8 + 0.5*0.6 = 0.7, got {score}");
+        assert!(
+            (score - 0.7).abs() < 1e-10,
+            "expected 0.5*0.8 + 0.5*0.6 = 0.7, got {score}"
+        );
     }
 }

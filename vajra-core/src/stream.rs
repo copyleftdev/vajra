@@ -136,12 +136,8 @@ pub fn load_adaptive(path: &Path, threshold_bytes: u64) -> Result<AnalysisMode, 
 /// Count total nodes in a JSON value tree.
 fn count_nodes(value: &serde_json::Value) -> u64 {
     match value {
-        serde_json::Value::Object(map) => {
-            1 + map.values().map(count_nodes).sum::<u64>()
-        }
-        serde_json::Value::Array(arr) => {
-            1 + arr.iter().map(count_nodes).sum::<u64>()
-        }
+        serde_json::Value::Object(map) => 1 + map.values().map(count_nodes).sum::<u64>(),
+        serde_json::Value::Array(arr) => 1 + arr.iter().map(count_nodes).sum::<u64>(),
         _ => 1,
     }
 }
@@ -182,10 +178,14 @@ mod tests {
         assert!(events.len() >= 4);
 
         // First event should be ObjectStart at root
-        assert!(matches!(&events[0], JsonEvent::ObjectStart { path } if path == &WildcardPath::root()));
+        assert!(
+            matches!(&events[0], JsonEvent::ObjectStart { path } if path == &WildcardPath::root())
+        );
 
         // Last event should be ObjectEnd at root
-        assert!(matches!(events.last(), Some(JsonEvent::ObjectEnd { path }) if path == &WildcardPath::root()));
+        assert!(
+            matches!(events.last(), Some(JsonEvent::ObjectEnd { path }) if path == &WildcardPath::root())
+        );
     }
 
     #[test]
@@ -265,10 +265,13 @@ mod tests {
         let value = parse_value("null");
         let events = emit_events(&value);
         assert_eq!(events.len(), 1);
-        assert!(matches!(&events[0], JsonEvent::Value {
-            value: ScalarValue::Null,
-            ..
-        }));
+        assert!(matches!(
+            &events[0],
+            JsonEvent::Value {
+                value: ScalarValue::Null,
+                ..
+            }
+        ));
     }
 
     #[test]

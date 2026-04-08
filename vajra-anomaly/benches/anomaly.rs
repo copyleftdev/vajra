@@ -84,8 +84,7 @@ fn bench_anomaly(c: &mut Criterion) {
         .iter()
         .map(|(name, size)| {
             let json = generate_json(*size);
-            let doc = vajra_core::parse_str(&json)
-                .unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc = vajra_core::parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
             (*name, doc)
         })
         .collect();
@@ -94,13 +93,9 @@ fn bench_anomaly(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("anomaly");
     for (name, doc) in &docs {
-        group.bench_with_input(
-            BenchmarkId::new("anomaly_analyze", *name),
-            doc,
-            |b, d| {
-                b.iter(|| analyzer.analyze(black_box(d)));
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("anomaly_analyze", *name), doc, |b, d| {
+            b.iter(|| analyzer.analyze(black_box(d)));
+        });
     }
     group.finish();
 }

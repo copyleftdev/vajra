@@ -258,10 +258,7 @@ mod tests {
 
         // All heavy hitters should still be tracked
         for name in &heavy {
-            assert!(
-                ss.contains(name),
-                "{name} should be tracked but isn't"
-            );
+            assert!(ss.contains(name), "{name} should be tracked but isn't");
         }
 
         // And they should be in the top of top_k

@@ -22,10 +22,12 @@ pub use canonical::canonicalize;
 pub use decompress::{decompress_bytes, decompress_file, Compression};
 pub use event::{JsonEvent, ScalarValue};
 pub use fetch::is_url;
-pub use formats::{detect_format, parse_auto, parse_csv, parse_file_auto, parse_ndjson, parse_yaml, InputFormat};
-pub use markdown::parse_markdown;
-pub use pdf::{parse_pdf_bytes, parse_pdf_file};
+pub use formats::{
+    detect_format, parse_auto, parse_csv, parse_file_auto, parse_ndjson, parse_yaml, InputFormat,
+};
 pub use input::{load_documents, load_input, resolve_input, InputSource, LoadedInput};
+pub use markdown::parse_markdown;
 pub use parse::{parse_file, parse_str};
+pub use pdf::{parse_pdf_bytes, parse_pdf_file};
 pub use pipeline::{emit_and_index, metadata_from_events, trie_from_events};
 pub use stream::{emit_events, load_adaptive, AnalysisMode};

@@ -23,7 +23,9 @@ pub struct TypeInstability {
 }
 
 /// All seven JSON type names in index order, matching [`JsonType::index`].
-const TYPE_NAMES: [&str; 7] = ["null", "boolean", "integer", "float", "string", "array", "object"];
+const TYPE_NAMES: [&str; 7] = [
+    "null", "boolean", "integer", "float", "string", "array", "object",
+];
 
 /// Compute the type instability score for a set of type counts.
 ///
@@ -243,9 +245,7 @@ mod tests {
 
         let result = detect_type_instabilities(&trie, 0.01);
         assert!(!result.is_empty());
-        let found = result
-            .iter()
-            .any(|r| r.path == "$.claims[*].amount");
+        let found = result.iter().any(|r| r.path == "$.claims[*].amount");
         assert!(found, "should find unstable nested path");
     }
 

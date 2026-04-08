@@ -598,11 +598,15 @@ mod tests {
     fn simple_heading_paragraph() {
         let v = md_json("# Hello\n\nWorld.\n");
         assert_eq!(v["type"], "document");
-        let sections = v["sections"].as_array().unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sections"));
         assert_eq!(sections.len(), 1);
         assert_eq!(sections[0]["heading"], "Hello");
         assert_eq!(sections[0]["level"], 1);
-        let content = sections[0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
+        let content = sections[0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
         assert_eq!(content[0]["type"], "paragraph");
         assert_eq!(content[0]["text"], "World.");
     }
@@ -612,13 +616,19 @@ mod tests {
     fn nested_headings_hierarchy() {
         let input = "# Top\n\n## Mid\n\n### Deep\n\nText here.\n";
         let v = md_json(input);
-        let sections = v["sections"].as_array().unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sections"));
         assert_eq!(sections.len(), 1);
         assert_eq!(sections[0]["heading"], "Top");
-        let sub1 = sections[0]["subsections"].as_array().unwrap_or_else(|| panic!("no sub"));
+        let sub1 = sections[0]["subsections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sub"));
         assert_eq!(sub1.len(), 1);
         assert_eq!(sub1[0]["heading"], "Mid");
-        let sub2 = sub1[0]["subsections"].as_array().unwrap_or_else(|| panic!("no sub2"));
+        let sub2 = sub1[0]["subsections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sub2"));
         assert_eq!(sub2.len(), 1);
         assert_eq!(sub2[0]["heading"], "Deep");
     }
@@ -628,7 +638,9 @@ mod tests {
     fn code_block_with_language() {
         let input = "# Code\n\n```rust\nfn main() {}\n```\n";
         let v = md_json(input);
-        let content = v["sections"][0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
+        let content = v["sections"][0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
         assert_eq!(content[0]["type"], "code_block");
         assert_eq!(content[0]["language"], "rust");
         assert_eq!(content[0]["code"], "fn main() {}\n");
@@ -640,12 +652,18 @@ mod tests {
         let input = "- apple\n- banana\n- cherry\n";
         let v = md_json(input);
         // Content before first heading → root section.
-        let sections = v["sections"].as_array().unwrap_or_else(|| panic!("no sections"));
-        let content = sections[0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
+        let sections = v["sections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sections"));
+        let content = sections[0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
         let list = &content[0];
         assert_eq!(list["type"], "list");
         assert_eq!(list["ordered"], false);
-        let items = list["items"].as_array().unwrap_or_else(|| panic!("no items"));
+        let items = list["items"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no items"));
         assert_eq!(items.len(), 3);
         assert_eq!(items[0], "apple");
     }
@@ -655,11 +673,15 @@ mod tests {
     fn ordered_list() {
         let input = "1. first\n2. second\n3. third\n";
         let v = md_json(input);
-        let content = v["sections"][0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
+        let content = v["sections"][0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
         let list = &content[0];
         assert_eq!(list["type"], "list");
         assert_eq!(list["ordered"], true);
-        let items = list["items"].as_array().unwrap_or_else(|| panic!("no items"));
+        let items = list["items"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no items"));
         assert_eq!(items.len(), 3);
     }
 
@@ -668,11 +690,16 @@ mod tests {
     fn link_captured() {
         let input = "# Links\n\n[click here](https://example.com)\n";
         let v = md_json(input);
-        let content = v["sections"][0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
+        let content = v["sections"][0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
         // The link is inside a paragraph, but also emitted as its own content item.
         let has_link = content.iter().any(|c| c["type"] == "link");
         assert!(has_link, "expected a link content item");
-        let link = content.iter().find(|c| c["type"] == "link").unwrap_or_else(|| panic!("no link"));
+        let link = content
+            .iter()
+            .find(|c| c["type"] == "link")
+            .unwrap_or_else(|| panic!("no link"));
         assert_eq!(link["text"], "click here");
         assert_eq!(link["url"], "https://example.com");
     }
@@ -682,13 +709,22 @@ mod tests {
     fn table_parsed() {
         let input = "| Col A | Col B |\n|-------|-------|\n| 1 | 2 |\n| 3 | 4 |\n";
         let v = md_json(input);
-        let content = v["sections"][0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
-        let table = content.iter().find(|c| c["type"] == "table").unwrap_or_else(|| panic!("no table"));
-        let headers = table["headers"].as_array().unwrap_or_else(|| panic!("no headers"));
+        let content = v["sections"][0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
+        let table = content
+            .iter()
+            .find(|c| c["type"] == "table")
+            .unwrap_or_else(|| panic!("no table"));
+        let headers = table["headers"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no headers"));
         assert_eq!(headers.len(), 2);
         assert_eq!(headers[0], "Col A");
         assert_eq!(headers[1], "Col B");
-        let rows = table["rows"].as_array().unwrap_or_else(|| panic!("no rows"));
+        let rows = table["rows"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no rows"));
         assert_eq!(rows.len(), 2);
         assert_eq!(rows[0][0], "1");
         assert_eq!(rows[1][1], "4");
@@ -709,11 +745,10 @@ print("hi")
 - item b
 "#;
         let v = md_json(input);
-        let content = v["sections"][0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
-        let types: Vec<&str> = content
-            .iter()
-            .filter_map(|c| c["type"].as_str())
-            .collect();
+        let content = v["sections"][0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
+        let types: Vec<&str> = content.iter().filter_map(|c| c["type"].as_str()).collect();
         assert!(types.contains(&"paragraph"), "missing paragraph");
         assert!(types.contains(&"code_block"), "missing code_block");
         assert!(types.contains(&"list"), "missing list");
@@ -724,7 +759,9 @@ print("hi")
     fn empty_markdown() {
         let v = md_json("");
         assert_eq!(v["type"], "document");
-        let sections = v["sections"].as_array().unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sections"));
         assert!(sections.is_empty());
     }
 
@@ -732,7 +769,9 @@ print("hi")
     #[test]
     fn no_headings_root_section() {
         let v = md_json("Just some text.\n\nMore text.\n");
-        let sections = v["sections"].as_array().unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sections"));
         assert_eq!(sections.len(), 1);
         assert_eq!(sections[0]["heading"], "");
         assert_eq!(sections[0]["level"], 0);
@@ -743,7 +782,9 @@ print("hi")
     fn multiple_h1_sections() {
         let input = "# First\n\nText 1.\n\n# Second\n\nText 2.\n\n# Third\n\nText 3.\n";
         let v = md_json(input);
-        let sections = v["sections"].as_array().unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sections"));
         assert_eq!(sections.len(), 3);
         assert_eq!(sections[0]["heading"], "First");
         assert_eq!(sections[1]["heading"], "Second");
@@ -755,8 +796,13 @@ print("hi")
     fn image_captured() {
         let input = "![alt text](https://example.com/img.png)\n";
         let v = md_json(input);
-        let content = v["sections"][0]["content"].as_array().unwrap_or_else(|| panic!("no content"));
-        let img = content.iter().find(|c| c["type"] == "image").unwrap_or_else(|| panic!("no image"));
+        let content = v["sections"][0]["content"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no content"));
+        let img = content
+            .iter()
+            .find(|c| c["type"] == "image")
+            .unwrap_or_else(|| panic!("no image"));
         assert_eq!(img["alt"], "alt text");
         assert_eq!(img["url"], "https://example.com/img.png");
     }
@@ -868,7 +914,9 @@ code
         for cycle in 0..10 {
             for level in 1..=6 {
                 let hashes = "#".repeat(level);
-                buf.push_str(&format!("{hashes} Heading L{level} C{cycle}\n\nSome text.\n\n"));
+                buf.push_str(&format!(
+                    "{hashes} Heading L{level} C{cycle}\n\nSome text.\n\n"
+                ));
             }
         }
         let doc = parse_markdown(&buf).unwrap_or_else(|e| panic!("parse failed: {e}"));
@@ -880,7 +928,9 @@ code
     fn unicode_content() {
         let input = "# 日本語タイトル\n\nEmoji: 🦀🚀\n\nRTL: مرحبا\n\nCJK: 你好世界\n";
         let v = md_json(input);
-        let sections = v["sections"].as_array().unwrap_or_else(|| panic!("no sections"));
+        let sections = v["sections"]
+            .as_array()
+            .unwrap_or_else(|| panic!("no sections"));
         assert_eq!(sections[0]["heading"], "日本語タイトル");
     }
 

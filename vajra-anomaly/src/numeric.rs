@@ -157,7 +157,10 @@ mod tests {
     fn all_identical_no_outliers() {
         let mut values = vec![5.0; 100];
         let result = detect_numeric_outliers(&mut values, 3.5);
-        assert!(result.is_empty(), "all identical values should produce no outliers");
+        assert!(
+            result.is_empty(),
+            "all identical values should produce no outliers"
+        );
     }
 
     #[test]

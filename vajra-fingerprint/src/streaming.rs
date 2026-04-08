@@ -48,10 +48,7 @@ impl StreamingFingerprintAccumulator {
         let path = event.path();
         self.paths.insert(path.clone());
 
-        let type_counts = self
-            .path_types
-            .entry(path.clone())
-            .or_insert([0u64; 7]);
+        let type_counts = self.path_types.entry(path.clone()).or_insert([0u64; 7]);
 
         match event {
             JsonEvent::ObjectStart { .. } => {

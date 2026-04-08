@@ -45,10 +45,7 @@ fn chaos_deeply_nested_beyond_serde_limit() {
         json.push('}');
     }
     let result = parse_str(&json);
-    assert!(
-        result.is_err(),
-        "expected error for depth {depth}, got Ok"
-    );
+    assert!(result.is_err(), "expected error for depth {depth}, got Ok");
 }
 
 // -----------------------------------------------------------------------
@@ -83,8 +80,7 @@ fn chaos_empty_everything() {
     let inputs = vec!["{}", "[]", r#""""#, "0", "null", "false", "true"];
 
     for input in inputs {
-        let doc = parse_str(input)
-            .unwrap_or_else(|e| panic!("parse failed for '{input}': {e}"));
+        let doc = parse_str(input).unwrap_or_else(|e| panic!("parse failed for '{input}': {e}"));
 
         // Full pipeline: no panics.
         let _ = canonicalize(doc.value());
@@ -192,7 +188,10 @@ fn chaos_huge_array_identical_elements() {
         .push_array_wildcard()
         .push_key("id");
     if let Some(ps) = stats.paths.get(&id_path) {
-        assert_eq!(ps.cardinality, 1, "expected cardinality 1 for identical values");
+        assert_eq!(
+            ps.cardinality, 1,
+            "expected cardinality 1 for identical values"
+        );
         assert!(
             ps.entropy.abs() < 1e-10,
             "expected entropy ~0 for identical values, got {}",
@@ -225,7 +224,10 @@ fn chaos_huge_array_unique_elements() {
     let path = vajra_types::path::WildcardPath::root().push_array_wildcard();
     if let Some(ps) = stats.paths.get(&path) {
         assert_eq!(ps.cardinality, 10_000, "expected cardinality 10000");
-        assert!(ps.entropy > 0.0, "expected positive entropy for unique values");
+        assert!(
+            ps.entropy > 0.0,
+            "expected positive entropy for unique values"
+        );
     }
 }
 
@@ -258,10 +260,7 @@ fn chaos_numbers_at_extremes() {
     // If it parses, canonicalization should handle it.
     if let Ok(doc) = result {
         let canon = canonicalize(doc.value());
-        assert!(
-            canon.is_ok(),
-            "canonicalize should handle extreme numbers"
-        );
+        assert!(canon.is_ok(), "canonicalize should handle extreme numbers");
     }
     // Also test -0 specifically.
     let neg_zero_json = r#"{"val": -0.0}"#;
@@ -340,11 +339,13 @@ fn chaos_query_on_adversarial_input() {
         };
 
         // Run a path query -- should not panic.
-        let expr = vajra_query::parse_expr("$").unwrap_or_else(|e| panic!("parse expr failed: {e}"));
+        let expr =
+            vajra_query::parse_expr("$").unwrap_or_else(|e| panic!("parse expr failed: {e}"));
         let _ = vajra_query::evaluate(&expr, &ctx);
 
         // Try counting the root.
-        let expr = vajra_query::parse_expr("count($)").unwrap_or_else(|e| panic!("parse expr failed: {e}"));
+        let expr = vajra_query::parse_expr("count($)")
+            .unwrap_or_else(|e| panic!("parse expr failed: {e}"));
         let _ = vajra_query::evaluate(&expr, &ctx);
     }
 }
@@ -410,7 +411,10 @@ fn chaos_numeric_strings() {
     let path = vajra_types::path::WildcardPath::root().push_array_wildcard();
     if let Ok(ref s) = stats {
         if let Some(ps) = s.paths.get(&path) {
-            assert!(ps.numeric_stats.is_none(), "string values should not have numeric stats");
+            assert!(
+                ps.numeric_stats.is_none(),
+                "string values should not have numeric stats"
+            );
         }
     }
 }

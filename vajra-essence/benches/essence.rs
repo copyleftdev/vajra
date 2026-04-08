@@ -95,8 +95,7 @@ fn bench_essence(c: &mut Criterion) {
         .iter()
         .map(|(name, size)| {
             let json = generate_json(*size);
-            let doc = vajra_core::parse_str(&json)
-                .unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc = vajra_core::parse_str(&json).unwrap_or_else(|e| panic!("parse failed: {e}"));
             let stats = StatsAnalyzer
                 .analyze(&doc)
                 .unwrap_or_else(|e| panic!("stats failed: {e}"));

@@ -141,9 +141,7 @@ fn serialize_number(n: &serde_json::Number, buf: &mut Vec<u8>) -> Result<(), Vaj
                 if rt.to_bits() != f.to_bits() {
                     let mut ryu_buf2 = ryu::Buffer::new();
                     let formatted2 = ryu_buf2.format_finite(rt);
-                    buf.extend_from_slice(
-                        jcs_format_float(formatted2, rt).as_bytes(),
-                    );
+                    buf.extend_from_slice(jcs_format_float(formatted2, rt).as_bytes());
                     return Ok(());
                 }
             }
@@ -202,11 +200,15 @@ fn jcs_format_float(ryu_str: &str, value: f64) -> String {
             .map_or((false, mantissa_str), |stripped| (true, stripped));
 
         // Split mantissa into integer and fractional parts
-        let (int_part, frac_part) = unsigned_mantissa
-            .find('.')
-            .map_or((unsigned_mantissa, ""), |dot_pos| {
-                (&unsigned_mantissa[..dot_pos], &unsigned_mantissa[dot_pos + 1..])
-            });
+        let (int_part, frac_part) =
+            unsigned_mantissa
+                .find('.')
+                .map_or((unsigned_mantissa, ""), |dot_pos| {
+                    (
+                        &unsigned_mantissa[..dot_pos],
+                        &unsigned_mantissa[dot_pos + 1..],
+                    )
+                });
 
         // Combine all significant digits
         let mut digits = String::from(int_part);
@@ -286,10 +288,7 @@ fn jcs_format_float(ryu_str: &str, value: f64) -> String {
         // No exponent in ryu output -- it's a simple decimal
         // Trim trailing zeros from the fractional part
         let trimmed = ryu_str.trim_end_matches('0');
-        trimmed
-            .strip_suffix('.')
-            .unwrap_or(trimmed)
-            .to_string()
+        trimmed.strip_suffix('.').unwrap_or(trimmed).to_string()
     } else {
         ryu_str.to_string()
     }
@@ -456,12 +455,13 @@ mod tests {
             let first = canonicalize(&value).unwrap_or_else(|e| panic!("first canon failed: {e}"));
             let first_str =
                 String::from_utf8(first.clone()).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
-            let reparsed: serde_json::Value = serde_json::from_str(&first_str)
-                .unwrap_or_else(|e| panic!("reparse failed: {e}"));
+            let reparsed: serde_json::Value =
+                serde_json::from_str(&first_str).unwrap_or_else(|e| panic!("reparse failed: {e}"));
             let second =
                 canonicalize(&reparsed).unwrap_or_else(|e| panic!("second canon failed: {e}"));
             assert_eq!(
-                first, second,
+                first,
+                second,
                 "idempotency failed for {value}: first={first_str}, second={}",
                 String::from_utf8_lossy(&second)
             );
@@ -492,15 +492,11 @@ mod tests {
         // UTF-16: FFFF > D800, so U+FFFF > U+10000 in UTF-16 order
         // UTF-8: EF BF BF vs F0 90 80 80, so EF < F0, meaning U+FFFF < U+10000 in byte order
         // This is where UTF-16 sorting differs from byte order!
-        let obj_str = format!(
-            "{{\"\\uFFFF\": 1, \"{}\" : 2}}",
-            '\u{10000}'
-        );
+        let obj_str = format!("{{\"\\uFFFF\": 1, \"{}\" : 2}}", '\u{10000}');
         let val: serde_json::Value =
             serde_json::from_str(&obj_str).unwrap_or_else(|e| panic!("parse failed: {e}"));
         let result = canonicalize(&val).unwrap_or_else(|e| panic!("canon failed: {e}"));
-        let result_str =
-            String::from_utf8(result).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
+        let result_str = String::from_utf8(result).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
 
         // In UTF-16 order: U+10000 (D800 DC00) < U+FFFF (FFFF)
         // So the key for U+10000 should come first
@@ -567,8 +563,7 @@ mod tests {
         });
         // Just ensure it doesn't error and is valid JSON
         let result = canonicalize(&doc).unwrap_or_else(|e| panic!("canon failed: {e}"));
-        let result_str =
-            String::from_utf8(result).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
+        let result_str = String::from_utf8(result).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
         // Re-parse to validate it's valid JSON
         let _: serde_json::Value = serde_json::from_str(&result_str)
             .unwrap_or_else(|e| panic!("result is not valid JSON: {e}\nresult: {result_str}"));
@@ -605,10 +600,10 @@ mod tests {
             String::from_utf8(first.clone()).unwrap_or_else(|e| panic!("invalid utf8: {e}"));
         let reparsed: serde_json::Value =
             serde_json::from_str(&first_str).unwrap_or_else(|e| panic!("reparse failed: {e}"));
-        let second =
-            canonicalize(&reparsed).unwrap_or_else(|e| panic!("second canon failed: {e}"));
+        let second = canonicalize(&reparsed).unwrap_or_else(|e| panic!("second canon failed: {e}"));
         assert_eq!(
-            first, second,
+            first,
+            second,
             "idempotency failed: first={first_str}, second={}",
             String::from_utf8_lossy(&second)
         );

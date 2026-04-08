@@ -222,10 +222,7 @@ pub fn parse_yaml(input: &str) -> Result<Vec<Document>, VajraError> {
     }
 
     // Filter out documents that deserialized to null from empty / whitespace-only input.
-    let non_null: Vec<Document> = docs
-        .into_iter()
-        .filter(|d| !d.value().is_null())
-        .collect();
+    let non_null: Vec<Document> = docs.into_iter().filter(|d| !d.value().is_null()).collect();
 
     if non_null.is_empty() {
         return Err(VajraError::Parse {
@@ -531,9 +528,15 @@ mod tests {
     fn csv_simple() {
         let input = "name,age,city\nAlice,30,NYC\nBob,25,LA\nCarol,35,SF\n";
         let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert_eq!(arr.len(), 3);
-        assert_eq!(arr[0]["name"], serde_json::Value::String("Alice".to_string()));
+        assert_eq!(
+            arr[0]["name"],
+            serde_json::Value::String("Alice".to_string())
+        );
         assert_eq!(arr[0]["age"], serde_json::json!(30));
     }
 
@@ -541,7 +544,10 @@ mod tests {
     fn csv_numeric_inference() {
         let input = "int,float,string\n42,3.14,hello\n";
         let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert_eq!(arr[0]["int"], serde_json::json!(42));
         assert_eq!(arr[0]["float"], serde_json::json!(3.14));
         assert_eq!(
@@ -554,7 +560,10 @@ mod tests {
     fn csv_empty_cells_null() {
         let input = "a,b,c\n1,,3\n";
         let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert!(arr[0]["b"].is_null(), "expected null for empty cell");
     }
 
@@ -562,7 +571,10 @@ mod tests {
     fn csv_quoted_fields() {
         let input = "name,note\n\"Alice\",\"has a comma, here\"\n";
         let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert_eq!(
             arr[0]["note"],
             serde_json::Value::String("has a comma, here".to_string())
@@ -573,7 +585,10 @@ mod tests {
     fn csv_headers_only() {
         let input = "a,b,c\n";
         let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert!(arr.is_empty());
     }
 
@@ -581,7 +596,10 @@ mod tests {
     fn csv_single_row() {
         let input = "x,y\n10,20\n";
         let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert_eq!(arr.len(), 1);
     }
 
@@ -589,9 +607,15 @@ mod tests {
     fn tsv_works() {
         let input = "name\tage\nAlice\t30\n";
         let doc = parse_csv(input, b'\t').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert_eq!(arr.len(), 1);
-        assert_eq!(arr[0]["name"], serde_json::Value::String("Alice".to_string()));
+        assert_eq!(
+            arr[0]["name"],
+            serde_json::Value::String("Alice".to_string())
+        );
         assert_eq!(arr[0]["age"], serde_json::json!(30));
     }
 
@@ -679,7 +703,10 @@ mod tests {
             buf.push_str(&format!("{i},val_{i}\n"));
         }
         let doc = parse_csv(&buf, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert_eq!(arr.len(), 10_000);
     }
 
@@ -732,7 +759,10 @@ mod tests {
         let input = "a,b,c\n1,2\n4,5,6,7\n";
         // flexible(true) means this should not panic
         let doc = parse_csv(input, b',').unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let arr = doc.value().as_array().unwrap_or_else(|| panic!("expected array"));
+        let arr = doc
+            .value()
+            .as_array()
+            .unwrap_or_else(|| panic!("expected array"));
         assert_eq!(arr.len(), 2);
         // First row has fewer columns: missing column becomes null
         assert!(arr[0]["c"].is_null());
@@ -801,7 +831,10 @@ mod tests {
 
     #[test]
     fn sniff_markdown_heading() {
-        assert_eq!(sniff_format("# Title\n\nSome text.\n"), InputFormat::Markdown);
+        assert_eq!(
+            sniff_format("# Title\n\nSome text.\n"),
+            InputFormat::Markdown
+        );
         assert_eq!(sniff_format("## Sub heading\n"), InputFormat::Markdown);
     }
 
@@ -824,8 +857,7 @@ mod tests {
     #[test]
     fn parse_auto_sniff_detects_markdown() {
         let input = "# Heading\n\nParagraph content.\n";
-        let docs = parse_auto(input, None)
-            .unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let docs = parse_auto(input, None).unwrap_or_else(|e| panic!("parse failed: {e}"));
         assert_eq!(docs.len(), 1);
         assert_eq!(docs[0].value()["type"], "document");
     }

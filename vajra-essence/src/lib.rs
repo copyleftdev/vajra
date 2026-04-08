@@ -91,10 +91,22 @@ mod tests {
 
         let json = render_json(&essence);
 
-        assert!(json.get("identity").is_some(), "JSON should have 'identity' key");
-        assert!(json.get("structure").is_some(), "JSON should have 'structure' key");
-        assert!(json.get("observations").is_some(), "JSON should have 'observations' key");
-        assert!(json.get("anomalies").is_some(), "JSON should have 'anomalies' key");
+        assert!(
+            json.get("identity").is_some(),
+            "JSON should have 'identity' key"
+        );
+        assert!(
+            json.get("structure").is_some(),
+            "JSON should have 'structure' key"
+        );
+        assert!(
+            json.get("observations").is_some(),
+            "JSON should have 'observations' key"
+        );
+        assert!(
+            json.get("anomalies").is_some(),
+            "JSON should have 'anomalies' key"
+        );
 
         // Structure should have the right subkeys
         let structure = json.get("structure").unwrap_or(&serde_json::Value::Null);

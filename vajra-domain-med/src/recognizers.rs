@@ -125,10 +125,7 @@ impl TypeRecognizer for NdcRecognizer {
     }
 
     fn matches(&self, value: &str) -> bool {
-        let Some(re) = compile_once(
-            &NDC_RE,
-            r"^(\d{5}-\d{3,4}-\d{1,2}|\d{11})$",
-        ) else {
+        let Some(re) = compile_once(&NDC_RE, r"^(\d{5}-\d{3,4}-\d{1,2}|\d{11})$") else {
             return false;
         };
         re.is_match(value)
@@ -192,10 +189,8 @@ impl TypeRecognizer for DiagnosisCodeRecognizer {
     }
 
     fn matches(&self, value: &str) -> bool {
-        let Some(re) = compile_once(
-            &DIAG_RE,
-            r"^([A-Za-z]\d{2}(\.\w{1,4})?|[A-Za-z0-9]{7})$",
-        ) else {
+        let Some(re) = compile_once(&DIAG_RE, r"^([A-Za-z]\d{2}(\.\w{1,4})?|[A-Za-z0-9]{7})$")
+        else {
             return false;
         };
         re.is_match(value)
@@ -505,11 +500,7 @@ mod tests {
                 "{} should not match whitespace",
                 r.type_name()
             );
-            assert!(
-                !r.matches("\t"),
-                "{} should not match tab",
-                r.type_name()
-            );
+            assert!(!r.matches("\t"), "{} should not match tab", r.type_name());
             assert!(
                 !r.matches("\n"),
                 "{} should not match newline",

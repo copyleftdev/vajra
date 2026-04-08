@@ -6,9 +6,7 @@
 
 use std::path::Path;
 
-use vajra_types::{
-    Document, DocumentMetadata, JsonType, PathTrie, VajraError, WildcardPath,
-};
+use vajra_types::{Document, DocumentMetadata, JsonType, PathTrie, VajraError, WildcardPath};
 
 /// Default maximum nesting depth to prevent stack overflow on adversarial input.
 const MAX_DEPTH: u32 = 256;
@@ -20,12 +18,11 @@ const MAX_DEPTH: u32 = 256;
 /// Returns [`VajraError::Parse`] if the input is not valid JSON.
 /// Returns [`VajraError::LimitExceeded`] if nesting depth exceeds 256.
 pub fn parse_str(input: &str) -> Result<Document, VajraError> {
-    let value: serde_json::Value =
-        serde_json::from_str(input).map_err(|e| VajraError::Parse {
-            byte_offset: e.column(),
-            message: e.to_string(),
-            source_path: None,
-        })?;
+    let value: serde_json::Value = serde_json::from_str(input).map_err(|e| VajraError::Parse {
+        byte_offset: e.column(),
+        message: e.to_string(),
+        source_path: None,
+    })?;
 
     let mut trie = PathTrie::new();
     let mut metadata = DocumentMetadata {

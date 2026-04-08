@@ -15,7 +15,7 @@ use serde_json::{json, Value};
 use vajra_anomaly::AnomalyAnalyzer;
 use vajra_core::formats::parse_file_auto;
 use vajra_drift::full_drift;
-use vajra_essence::{EssenceBuilder, EngineerProfile};
+use vajra_essence::{EngineerProfile, EssenceBuilder};
 use vajra_fingerprint::FingerprintAnalyzer;
 use vajra_stats::StatsAnalyzer;
 use vajra_types::traits::{Analyzer, ConcernProfile, OutputFormat};
@@ -266,19 +266,24 @@ fn make_claim_batch() -> String {
     let mut rng = Rng::new(42);
     let mut lines = Vec::with_capacity(50);
 
-    let statuses = ["paid", "paid", "paid", "paid", "paid", "paid", "paid",
-                    "denied", "denied", "denied",
-                    "pending", "pending",
-                    "partial"];
+    let statuses = [
+        "paid", "paid", "paid", "paid", "paid", "paid", "paid", "denied", "denied", "denied",
+        "pending", "pending", "partial",
+    ];
     let cpt_codes = ["99213", "99214", "99215", "99211", "99212"];
     let hcpcs_codes = ["J0120", "G0101", "A0021", "J3490"];
-    let icd10_codes = ["E11.9", "I10", "J18.9", "M54.5", "Z00.00", "K21.0", "F32.9", "N18.3"];
+    let icd10_codes = [
+        "E11.9", "I10", "J18.9", "M54.5", "Z00.00", "K21.0", "F32.9", "N18.3",
+    ];
     let adj_reasons = ["CO-45", "PR-1", "OA-23", "PI-97"];
     let ndc_codes = ["12345-6789-01", "54321-1234-02", "99999-0001-01"];
-    let first_names = ["John", "Jane", "Michael", "Sarah", "Robert", "Emily",
-                       "David", "Maria", "James", "Lisa"];
-    let last_names = ["Smith", "Johnson", "Williams", "Brown", "Jones",
-                      "Davis", "Miller", "Wilson", "Moore", "Taylor"];
+    let first_names = [
+        "John", "Jane", "Michael", "Sarah", "Robert", "Emily", "David", "Maria", "James", "Lisa",
+    ];
+    let last_names = [
+        "Smith", "Johnson", "Williams", "Brown", "Jones", "Davis", "Miller", "Wilson", "Moore",
+        "Taylor",
+    ];
 
     for i in 0..50 {
         let num_lines = rng.range(1, 21) as usize;
@@ -325,10 +330,9 @@ fn make_claim_batch() -> String {
 
             // Add NDC for drug-related lines
             if is_drug {
-                line.as_object_mut().unwrap_or_else(|| unreachable!()).insert(
-                    "ndc_code".to_string(),
-                    json!(*rng.pick(&ndc_codes)),
-                );
+                line.as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert("ndc_code".to_string(), json!(*rng.pick(&ndc_codes)));
             }
 
             service_lines.push(line);
@@ -569,16 +573,20 @@ fn make_paginated_list() -> Value {
 
         // Optional fields: some items have description, some have owner
         if i % 3 == 0 {
-            item.as_object_mut().unwrap_or_else(|| unreachable!()).insert(
-                "description".to_string(),
-                json!(format!("Description for resource {}", i + 1)),
-            );
+            item.as_object_mut()
+                .unwrap_or_else(|| unreachable!())
+                .insert(
+                    "description".to_string(),
+                    json!(format!("Description for resource {}", i + 1)),
+                );
         }
         if i % 4 == 0 {
-            item.as_object_mut().unwrap_or_else(|| unreachable!()).insert(
-                "owner".to_string(),
-                json!(format!("user-{:03}", rng.range(1, 50))),
-            );
+            item.as_object_mut()
+                .unwrap_or_else(|| unreachable!())
+                .insert(
+                    "owner".to_string(),
+                    json!(format!("user-{:03}", rng.range(1, 50))),
+                );
         }
 
         items.push(item);
@@ -703,10 +711,17 @@ fn make_webhook_batch() -> String {
     let mut lines = Vec::with_capacity(100);
 
     let event_types = [
-        "user.created", "user.updated", "user.deleted",
-        "order.placed", "order.shipped", "order.delivered",
-        "payment.completed", "payment.failed", "payment.refunded",
-        "subscription.started", "subscription.cancelled",
+        "user.created",
+        "user.updated",
+        "user.deleted",
+        "order.placed",
+        "order.shipped",
+        "order.delivered",
+        "payment.completed",
+        "payment.failed",
+        "payment.refunded",
+        "subscription.started",
+        "subscription.cancelled",
     ];
 
     for i in 0..100 {
@@ -725,33 +740,57 @@ fn make_webhook_batch() -> String {
         // Schema varies by event type
         match event_type {
             "user.created" | "user.updated" | "user.deleted" => {
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("data".to_string(), json!({
-                    "user_id": format!("usr-{:05}", rng.range(1, 10000)),
-                    "email": format!("user{}@example.com", rng.range(1, 999)),
-                    "name": format!("User {}", rng.range(1, 500))
-                }));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert(
+                        "data".to_string(),
+                        json!({
+                            "user_id": format!("usr-{:05}", rng.range(1, 10000)),
+                            "email": format!("user{}@example.com", rng.range(1, 999)),
+                            "name": format!("User {}", rng.range(1, 500))
+                        }),
+                    );
             }
             "order.placed" | "order.shipped" | "order.delivered" => {
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("data".to_string(), json!({
-                    "order_id": format!("ord-{:06}", rng.range(1, 100000)),
-                    "user_id": format!("usr-{:05}", rng.range(1, 10000)),
-                    "total": (rng.range_f64(10.0, 500.0) * 100.0).round() / 100.0,
-                    "items_count": rng.range(1, 10)
-                }));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert(
+                        "data".to_string(),
+                        json!({
+                            "order_id": format!("ord-{:06}", rng.range(1, 100000)),
+                            "user_id": format!("usr-{:05}", rng.range(1, 10000)),
+                            "total": (rng.range_f64(10.0, 500.0) * 100.0).round() / 100.0,
+                            "items_count": rng.range(1, 10)
+                        }),
+                    );
             }
             "payment.completed" | "payment.failed" | "payment.refunded" => {
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("data".to_string(), json!({
-                    "payment_id": format!("pay-{:06}", rng.range(1, 100000)),
-                    "amount": (rng.range_f64(5.0, 1000.0) * 100.0).round() / 100.0,
-                    "currency": *rng.pick(&["USD", "EUR", "GBP"]),
-                    "method": *rng.pick(&["card", "bank_transfer", "paypal"])
-                }));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert(
+                        "data".to_string(),
+                        json!({
+                            "payment_id": format!("pay-{:06}", rng.range(1, 100000)),
+                            "amount": (rng.range_f64(5.0, 1000.0) * 100.0).round() / 100.0,
+                            "currency": *rng.pick(&["USD", "EUR", "GBP"]),
+                            "method": *rng.pick(&["card", "bank_transfer", "paypal"])
+                        }),
+                    );
             }
             _ => {
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("data".to_string(), json!({
-                    "subscription_id": format!("sub-{:05}", rng.range(1, 5000)),
-                    "plan": *rng.pick(&["basic", "pro", "enterprise"])
-                }));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert(
+                        "data".to_string(),
+                        json!({
+                            "subscription_id": format!("sub-{:05}", rng.range(1, 5000)),
+                            "plan": *rng.pick(&["basic", "pro", "enterprise"])
+                        }),
+                    );
             }
         }
 
@@ -831,14 +870,8 @@ fn generate_config(root: &Path) {
     ensure_dir(&dir);
 
     write_text(&dir.join("kubernetes_deployment.yaml"), &make_k8s_yaml());
-    write_json(
-        &dir.join("cloudformation.json"),
-        &make_cloudformation(),
-    );
-    write_json(
-        &dir.join("terraform_state.json"),
-        &make_terraform_state(),
-    );
+    write_json(&dir.join("cloudformation.json"), &make_cloudformation());
+    write_json(&dir.join("terraform_state.json"), &make_terraform_state());
 }
 
 fn make_k8s_yaml() -> String {
@@ -944,7 +977,8 @@ spec:
                 name: api-gateway-service
                 port:
                   number: 80
-"#.to_string()
+"#
+    .to_string()
 }
 
 fn make_cloudformation() -> Value {
@@ -1168,8 +1202,22 @@ fn make_event_stream() -> String {
     let mut rng = Rng::new(400);
     let mut lines = Vec::with_capacity(200);
 
-    let event_types = ["page_view", "click", "purchase", "error", "scroll", "form_submit"];
-    let pages = ["/home", "/products", "/cart", "/checkout", "/profile", "/search"];
+    let event_types = [
+        "page_view",
+        "click",
+        "purchase",
+        "error",
+        "scroll",
+        "form_submit",
+    ];
+    let pages = [
+        "/home",
+        "/products",
+        "/cart",
+        "/checkout",
+        "/profile",
+        "/search",
+    ];
 
     for i in 0..200 {
         let event_type = *rng.pick(&event_types);
@@ -1196,27 +1244,63 @@ fn make_event_stream() -> String {
         // Type-specific payload
         match event_type {
             "click" => {
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("element".to_string(), json!(*rng.pick(&["button", "link", "image", "nav"])));
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("x".to_string(), json!(rng.range(0, 1920)));
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("y".to_string(), json!(rng.range(0, 1080)));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert(
+                        "element".to_string(),
+                        json!(*rng.pick(&["button", "link", "image", "nav"])),
+                    );
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert("x".to_string(), json!(rng.range(0, 1920)));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert("y".to_string(), json!(rng.range(0, 1080)));
             }
             "purchase" => {
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("amount".to_string(), json!((rng.range_f64(5.0, 500.0) * 100.0).round() / 100.0));
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("items".to_string(), json!(rng.range(1, 8)));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert(
+                        "amount".to_string(),
+                        json!((rng.range_f64(5.0, 500.0) * 100.0).round() / 100.0),
+                    );
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert("items".to_string(), json!(rng.range(1, 8)));
             }
             "error" => {
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("error_code".to_string(), json!(*rng.pick(&["500", "502", "503", "timeout"])));
-                event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("stack_trace".to_string(), json!("at main.js:42"));
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert(
+                        "error_code".to_string(),
+                        json!(*rng.pick(&["500", "502", "503", "timeout"])),
+                    );
+                event
+                    .as_object_mut()
+                    .unwrap_or_else(|| unreachable!())
+                    .insert("stack_trace".to_string(), json!("at main.js:42"));
             }
             _ => {}
         }
 
         // Schema variation: some events have debug fields
         if rng.next_f64() < 0.1 {
-            event.as_object_mut().unwrap_or_else(|| unreachable!()).insert("debug".to_string(), json!({
-                "render_time_ms": rng.range(10, 5000),
-                "memory_mb": rng.range(50, 500)
-            }));
+            event
+                .as_object_mut()
+                .unwrap_or_else(|| unreachable!())
+                .insert(
+                    "debug".to_string(),
+                    json!({
+                        "render_time_ms": rng.range(10, 5000),
+                        "memory_mb": rng.range(50, 500)
+                    }),
+                );
         }
 
         lines.push(serde_json::to_string(&event).unwrap_or_default());
@@ -1227,7 +1311,9 @@ fn make_event_stream() -> String {
 
 fn make_metrics_csv() -> String {
     let mut rng = Rng::new(500);
-    let mut csv = String::from("timestamp,host,cpu_pct,memory_pct,disk_io,network_in,network_out,error_count\n");
+    let mut csv = String::from(
+        "timestamp,host,cpu_pct,memory_pct,disk_io,network_in,network_out,error_count\n",
+    );
 
     let hosts = ["web-01", "web-02", "web-03", "db-01", "worker-01"];
 
@@ -1236,11 +1322,7 @@ fn make_metrics_csv() -> String {
         let host = hosts[host_idx];
         let hour = row / 5 / 12; // 100 time slots, ~8 hours
         let minute = (row / 5 % 12) * 5;
-        let ts = format!(
-            "2025-03-15T{:02}:{:02}:00Z",
-            hour.min(23),
-            minute.min(59)
-        );
+        let ts = format!("2025-03-15T{:02}:{:02}:00Z", hour.min(23), minute.min(59));
 
         // Anomalous CPU spikes on web-01
         let cpu = if host == "web-01" && (row / 5 > 40 && row / 5 < 50) {
@@ -1293,10 +1375,25 @@ fn make_transactions() -> String {
 
     let currencies = ["USD", "EUR", "GBP", "JPY", "CAD"];
     let merchants = [
-        "Amazon", "Walmart", "Target", "Starbucks", "Shell Gas",
-        "Netflix", "Uber", "Whole Foods", "CVS Pharmacy", "Home Depot",
+        "Amazon",
+        "Walmart",
+        "Target",
+        "Starbucks",
+        "Shell Gas",
+        "Netflix",
+        "Uber",
+        "Whole Foods",
+        "CVS Pharmacy",
+        "Home Depot",
     ];
-    let categories = ["retail", "food", "gas", "entertainment", "services", "transfer"];
+    let categories = [
+        "retail",
+        "food",
+        "gas",
+        "entertainment",
+        "services",
+        "transfer",
+    ];
 
     for i in 0..100 {
         // Benford's Law amounts (mostly), with some synthetic outliers
@@ -1466,44 +1563,55 @@ fn generate_edge_cases(root: &Path) {
     write_json(&dir.join("wide_object.json"), &Value::Object(wide));
 
     // Big array: 5000 identical elements
-    let big_array: Vec<Value> = (0..5000).map(|_| json!({"value": 1, "label": "x"})).collect();
+    let big_array: Vec<Value> = (0..5000)
+        .map(|_| json!({"value": 1, "label": "x"}))
+        .collect();
     write_json(&dir.join("big_array.json"), &Value::Array(big_array));
 
     // Type chaos
-    write_json(&dir.join("type_chaos.json"), &json!({
-        "a_string": "hello",
-        "a_number": 42,
-        "a_float": 3.14,
-        "a_bool": true,
-        "a_null": null,
-        "an_array": [1, "two", 3.0, true, null, {"nested": "obj"}, [1, 2]],
-        "an_object": {"x": 1},
-        "an_empty_array": [],
-        "an_empty_object": {},
-        "a_negative": -99,
-        "a_big_number": 9007199254740992_i64,
-        "a_small_float": 0.000001
-    }));
+    write_json(
+        &dir.join("type_chaos.json"),
+        &json!({
+            "a_string": "hello",
+            "a_number": 42,
+            "a_float": 3.14,
+            "a_bool": true,
+            "a_null": null,
+            "an_array": [1, "two", 3.0, true, null, {"nested": "obj"}, [1, 2]],
+            "an_object": {"x": 1},
+            "an_empty_array": [],
+            "an_empty_object": {},
+            "a_negative": -99,
+            "a_big_number": 9007199254740992_i64,
+            "a_small_float": 0.000001
+        }),
+    );
 
     // Unicode stress
-    write_json(&dir.join("unicode_stress.json"), &json!({
-        "emoji_key_\u{1F600}": "grinning face",
-        "cjk_\u{4E16}\u{754C}": "\u{4F60}\u{597D}\u{4E16}\u{754C}",
-        "arabic_\u{0627}\u{0644}\u{0639}\u{0627}\u{0644}\u{0645}": "\u{0645}\u{0631}\u{062D}\u{0628}\u{0627}",
-        "combining": "e\u{0301}e\u{0308}",
-        "zero_width": "hello\u{200B}world\u{200C}test\u{200D}join\u{FEFF}bom",
-        "surrogate_safe": "\u{1F4A9}\u{1F680}\u{1F30D}",
-        "rtl_mixed": "\u{0627}\u{0644}\u{0639}\u{0631}\u{0628}\u{064A}\u{0629} and English",
-        "fullwidth": "\u{FF21}\u{FF22}\u{FF23}",
-        "normal_key": "normal_value"
-    }));
+    write_json(
+        &dir.join("unicode_stress.json"),
+        &json!({
+            "emoji_key_\u{1F600}": "grinning face",
+            "cjk_\u{4E16}\u{754C}": "\u{4F60}\u{597D}\u{4E16}\u{754C}",
+            "arabic_\u{0627}\u{0644}\u{0639}\u{0627}\u{0644}\u{0645}": "\u{0645}\u{0631}\u{062D}\u{0628}\u{0627}",
+            "combining": "e\u{0301}e\u{0308}",
+            "zero_width": "hello\u{200B}world\u{200C}test\u{200D}join\u{FEFF}bom",
+            "surrogate_safe": "\u{1F4A9}\u{1F680}\u{1F30D}",
+            "rtl_mixed": "\u{0627}\u{0644}\u{0639}\u{0631}\u{0628}\u{064A}\u{0629} and English",
+            "fullwidth": "\u{FF21}\u{FF22}\u{FF23}",
+            "normal_key": "normal_value"
+        }),
+    );
 
     // All nulls
-    write_json(&dir.join("all_nulls.json"), &json!({
-        "a": null, "b": null, "c": null, "d": null, "e": null,
-        "nested": {"f": null, "g": null},
-        "array_of_nulls": [null, null, null]
-    }));
+    write_json(
+        &dir.join("all_nulls.json"),
+        &json!({
+            "a": null, "b": null, "c": null, "d": null, "e": null,
+            "nested": {"f": null, "g": null},
+            "array_of_nulls": [null, null, null]
+        }),
+    );
 
     // Mixed schemas NDJSON
     let mixed = [
@@ -1518,25 +1626,31 @@ fn generate_edge_cases(root: &Path) {
         json!(42),
         json!({"empty_containers": {"obj": {}, "arr": []}}),
     ];
-    let mixed_lines: Vec<String> = mixed.iter().map(|v| serde_json::to_string(v).unwrap_or_default()).collect();
+    let mixed_lines: Vec<String> = mixed
+        .iter()
+        .map(|v| serde_json::to_string(v).unwrap_or_default())
+        .collect();
     write_text(&dir.join("mixed_schemas.ndjson"), &mixed_lines.join("\n"));
 
     // Sensitive data (for redaction testing)
-    write_json(&dir.join("sensitive_data.json"), &json!({
-        "patient": {
-            "name": "Jane Doe",
-            "ssn": "123-45-6789",
-            "email": "jane.doe@example.com",
-            "phone": "+1-555-867-5309",
-            "credit_card": "4111-1111-1111-1111",
-            "date_of_birth": "1985-06-12"
-        },
-        "notes": "Patient SSN is 987-65-4321 and card ending 4242",
-        "records": [
-            {"ssn": "111-22-3333", "name": "John Smith"},
-            {"email": "bob@test.org", "phone": "555-123-4567"}
-        ]
-    }));
+    write_json(
+        &dir.join("sensitive_data.json"),
+        &json!({
+            "patient": {
+                "name": "Jane Doe",
+                "ssn": "123-45-6789",
+                "email": "jane.doe@example.com",
+                "phone": "+1-555-867-5309",
+                "credit_card": "4111-1111-1111-1111",
+                "date_of_birth": "1985-06-12"
+            },
+            "notes": "Patient SSN is 987-65-4321 and card ending 4242",
+            "records": [
+                {"ssn": "111-22-3333", "name": "John Smith"},
+                {"email": "bob@test.org", "phone": "555-123-4567"}
+            ]
+        }),
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -1623,7 +1737,8 @@ For detailed metrics, see the [Grafana dashboard](https://grafana.internal/d/pro
 ---
 
 *Report generated by the SRE team. Contact: sre@example.com*
-"#.to_string()
+"#
+    .to_string()
 }
 
 fn make_readme_example() -> String {
@@ -1676,7 +1791,8 @@ vajra drift v1.json v2.json
 ## License
 
 MIT OR Apache-2.0
-"#.to_string()
+"#
+    .to_string()
 }
 
 // ---------------------------------------------------------------------------
@@ -1845,22 +1961,30 @@ fn capture_stats_golden(doc: &Document, stem: &str, golden_dir: &Path) {
 
     let mut paths_json = Vec::new();
     for (wp, stats) in &result.paths {
-        let numeric = stats.numeric_stats.as_ref().map(|ns| json!({
-            "min": ns.min,
-            "max": ns.max,
-            "mean": ns.mean,
-            "median": ns.median,
-            "mad": ns.mad,
-            "p05": ns.p05,
-            "p25": ns.p25,
-            "p75": ns.p75,
-            "p95": ns.p95,
-        }));
+        let numeric = stats.numeric_stats.as_ref().map(|ns| {
+            json!({
+                "min": ns.min,
+                "max": ns.max,
+                "mean": ns.mean,
+                "median": ns.median,
+                "mad": ns.mad,
+                "p05": ns.p05,
+                "p25": ns.p25,
+                "p75": ns.p75,
+                "p95": ns.p95,
+            })
+        });
 
-        let top_values: Vec<Value> = stats.top_values.iter().map(|(v, c)| json!({
-            "value": v,
-            "count": c,
-        })).collect();
+        let top_values: Vec<Value> = stats
+            .top_values
+            .iter()
+            .map(|(v, c)| {
+                json!({
+                    "value": v,
+                    "count": c,
+                })
+            })
+            .collect();
 
         paths_json.push(json!({
             "path": wp.to_string(),
@@ -1889,13 +2013,17 @@ fn capture_fingerprint_golden(doc: &Document, stem: &str, golden_dir: &Path) {
         }
     };
 
-    let mut motifs: Vec<Value> = result.subtree_frequencies
+    let mut motifs: Vec<Value> = result
+        .subtree_frequencies
         .iter()
         .filter(|(_, &count)| count > 1)
         .map(|(h, &count)| json!({"hash": hex(h), "count": count}))
         .collect();
     motifs.sort_by(|a, b| {
-        b["count"].as_u64().unwrap_or(0).cmp(&a["count"].as_u64().unwrap_or(0))
+        b["count"]
+            .as_u64()
+            .unwrap_or(0)
+            .cmp(&a["count"].as_u64().unwrap_or(0))
     });
 
     let output = json!({
@@ -1920,26 +2048,44 @@ fn capture_anomalies_golden(doc: &Document, stem: &str, golden_dir: &Path) {
         }
     };
 
-    let instabilities: Vec<Value> = report.type_instabilities.iter().map(|ti| json!({
-        "path": ti.path,
-        "instability": ti.instability,
-        "dominant_type": ti.dominant_type,
-        "type_distribution": ti.type_distribution,
-    })).collect();
+    let instabilities: Vec<Value> = report
+        .type_instabilities
+        .iter()
+        .map(|ti| {
+            json!({
+                "path": ti.path,
+                "instability": ti.instability,
+                "dominant_type": ti.dominant_type,
+                "type_distribution": ti.type_distribution,
+            })
+        })
+        .collect();
 
-    let outliers: Vec<Value> = report.numeric_outliers.iter().map(|no| json!({
-        "path": no.path,
-        "value": no.value,
-        "z_mad": no.z_mad,
-        "median": no.median,
-        "mad": no.mad,
-    })).collect();
+    let outliers: Vec<Value> = report
+        .numeric_outliers
+        .iter()
+        .map(|no| {
+            json!({
+                "path": no.path,
+                "value": no.value,
+                "z_mad": no.z_mad,
+                "median": no.median,
+                "mad": no.mad,
+            })
+        })
+        .collect();
 
-    let rare: Vec<Value> = report.rare_values.iter().map(|rv| json!({
-        "value": rv.value,
-        "count": rv.count,
-        "rarity_bits": rv.rarity_bits,
-    })).collect();
+    let rare: Vec<Value> = report
+        .rare_values
+        .iter()
+        .map(|rv| {
+            json!({
+                "value": rv.value,
+                "count": rv.count,
+                "rarity_bits": rv.rarity_bits,
+            })
+        })
+        .collect();
 
     let output = json!({
         "type_instabilities": instabilities,
@@ -1966,8 +2112,7 @@ fn capture_essence_golden(doc: &Document, stem: &str, golden_dir: &Path) {
     let anomalies = AnomalyAnalyzer::default().analyze(doc).ok();
     let fingerprint = FingerprintAnalyzer.analyze(doc).ok();
 
-    let mut builder = EssenceBuilder::new(doc, &profile)
-        .with_stats(&stats);
+    let mut builder = EssenceBuilder::new(doc, &profile).with_stats(&stats);
 
     if let Some(ref a) = anomalies {
         builder = builder.with_anomalies(a);
@@ -1988,7 +2133,8 @@ fn capture_essence_golden(doc: &Document, stem: &str, golden_dir: &Path) {
     };
 
     // Parse the rendered JSON to store as proper JSON (not string-escaped)
-    let parsed: Value = serde_json::from_str(&rendered).unwrap_or_else(|_| json!({"rendered": rendered}));
+    let parsed: Value =
+        serde_json::from_str(&rendered).unwrap_or_else(|_| json!({"rendered": rendered}));
     let out_path = golden_dir.join(format!("{stem}.essence.golden.json"));
     write_json(&out_path, &parsed);
 }

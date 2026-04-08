@@ -205,14 +205,19 @@ impl ConcernProfile for CustomProfile {
                     message: format!("JSON serialization failed: {e}"),
                 }),
             OutputFormat::CompactAi => {
-                serde_json::to_string_pretty(&render_compact_ai(essence, false))
-                    .map_err(|e| VajraError::Analysis {
+                serde_json::to_string_pretty(&render_compact_ai(essence, false)).map_err(|e| {
+                    VajraError::Analysis {
                         path: String::new(),
                         message: format!("JSON serialization failed: {e}"),
-                    })
+                    }
+                })
             }
             OutputFormat::Markdown => Ok(render_markdown(essence, &self.profile_name)),
-            _ => Ok(render_custom_text(essence, &self.rendering, &self.profile_name)),
+            _ => Ok(render_custom_text(
+                essence,
+                &self.rendering,
+                &self.profile_name,
+            )),
         }
     }
 }
@@ -294,11 +299,7 @@ fn render_custom_text(
                         obs.score, obs.observation.path, obs.observation.description
                     );
                 } else {
-                    let _ = writeln!(
-                        out,
-                        "  [{:.4}] {}",
-                        obs.score, obs.observation.description
-                    );
+                    let _ = writeln!(out, "  [{:.4}] {}", obs.score, obs.observation.description);
                 }
             }
             if motif_count > config.motif_collapse_threshold {
@@ -321,9 +322,7 @@ fn render_custom_text(
             );
 
             if observations.is_empty() {
-                out.push_str(
-                    "No significant observations were identified during analysis.\n",
-                );
+                out.push_str("No significant observations were identified during analysis.\n");
             } else {
                 let _ = writeln!(out, "Observations:");
                 let _ = writeln!(out, "-------------\n");
@@ -478,7 +477,11 @@ max_observations = 20
     #[test]
     fn valid_toml_parses_correctly() {
         let profiles = load_profiles_from_toml(sample_toml());
-        assert!(profiles.is_ok(), "should parse valid TOML: {:?}", profiles.err());
+        assert!(
+            profiles.is_ok(),
+            "should parse valid TOML: {:?}",
+            profiles.err()
+        );
         let profiles = profiles.unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(profiles.len(), 1);
 
@@ -558,8 +561,7 @@ concern_relevance = 0.50
 
     #[test]
     fn custom_profile_scoring_works() {
-        let profiles = load_profiles_from_toml(sample_toml())
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(sample_toml()).unwrap_or_else(|e| panic!("{e}"));
         let profile = &profiles[0];
 
         let candidate = CandidateObservation {
@@ -600,8 +602,7 @@ concern_relevance = 0.50
 
     #[test]
     fn custom_profile_rendering_plain_vocabulary() {
-        let profiles = load_profiles_from_toml(sample_toml())
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(sample_toml()).unwrap_or_else(|e| panic!("{e}"));
         let profile = &profiles[0];
 
         let essence = make_essence(5);
@@ -610,11 +611,20 @@ concern_relevance = 0.50
             .unwrap_or_else(|e| panic!("{e}"));
 
         // Plain vocabulary: should have narrative sections
-        assert!(rendered.contains("Document Summary"), "plain should have Document Summary");
-        assert!(rendered.contains("Notable Findings"), "plain should have Notable Findings");
+        assert!(
+            rendered.contains("Document Summary"),
+            "plain should have Document Summary"
+        );
+        assert!(
+            rendered.contains("Notable Findings"),
+            "plain should have Notable Findings"
+        );
         // Plain: should NOT show paths in observations
         // The descriptions don't contain paths, so just check structure
-        assert!(rendered.contains("observation 0"), "should have observation text");
+        assert!(
+            rendered.contains("observation 0"),
+            "should have observation text"
+        );
     }
 
     #[test]
@@ -636,8 +646,7 @@ vocabulary = "technical"
 show_paths = true
 max_observations = 50
 "#;
-        let profiles = load_profiles_from_toml(toml)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
         let profile = &profiles[0];
 
         let essence = make_essence(3);
@@ -646,8 +655,14 @@ max_observations = 50
             .unwrap_or_else(|e| panic!("{e}"));
 
         // Technical: shows paths and scores
-        assert!(rendered.contains("$.field_0"), "technical should show paths");
-        assert!(rendered.contains("Essence (tech)"), "should show profile name header");
+        assert!(
+            rendered.contains("$.field_0"),
+            "technical should show paths"
+        );
+        assert!(
+            rendered.contains("Essence (tech)"),
+            "should show profile name header"
+        );
     }
 
     #[test]
@@ -668,8 +683,7 @@ concern_relevance = 0.20
 vocabulary = "formal"
 max_observations = 50
 "#;
-        let profiles = load_profiles_from_toml(toml)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
         let profile = &profiles[0];
 
         let essence = make_essence(3);
@@ -678,8 +692,14 @@ max_observations = 50
             .unwrap_or_else(|e| panic!("{e}"));
 
         // Formal: full sentences with "the analysis identified"
-        assert!(rendered.contains("the analysis identified"), "formal should use full sentences");
-        assert!(rendered.contains("Profile: formal"), "should show profile header");
+        assert!(
+            rendered.contains("the analysis identified"),
+            "formal should use full sentences"
+        );
+        assert!(
+            rendered.contains("Profile: formal"),
+            "should show profile header"
+        );
     }
 
     #[test]
@@ -701,8 +721,7 @@ vocabulary = "technical"
 show_paths = true
 max_observations = 3
 "#;
-        let profiles = load_profiles_from_toml(toml)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
         let profile = &profiles[0];
 
         let essence = make_essence(10);
@@ -714,13 +733,15 @@ max_observations = 3
         assert!(rendered.contains("observation 0"));
         assert!(rendered.contains("observation 2"));
         // observation 3 should NOT be in output
-        assert!(!rendered.contains("observation 3"), "should respect max_observations=3");
+        assert!(
+            !rendered.contains("observation 3"),
+            "should respect max_observations=3"
+        );
     }
 
     #[test]
     fn json_rendering_works_for_custom_profile() {
-        let profiles = load_profiles_from_toml(sample_toml())
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(sample_toml()).unwrap_or_else(|e| panic!("{e}"));
         let profile = &profiles[0];
 
         let essence = make_essence(3);
@@ -762,8 +783,7 @@ structural_coverage = 0.10
 anomaly_strength = 0.10
 concern_relevance = 0.30
 "#;
-        let profiles = load_profiles_from_toml(toml)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(profiles.len(), 2);
         let names: Vec<&str> = profiles.iter().map(|p| p.name()).collect();
         assert!(names.contains(&"alpha"));
@@ -772,8 +792,7 @@ concern_relevance = 0.30
 
     #[test]
     fn empty_toml_returns_no_profiles() {
-        let profiles = load_profiles_from_toml("")
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml("").unwrap_or_else(|e| panic!("{e}"));
         assert!(profiles.is_empty());
     }
 
@@ -797,8 +816,7 @@ structural_coverage = 0.10
 anomaly_strength = 0.25
 concern_relevance = 0.20
 "#;
-        let profiles = load_profiles_from_toml(toml)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let profiles = load_profiles_from_toml(toml).unwrap_or_else(|e| panic!("{e}"));
         let p = &profiles[0];
         // Should use defaults
         assert_eq!(p.rendering.vocabulary, Vocabulary::Technical);

@@ -21,8 +21,8 @@ pub use analyzer::{FingerprintAnalyzer, FingerprintResult};
 pub use merkle::{merkle_fingerprint, merkle_with_motifs};
 pub use path_set::path_set_fingerprint;
 pub use similarity::{
-    cluster_documents, jaccard_similarity, minhash_signature, minhash_similarity,
-    ClusterResult, LshIndex, MinHashSignature,
+    cluster_documents, jaccard_similarity, minhash_signature, minhash_similarity, ClusterResult,
+    LshIndex, MinHashSignature,
 };
 pub use streaming::{StreamingFingerprintAccumulator, StreamingFingerprintResult};
 pub use typed_path::typed_path_fingerprint;

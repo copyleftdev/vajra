@@ -52,13 +52,12 @@ pub fn parse_pdf_file(path: &Path) -> Result<Document, VajraError> {
 /// Returns [`VajraError::Parse`] if the data is not a valid PDF.
 #[cfg(feature = "pdf")]
 pub fn parse_pdf_bytes(data: &[u8]) -> Result<Document, VajraError> {
-    let pages = pdf_extract::extract_text_from_mem_by_pages(data).map_err(|e| {
-        VajraError::Parse {
+    let pages =
+        pdf_extract::extract_text_from_mem_by_pages(data).map_err(|e| VajraError::Parse {
             byte_offset: 0,
             message: format!("PDF extraction from memory failed: {e}"),
             source_path: None,
-        }
-    })?;
+        })?;
 
     build_document_from_pages(&pages)
 }
@@ -208,8 +207,7 @@ mod tests {
     #[test]
     fn build_document_from_empty_pages() {
         let pages: Vec<String> = vec![];
-        let doc = build_document_from_pages(&pages)
-            .unwrap_or_else(|e| panic!("build failed: {e}"));
+        let doc = build_document_from_pages(&pages).unwrap_or_else(|e| panic!("build failed: {e}"));
         let v = doc.value();
         assert_eq!(v["type"], "pdf_document");
         assert_eq!(v["metadata"]["page_count"], 0);
@@ -224,12 +222,14 @@ mod tests {
             "Hello world.\n\nSecond paragraph.".to_string(),
             "Page two content here with more words.".to_string(),
         ];
-        let doc = build_document_from_pages(&pages)
-            .unwrap_or_else(|e| panic!("build failed: {e}"));
+        let doc = build_document_from_pages(&pages).unwrap_or_else(|e| panic!("build failed: {e}"));
         let v = doc.value();
         assert_eq!(v["metadata"]["page_count"], 2);
         let total_wc = v["metadata"]["word_count"].as_u64().unwrap_or(0);
-        assert!(total_wc > 5, "expected more than 5 words total, got {total_wc}");
+        assert!(
+            total_wc > 5,
+            "expected more than 5 words total, got {total_wc}"
+        );
 
         let pages_arr = v["pages"].as_array().unwrap_or_else(|| panic!("no pages"));
         assert_eq!(pages_arr[0]["number"], 1);
@@ -244,8 +244,7 @@ mod tests {
     #[test]
     fn build_document_produces_valid_trie() {
         let pages = vec!["Some test content on page one.".to_string()];
-        let doc = build_document_from_pages(&pages)
-            .unwrap_or_else(|e| panic!("build failed: {e}"));
+        let doc = build_document_from_pages(&pages).unwrap_or_else(|e| panic!("build failed: {e}"));
         assert!(doc.metadata().total_nodes > 0);
         assert!(doc.metadata().distinct_paths > 0);
         assert!(doc.trie().path_count() > 0);

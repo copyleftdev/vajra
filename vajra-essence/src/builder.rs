@@ -158,10 +158,7 @@ impl<'a> EssenceBuilder<'a> {
     }
 }
 
-fn observations_from_stats(
-    stats: &StatsResult,
-    candidates: &mut Vec<CandidateObservation>,
-) {
+fn observations_from_stats(stats: &StatsResult, candidates: &mut Vec<CandidateObservation>) {
     for (path, path_stats) in &stats.paths {
         let path_str = path.to_string();
 
@@ -183,9 +180,7 @@ fn observations_from_stats(
         }
 
         // Low cardinality => "enum-like field"
-        if path_stats.cardinality > 0
-            && path_stats.cardinality <= 10
-            && path_stats.total_count >= 2
+        if path_stats.cardinality > 0 && path_stats.cardinality <= 10 && path_stats.total_count >= 2
         {
             // Scale rarity: fewer distinct values = more enum-like
             #[allow(clippy::cast_precision_loss)]
@@ -583,9 +578,7 @@ mod tests {
     #[test]
     fn with_fingerprint_generates_motif_observations() {
         // A document with repeated structure
-        let doc = parse_doc(
-            r#"[{"a": 1, "b": 2}, {"a": 3, "b": 4}, {"a": 5, "b": 6}]"#,
-        );
+        let doc = parse_doc(r#"[{"a": 1, "b": 2}, {"a": 3, "b": 4}, {"a": 5, "b": 6}]"#);
 
         use vajra_fingerprint::FingerprintAnalyzer;
         use vajra_types::traits::Analyzer;
@@ -635,7 +628,9 @@ mod tests {
         use vajra_anomaly::AnomalyAnalyzer;
         use vajra_stats::StatsAnalyzer;
         use vajra_types::traits::Analyzer;
-        let stats = StatsAnalyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let stats = StatsAnalyzer
+            .analyze(&doc)
+            .unwrap_or_else(|e| panic!("{e}"));
         let anomalies = AnomalyAnalyzer::default()
             .analyze(&doc)
             .unwrap_or_else(|e| panic!("{e}"));
@@ -674,7 +669,9 @@ mod tests {
         use vajra_stats::StatsAnalyzer;
         use vajra_types::traits::Analyzer;
 
-        let stats = StatsAnalyzer.analyze(&doc).unwrap_or_else(|e| panic!("{e}"));
+        let stats = StatsAnalyzer
+            .analyze(&doc)
+            .unwrap_or_else(|e| panic!("{e}"));
         let anomalies = AnomalyAnalyzer::default()
             .analyze(&doc)
             .unwrap_or_else(|e| panic!("{e}"));

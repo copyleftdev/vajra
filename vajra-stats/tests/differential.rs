@@ -2,8 +2,8 @@
 //! counterparts to verify error bounds.
 
 use std::collections::BTreeMap;
+use vajra_fingerprint::similarity::{jaccard_similarity, minhash_signature, minhash_similarity};
 use vajra_stats::{CountMinSketch, DDSketch, SpaceSaving};
-use vajra_fingerprint::similarity::{minhash_signature, minhash_similarity, jaccard_similarity};
 use vajra_types::path::WildcardPath;
 
 // -----------------------------------------------------------------------
@@ -111,7 +111,9 @@ fn differential_ddsketch_vs_exact() {
 
     let quantiles = [0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99];
     for &q in &quantiles {
-        let sketch_est = sketch.quantile(q).unwrap_or_else(|| panic!("quantile {q} returned None"));
+        let sketch_est = sketch
+            .quantile(q)
+            .unwrap_or_else(|| panic!("quantile {q} returned None"));
 
         // Exact quantile: interpolation at rank q * (n-1).
         let rank = q * (exact_values.len() as f64 - 1.0);
@@ -155,7 +157,9 @@ fn differential_ddsketch_vs_exact_negative_values() {
     exact_values.sort_by(|a, b| a.total_cmp(b));
 
     for &q in &[0.25, 0.50, 0.75] {
-        let sketch_est = sketch.quantile(q).unwrap_or_else(|| panic!("quantile {q} returned None"));
+        let sketch_est = sketch
+            .quantile(q)
+            .unwrap_or_else(|| panic!("quantile {q} returned None"));
 
         let rank = q * (exact_values.len() as f64 - 1.0);
         let lower = rank.floor() as usize;
@@ -256,7 +260,11 @@ fn differential_space_saving_vs_exact() {
     // Find the true top-10 by frequency.
     let mut sorted_true: Vec<(String, u64)> = true_counts.into_iter().collect();
     sorted_true.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-    let true_top_10: Vec<String> = sorted_true.iter().take(10).map(|(k, _)| k.clone()).collect();
+    let true_top_10: Vec<String> = sorted_true
+        .iter()
+        .take(10)
+        .map(|(k, _)| k.clone())
+        .collect();
 
     // With k=15 slots, all true top-10 items should be tracked.
     let top = ss.top_k();
@@ -275,17 +283,26 @@ fn differential_space_saving_ordering() {
     // Verify that top_k returns items in descending count order.
     let mut ss = SpaceSaving::new(20);
 
-    for _ in 0..500 { ss.add("alpha"); }
-    for _ in 0..300 { ss.add("beta"); }
-    for _ in 0..100 { ss.add("gamma"); }
-    for _ in 0..50 { ss.add("delta"); }
+    for _ in 0..500 {
+        ss.add("alpha");
+    }
+    for _ in 0..300 {
+        ss.add("beta");
+    }
+    for _ in 0..100 {
+        ss.add("gamma");
+    }
+    for _ in 0..50 {
+        ss.add("delta");
+    }
 
     let top = ss.top_k();
     for window in top.windows(2) {
         assert!(
             window[0].1 >= window[1].1,
             "top_k not in descending order: {:?} before {:?}",
-            window[0], window[1]
+            window[0],
+            window[1]
         );
     }
 }

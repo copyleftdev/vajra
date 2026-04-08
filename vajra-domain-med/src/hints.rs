@@ -50,10 +50,7 @@ fn diagnosis_code_description() -> RelationshipHint {
 fn patient_subscriber() -> RelationshipHint {
     RelationshipHint {
         name: "patient_subscriber".to_owned(),
-        fields: vec![
-            "**/patient_*".to_owned(),
-            "**/subscriber_*".to_owned(),
-        ],
+        fields: vec!["**/patient_*".to_owned(), "**/subscriber_*".to_owned()],
         relationship: RelationshipType::CoOccurrence,
         weight: 0.8,
     }
@@ -63,10 +60,7 @@ fn patient_subscriber() -> RelationshipHint {
 fn provider_npi_name() -> RelationshipHint {
     RelationshipHint {
         name: "provider_npi_name".to_owned(),
-        fields: vec![
-            "**/provider_npi".to_owned(),
-            "**/provider_name".to_owned(),
-        ],
+        fields: vec!["**/provider_npi".to_owned(), "**/provider_name".to_owned()],
         relationship: RelationshipType::FunctionalDependency,
         weight: 0.9,
     }
@@ -91,10 +85,7 @@ fn adjudication() -> RelationshipHint {
 fn denial_reason() -> RelationshipHint {
     RelationshipHint {
         name: "denial_reason".to_owned(),
-        fields: vec![
-            "**/claim_status".to_owned(),
-            "**/denial_reason".to_owned(),
-        ],
+        fields: vec!["**/claim_status".to_owned(), "**/denial_reason".to_owned()],
         relationship: RelationshipType::ConditionalPresence,
         weight: 0.75,
     }

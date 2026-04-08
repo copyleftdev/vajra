@@ -267,8 +267,7 @@ pub fn cluster_documents(docs: &[&Document], seed: u64) -> ClusterResult {
     }
 
     // Extract path sets for each document.
-    let path_sets: Vec<Vec<WildcardPath>> =
-        docs.iter().map(|d| d.trie().all_paths()).collect();
+    let path_sets: Vec<Vec<WildcardPath>> = docs.iter().map(|d| d.trie().all_paths()).collect();
 
     let mut uf = UnionFind::new(n);
 
@@ -364,17 +363,17 @@ mod tests {
             WildcardPath::root().push_key("d"),
         ];
         let sim = jaccard_similarity(&a, &b);
-        assert!(
-            (sim - 0.5).abs() < EPS,
-            "expected 0.5, got {sim}"
-        );
+        assert!((sim - 0.5).abs() < EPS, "expected 0.5, got {sim}");
     }
 
     #[test]
     fn jaccard_empty_sets() {
         let a: Vec<WildcardPath> = vec![];
         let sim = jaccard_similarity(&a, &a);
-        assert!((sim - 1.0).abs() < EPS, "expected 1.0 for empty sets, got {sim}");
+        assert!(
+            (sim - 1.0).abs() < EPS,
+            "expected 1.0 for empty sets, got {sim}"
+        );
     }
 
     #[test]
@@ -456,10 +455,7 @@ mod tests {
         }
 
         // With k=512, we expect the maximum error across 10 trials to be < 0.15.
-        assert!(
-            max_error < 0.15,
-            "MinHash max error too large: {max_error}"
-        );
+        assert!(max_error < 0.15, "MinHash max error too large: {max_error}");
     }
 
     // ---- LSH ----

@@ -158,10 +158,10 @@ fn bench_drift(c: &mut Criterion) {
         .map(|(name, size)| {
             let json_a = generate_json(*size);
             let json_b = generate_json_variant(*size);
-            let doc_a = vajra_core::parse_str(&json_a)
-                .unwrap_or_else(|e| panic!("parse failed: {e}"));
-            let doc_b = vajra_core::parse_str(&json_b)
-                .unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc_a =
+                vajra_core::parse_str(&json_a).unwrap_or_else(|e| panic!("parse failed: {e}"));
+            let doc_b =
+                vajra_core::parse_str(&json_b).unwrap_or_else(|e| panic!("parse failed: {e}"));
             (*name, doc_a, doc_b)
         })
         .collect();

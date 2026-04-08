@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use vajra_anomaly::AnomalyAnalyzer;
 use vajra_core::formats::parse_file_auto;
 use vajra_drift::full_drift;
-use vajra_essence::{EssenceBuilder, EngineerProfile};
+use vajra_essence::{EngineerProfile, EssenceBuilder};
 use vajra_fingerprint::FingerprintAnalyzer;
 use vajra_stats::StatsAnalyzer;
 use vajra_types::traits::{Analyzer, ConcernProfile, OutputFormat};
@@ -211,22 +211,30 @@ fn analyze_stats(doc: &Document) -> serde_json::Value {
 
     let mut paths_json = Vec::new();
     for (wp, stats) in &result.paths {
-        let numeric = stats.numeric_stats.as_ref().map(|ns| serde_json::json!({
-            "min": ns.min,
-            "max": ns.max,
-            "mean": ns.mean,
-            "median": ns.median,
-            "mad": ns.mad,
-            "p05": ns.p05,
-            "p25": ns.p25,
-            "p75": ns.p75,
-            "p95": ns.p95,
-        }));
+        let numeric = stats.numeric_stats.as_ref().map(|ns| {
+            serde_json::json!({
+                "min": ns.min,
+                "max": ns.max,
+                "mean": ns.mean,
+                "median": ns.median,
+                "mad": ns.mad,
+                "p05": ns.p05,
+                "p25": ns.p25,
+                "p75": ns.p75,
+                "p95": ns.p95,
+            })
+        });
 
-        let top_values: Vec<serde_json::Value> = stats.top_values.iter().map(|(v, c)| serde_json::json!({
-            "value": v,
-            "count": c,
-        })).collect();
+        let top_values: Vec<serde_json::Value> = stats
+            .top_values
+            .iter()
+            .map(|(v, c)| {
+                serde_json::json!({
+                    "value": v,
+                    "count": c,
+                })
+            })
+            .collect();
 
         paths_json.push(serde_json::json!({
             "path": wp.to_string(),
@@ -249,13 +257,17 @@ fn analyze_fingerprint(doc: &Document) -> serde_json::Value {
         Err(e) => return serde_json::json!({"error": format!("{e}")}),
     };
 
-    let mut motifs: Vec<serde_json::Value> = result.subtree_frequencies
+    let mut motifs: Vec<serde_json::Value> = result
+        .subtree_frequencies
         .iter()
         .filter(|(_, &count)| count > 1)
         .map(|(h, &count)| serde_json::json!({"hash": hex(h), "count": count}))
         .collect();
     motifs.sort_by(|a, b| {
-        b["count"].as_u64().unwrap_or(0).cmp(&a["count"].as_u64().unwrap_or(0))
+        b["count"]
+            .as_u64()
+            .unwrap_or(0)
+            .cmp(&a["count"].as_u64().unwrap_or(0))
     });
 
     serde_json::json!({
@@ -273,26 +285,44 @@ fn analyze_anomalies(doc: &Document) -> serde_json::Value {
         Err(e) => return serde_json::json!({"error": format!("{e}")}),
     };
 
-    let instabilities: Vec<serde_json::Value> = report.type_instabilities.iter().map(|ti| serde_json::json!({
-        "path": ti.path,
-        "instability": ti.instability,
-        "dominant_type": ti.dominant_type,
-        "type_distribution": ti.type_distribution,
-    })).collect();
+    let instabilities: Vec<serde_json::Value> = report
+        .type_instabilities
+        .iter()
+        .map(|ti| {
+            serde_json::json!({
+                "path": ti.path,
+                "instability": ti.instability,
+                "dominant_type": ti.dominant_type,
+                "type_distribution": ti.type_distribution,
+            })
+        })
+        .collect();
 
-    let outliers: Vec<serde_json::Value> = report.numeric_outliers.iter().map(|no| serde_json::json!({
-        "path": no.path,
-        "value": no.value,
-        "z_mad": no.z_mad,
-        "median": no.median,
-        "mad": no.mad,
-    })).collect();
+    let outliers: Vec<serde_json::Value> = report
+        .numeric_outliers
+        .iter()
+        .map(|no| {
+            serde_json::json!({
+                "path": no.path,
+                "value": no.value,
+                "z_mad": no.z_mad,
+                "median": no.median,
+                "mad": no.mad,
+            })
+        })
+        .collect();
 
-    let rare: Vec<serde_json::Value> = report.rare_values.iter().map(|rv| serde_json::json!({
-        "value": rv.value,
-        "count": rv.count,
-        "rarity_bits": rv.rarity_bits,
-    })).collect();
+    let rare: Vec<serde_json::Value> = report
+        .rare_values
+        .iter()
+        .map(|rv| {
+            serde_json::json!({
+                "value": rv.value,
+                "count": rv.count,
+                "rarity_bits": rv.rarity_bits,
+            })
+        })
+        .collect();
 
     serde_json::json!({
         "type_instabilities": instabilities,
@@ -312,8 +342,7 @@ fn analyze_essence(doc: &Document) -> serde_json::Value {
     let anomalies = AnomalyAnalyzer::default().analyze(doc).ok();
     let fingerprint = FingerprintAnalyzer.analyze(doc).ok();
 
-    let mut builder = EssenceBuilder::new(doc, &profile)
-        .with_stats(&stats);
+    let mut builder = EssenceBuilder::new(doc, &profile).with_stats(&stats);
 
     if let Some(ref a) = anomalies {
         builder = builder.with_anomalies(a);
@@ -325,10 +354,8 @@ fn analyze_essence(doc: &Document) -> serde_json::Value {
     let essence = builder.build();
 
     match profile.render(&essence, OutputFormat::Json) {
-        Ok(rendered) => {
-            serde_json::from_str(&rendered)
-                .unwrap_or_else(|_| serde_json::json!({"rendered": rendered}))
-        }
+        Ok(rendered) => serde_json::from_str(&rendered)
+            .unwrap_or_else(|_| serde_json::json!({"rendered": rendered})),
         Err(e) => serde_json::json!({"error": format!("{e}")}),
     }
 }
@@ -368,9 +395,7 @@ fn golden_drift() {
     let golden = golden_dir();
 
     if !corpus.exists() || !golden.exists() {
-        eprintln!(
-            "Corpus not generated. Run: cargo run -p vajra-cli --bin generate-corpus"
-        );
+        eprintln!("Corpus not generated. Run: cargo run -p vajra-cli --bin generate-corpus");
         return;
     }
 
@@ -383,10 +408,10 @@ fn golden_drift() {
     let v1_path = corpus.join("api").join("schema_drift.json");
     let v2_path = corpus.join("api").join("schema_drift_v2.json");
 
-    let v1_docs = parse_file_auto(&v1_path, None)
-        .unwrap_or_else(|e| panic!("failed to parse v1: {e}"));
-    let v2_docs = parse_file_auto(&v2_path, None)
-        .unwrap_or_else(|e| panic!("failed to parse v2: {e}"));
+    let v1_docs =
+        parse_file_auto(&v1_path, None).unwrap_or_else(|e| panic!("failed to parse v1: {e}"));
+    let v2_docs =
+        parse_file_auto(&v2_path, None).unwrap_or_else(|e| panic!("failed to parse v2: {e}"));
 
     let report = full_drift(&v1_docs[0], &v2_docs[0]);
 
@@ -426,9 +451,7 @@ fn run_golden_suite(analysis_name: &str, analyzer: fn(&Document) -> serde_json::
     let golden = golden_dir();
 
     if !corpus.exists() || !golden.exists() {
-        eprintln!(
-            "Corpus not generated. Run: cargo run -p vajra-cli --bin generate-corpus"
-        );
+        eprintln!("Corpus not generated. Run: cargo run -p vajra-cli --bin generate-corpus");
         return;
     }
 

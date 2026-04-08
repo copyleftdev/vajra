@@ -129,12 +129,21 @@ fn build_frequency_map(doc: &Document) -> BTreeMap<WildcardPath, BTreeMap<String
 
 /// Check whether a path is predominantly numeric in both documents.
 fn is_numeric_path(lhs: &Document, rhs: &Document, path: &WildcardPath) -> bool {
-    let lhs_type = lhs.trie().get(path).and_then(|n| n.metadata.dominant_type());
-    let rhs_type = rhs.trie().get(path).and_then(|n| n.metadata.dominant_type());
+    let lhs_type = lhs
+        .trie()
+        .get(path)
+        .and_then(|n| n.metadata.dominant_type());
+    let rhs_type = rhs
+        .trie()
+        .get(path)
+        .and_then(|n| n.metadata.dominant_type());
 
     matches!(
         (lhs_type, rhs_type),
-        (Some(JsonType::Integer | JsonType::Float), Some(JsonType::Integer | JsonType::Float))
+        (
+            Some(JsonType::Integer | JsonType::Float),
+            Some(JsonType::Integer | JsonType::Float)
+        )
     )
 }
 

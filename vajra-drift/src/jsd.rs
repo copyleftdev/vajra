@@ -77,7 +77,11 @@ pub fn jensen_shannon_divergence(p: &[f64], q: &[f64]) -> Result<f64, JsdError> 
     }
 
     // Compute M = 0.5 * (P + Q)
-    let m: Vec<f64> = p.iter().zip(q.iter()).map(|(&pi, &qi)| 0.5 * (pi + qi)).collect();
+    let m: Vec<f64> = p
+        .iter()
+        .zip(q.iter())
+        .map(|(&pi, &qi)| 0.5 * (pi + qi))
+        .collect();
 
     let kl_pm = kl_divergence(p, &m);
     let kl_qm = kl_divergence(q, &m);
@@ -110,7 +114,10 @@ mod tests {
         let p = [0.25, 0.25, 0.25, 0.25];
         let q = [0.25, 0.25, 0.25, 0.25];
         let jsd = jensen_shannon_divergence(&p, &q).unwrap_or(f64::NAN);
-        assert!((jsd - 0.0).abs() < 1e-12, "JSD of identical distributions should be 0, got {jsd}");
+        assert!(
+            (jsd - 0.0).abs() < 1e-12,
+            "JSD of identical distributions should be 0, got {jsd}"
+        );
     }
 
     #[test]
@@ -191,7 +198,10 @@ mod tests {
     fn jsd_metric_identity() {
         let p = [0.25, 0.25, 0.25, 0.25];
         let d = jsd_metric(&p, &p).unwrap_or(f64::NAN);
-        assert!((d - 0.0).abs() < 1e-12, "metric of identical distributions should be 0");
+        assert!(
+            (d - 0.0).abs() < 1e-12,
+            "metric of identical distributions should be 0"
+        );
     }
 
     #[test]

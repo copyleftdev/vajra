@@ -72,9 +72,8 @@ pub fn chunk_essence(essence: &EssenceData, tokens_per_chunk: usize) -> Vec<Esse
 
     // Estimate the context overhead (document summary included in every chunk)
     let context_json = build_context_json(essence);
-    let context_overhead = estimate_tokens(
-        &serde_json::to_string(&context_json).unwrap_or_default(),
-    );
+    let context_overhead =
+        estimate_tokens(&serde_json::to_string(&context_json).unwrap_or_default());
 
     let available_per_chunk = if tokens_per_chunk > context_overhead {
         tokens_per_chunk - context_overhead
@@ -190,7 +189,11 @@ mod tests {
             observations.push(ScoredObservation {
                 observation: CandidateObservation {
                     path: format!("$.anomaly_path_{i}"),
-                    description: format!("numeric outlier (value={}, z_mad={:.2})", i * 100, 3.0 + i as f64),
+                    description: format!(
+                        "numeric outlier (value={}, z_mad={:.2})",
+                        i * 100,
+                        3.0 + i as f64
+                    ),
                     rarity: 0.0,
                     instability: 0.0,
                     entropy_signal: 0.0,
@@ -222,7 +225,11 @@ mod tests {
             observations.push(ScoredObservation {
                 observation: CandidateObservation {
                     path: format!("$.stat_field_{i}"),
-                    description: format!("enum-like field ({} distinct values over {} observations)", i + 2, (i + 1) * 10),
+                    description: format!(
+                        "enum-like field ({} distinct values over {} observations)",
+                        i + 2,
+                        (i + 1) * 10
+                    ),
                     rarity: 0.5,
                     instability: 0.0,
                     entropy_signal: 0.0,
@@ -277,7 +284,10 @@ mod tests {
 
             // Content should also have doc section
             let content = &chunk.content;
-            assert!(content.get("doc").is_some(), "content should have doc context");
+            assert!(
+                content.get("doc").is_some(),
+                "content should have doc context"
+            );
         }
     }
 

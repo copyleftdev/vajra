@@ -52,8 +52,7 @@ pub fn detect_compression_from_bytes(data: &[u8]) -> Compression {
     if data.len() >= 2 && data[0] == 0x1f && data[1] == 0x8b {
         return Compression::Gzip;
     }
-    if data.len() >= 4 && data[0] == 0x28 && data[1] == 0xb5 && data[2] == 0x2f && data[3] == 0xfd
-    {
+    if data.len() >= 4 && data[0] == 0x28 && data[1] == 0xb5 && data[2] == 0x2f && data[3] == 0xfd {
         return Compression::Zstd;
     }
     Compression::None
@@ -185,7 +184,11 @@ fn decompress_zstd(data: &[u8], max_bytes: u64) -> Result<String, VajraError> {
 }
 
 /// Read from a decoder into a String, enforcing a byte-count limit.
-fn read_limited<R: Read>(mut reader: R, max_bytes: u64, format_name: &str) -> Result<String, VajraError> {
+fn read_limited<R: Read>(
+    mut reader: R,
+    max_bytes: u64,
+    format_name: &str,
+) -> Result<String, VajraError> {
     let mut buf = Vec::new();
     let chunk_size: usize = 64 * 1024; // 64 KB chunks
     let mut tmp = vec![0u8; chunk_size];
@@ -223,8 +226,7 @@ mod tests {
 
     /// Helper: compress a string with gzip.
     fn gzip_compress(input: &str) -> Vec<u8> {
-        let mut encoder =
-            flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
         encoder
             .write_all(input.as_bytes())
             .unwrap_or_else(|e| panic!("gzip write failed: {e}"));
@@ -245,10 +247,7 @@ mod tests {
 
     #[test]
     fn detect_gz_extension() {
-        assert_eq!(
-            detect_compression(Path::new("data.gz")),
-            Compression::Gzip
-        );
+        assert_eq!(detect_compression(Path::new("data.gz")), Compression::Gzip);
     }
 
     #[test]
@@ -261,10 +260,7 @@ mod tests {
 
     #[test]
     fn detect_zst_extension() {
-        assert_eq!(
-            detect_compression(Path::new("data.zst")),
-            Compression::Zstd
-        );
+        assert_eq!(detect_compression(Path::new("data.zst")), Compression::Zstd);
     }
 
     #[test]

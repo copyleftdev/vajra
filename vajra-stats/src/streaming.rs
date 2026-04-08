@@ -367,8 +367,7 @@ impl StreamingStatsAccumulator {
                         }
                     }
                     (ValueTracker::Exact(self_map), ValueTracker::Approximate(other_cms)) => {
-                        let mut cms =
-                            CountMinSketch::new(self_acc.cms_epsilon, self_acc.cms_delta);
+                        let mut cms = CountMinSketch::new(self_acc.cms_epsilon, self_acc.cms_delta);
                         for (k, &v) in self_map.iter() {
                             cms.add(k.as_bytes(), v);
                         }
@@ -435,8 +434,14 @@ mod tests {
 
         let path = WildcardPath::root().push_array_wildcard();
 
-        let dom_stats = dom_result.paths.get(&path).unwrap_or_else(|| panic!("missing dom"));
-        let stream_stats = stream_result.paths.get(&path).unwrap_or_else(|| panic!("missing stream"));
+        let dom_stats = dom_result
+            .paths
+            .get(&path)
+            .unwrap_or_else(|| panic!("missing dom"));
+        let stream_stats = stream_result
+            .paths
+            .get(&path)
+            .unwrap_or_else(|| panic!("missing stream"));
 
         assert_eq!(dom_stats.cardinality, stream_stats.cardinality);
         assert_eq!(dom_stats.total_count, stream_stats.total_count);
@@ -460,8 +465,16 @@ mod tests {
         let stream_result = acc.finalize();
 
         let path = WildcardPath::root().push_array_wildcard();
-        let dom_h = dom_result.paths.get(&path).map(|s| s.entropy).unwrap_or(0.0);
-        let stream_h = stream_result.paths.get(&path).map(|s| s.entropy).unwrap_or(0.0);
+        let dom_h = dom_result
+            .paths
+            .get(&path)
+            .map(|s| s.entropy)
+            .unwrap_or(0.0);
+        let stream_h = stream_result
+            .paths
+            .get(&path)
+            .map(|s| s.entropy)
+            .unwrap_or(0.0);
 
         assert!(
             (dom_h - stream_h).abs() < 1e-10,
@@ -483,10 +496,17 @@ mod tests {
 
         let path = WildcardPath::root().push_array_wildcard();
         let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
-        let ns = stats.numeric_stats.as_ref().unwrap_or_else(|| panic!("no numeric"));
+        let ns = stats
+            .numeric_stats
+            .as_ref()
+            .unwrap_or_else(|| panic!("no numeric"));
 
         // DDSketch with alpha=0.01 should be within ~2% of true values
-        assert!((ns.median - 50.0).abs() / 50.0 < 0.05, "median={}", ns.median);
+        assert!(
+            (ns.median - 50.0).abs() / 50.0 < 0.05,
+            "median={}",
+            ns.median
+        );
         assert!((ns.min - 1.0).abs() < 1e-10, "min={}", ns.min);
         assert!((ns.max - 100.0).abs() < 1e-10, "max={}", ns.max);
     }
@@ -508,8 +528,16 @@ mod tests {
         let stream_result = acc.finalize();
 
         let path = WildcardPath::root().push_array_wildcard();
-        let dom_top = &dom_result.paths.get(&path).unwrap_or_else(|| panic!("m")).top_values;
-        let stream_top = &stream_result.paths.get(&path).unwrap_or_else(|| panic!("m")).top_values;
+        let dom_top = &dom_result
+            .paths
+            .get(&path)
+            .unwrap_or_else(|| panic!("m"))
+            .top_values;
+        let stream_top = &stream_result
+            .paths
+            .get(&path)
+            .unwrap_or_else(|| panic!("m"))
+            .top_values;
 
         // First entry (most frequent) should match
         assert_eq!(dom_top[0].0, stream_top[0].0);
@@ -603,10 +631,17 @@ mod tests {
 
         let result = acc.finalize();
         let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
-        let ns = stats.numeric_stats.as_ref().unwrap_or_else(|| panic!("no numeric"));
+        let ns = stats
+            .numeric_stats
+            .as_ref()
+            .unwrap_or_else(|| panic!("no numeric"));
 
         // With alpha=0.05, wider buckets but median should still be reasonable
-        assert!((ns.median - 50.0).abs() / 50.0 < 0.10, "median={}", ns.median);
+        assert!(
+            (ns.median - 50.0).abs() / 50.0 < 0.10,
+            "median={}",
+            ns.median
+        );
     }
 
     // Test 14: Empty events produce empty result

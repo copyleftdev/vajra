@@ -86,7 +86,10 @@ mod tests {
         let mut a = vec![1.0, 2.0, 3.0];
         let mut b = vec![1.0, 2.0, 3.0];
         let d = wasserstein_1d(&mut a, &mut b);
-        assert!((d - 0.0).abs() < 1e-12, "identical distributions should give 0, got {d}");
+        assert!(
+            (d - 0.0).abs() < 1e-12,
+            "identical distributions should give 0, got {d}"
+        );
     }
 
     #[test]
@@ -107,7 +110,10 @@ mod tests {
         let mut a = vec![0.0];
         let mut b = vec![5.0];
         let d = wasserstein_1d(&mut a, &mut b);
-        assert!((d - 5.0).abs() < 1e-12, "distance between 0 and 5 should be 5.0, got {d}");
+        assert!(
+            (d - 5.0).abs() < 1e-12,
+            "distance between 0 and 5 should be 5.0, got {d}"
+        );
     }
 
     #[test]
@@ -137,10 +143,7 @@ mod tests {
         let mut a = vec![0.0];
         let mut b = vec![0.0, 1.0];
         let d = wasserstein_1d(&mut a, &mut b);
-        assert!(
-            (d - 0.5).abs() < 1e-12,
-            "expected 0.5, got {d}"
-        );
+        assert!((d - 0.5).abs() < 1e-12, "expected 0.5, got {d}");
     }
 
     #[test]

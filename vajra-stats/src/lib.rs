@@ -34,9 +34,7 @@ pub use entropy::{normalized_entropy, shannon_entropy_from_counts};
 pub use frequency::FrequencyCounter;
 pub use mad::{mad, median, modified_z_score};
 pub use numeric::{compute_numeric_stats, percentile, NumericStats};
-pub use relationships::{
-    conditional_entropy, discover_relationships, pmi, FieldRelationship,
-};
+pub use relationships::{conditional_entropy, discover_relationships, pmi, FieldRelationship};
 pub use space_saving::SpaceSaving;
 pub use streaming::{StreamingConfig, StreamingStatsAccumulator};
 pub use temporal::{

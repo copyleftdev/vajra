@@ -76,19 +76,22 @@ pub fn analyze_batch(file_paths: &[PathBuf]) -> Result<BatchResult> {
     }
 
     // Phase 1: Parse and analyze each document in parallel
-    let results: Vec<(usize, String, Result<(Document, StatsResult, AnomalyReport, FingerprintResult)>)> =
-        file_paths
-            .par_iter()
-            .enumerate()
-            .map(|(index, path)| {
-                let file_name = path
-                    .file_name()
-                    .map(|n| n.to_string_lossy().into_owned())
-                    .unwrap_or_else(|| path.display().to_string());
-                let result = analyze_single(path);
-                (index, file_name, result)
-            })
-            .collect();
+    let results: Vec<(
+        usize,
+        String,
+        Result<(Document, StatsResult, AnomalyReport, FingerprintResult)>,
+    )> = file_paths
+        .par_iter()
+        .enumerate()
+        .map(|(index, path)| {
+            let file_name = path
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_else(|| path.display().to_string());
+            let result = analyze_single(path);
+            (index, file_name, result)
+        })
+        .collect();
 
     // Phase 2: Separate successes from failures
     let mut per_document = Vec::new();
@@ -137,15 +140,18 @@ pub fn analyze_batch_from_strings(inputs: &[(String, String)]) -> Result<BatchRe
         anyhow::bail!("no documents to analyze (empty batch)");
     }
 
-    let results: Vec<(usize, String, Result<(Document, StatsResult, AnomalyReport, FingerprintResult)>)> =
-        inputs
-            .par_iter()
-            .enumerate()
-            .map(|(index, (name, json))| {
-                let result = analyze_single_str(json);
-                (index, name.clone(), result)
-            })
-            .collect();
+    let results: Vec<(
+        usize,
+        String,
+        Result<(Document, StatsResult, AnomalyReport, FingerprintResult)>,
+    )> = inputs
+        .par_iter()
+        .enumerate()
+        .map(|(index, (name, json))| {
+            let result = analyze_single_str(json);
+            (index, name.clone(), result)
+        })
+        .collect();
 
     let mut per_document = Vec::new();
     let mut errors = Vec::new();
@@ -180,20 +186,25 @@ pub fn analyze_batch_from_strings(inputs: &[(String, String)]) -> Result<BatchRe
 }
 
 /// Analyze a single file on disk.
-fn analyze_single(path: &Path) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
-    let doc = parse_file(path)
-        .with_context(|| format!("failed to parse {}", path.display()))?;
+fn analyze_single(
+    path: &Path,
+) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
+    let doc = parse_file(path).with_context(|| format!("failed to parse {}", path.display()))?;
     analyze_document(doc)
 }
 
 /// Analyze a single JSON string.
-fn analyze_single_str(json: &str) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
+fn analyze_single_str(
+    json: &str,
+) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
     let doc = parse_str(json).context("failed to parse JSON")?;
     analyze_document(doc)
 }
 
 /// Run all analyzers on a parsed document.
-fn analyze_document(doc: Document) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
+fn analyze_document(
+    doc: Document,
+) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
     let stats = StatsAnalyzer
         .analyze(&doc)
         .context("stats analysis failed")?;
@@ -269,12 +280,7 @@ pub fn collect_json_files(dir: &Path) -> Result<Vec<PathBuf>> {
     let mut files: Vec<PathBuf> = std::fs::read_dir(dir)
         .with_context(|| format!("failed to read directory {}", dir.display()))?
         .filter_map(|entry| entry.ok())
-        .filter(|entry| {
-            entry
-                .path()
-                .extension()
-                .is_some_and(|ext| ext == "json")
-        })
+        .filter(|entry| entry.path().extension().is_some_and(|ext| ext == "json"))
         .map(|entry| entry.path())
         .collect();
 
@@ -297,8 +303,8 @@ mod tests {
             ("file3.json".to_string(), json.to_string()),
         ];
 
-        let result = analyze_batch_from_strings(&inputs)
-            .unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result =
+            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
 
         assert_eq!(result.per_document.len(), 3);
         assert!(result.errors.is_empty());
@@ -335,15 +341,18 @@ mod tests {
             ("c.json".to_string(), json_c.to_string()),
         ];
 
-        let result = analyze_batch_from_strings(&inputs)
-            .unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result =
+            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
 
         assert_eq!(result.per_document.len(), 3);
         assert_eq!(result.aggregate.total_documents, 3);
 
         // $.name is common (in all 3 docs)
         assert!(
-            result.aggregate.common_paths.contains(&"$.name".to_string()),
+            result
+                .aggregate
+                .common_paths
+                .contains(&"$.name".to_string()),
             "$.name should be a common path, common_paths = {:?}",
             result.aggregate.common_paths,
         );
@@ -372,8 +381,8 @@ mod tests {
     fn batch_single_file() {
         let json = r#"{"x": 1}"#;
         let inputs = vec![("only.json".to_string(), json.to_string())];
-        let result = analyze_batch_from_strings(&inputs)
-            .unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result =
+            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
 
         assert_eq!(result.per_document.len(), 1);
         assert_eq!(result.aggregate.total_documents, 1);
@@ -389,28 +398,20 @@ mod tests {
         let dir_path = dir.path();
 
         // Create test JSON files
-        fs::write(
-            dir_path.join("a.json"),
-            r#"{"name": "Alice", "age": 30}"#,
-        )
-        .unwrap_or_else(|e| panic!("write failed: {e}"));
+        fs::write(dir_path.join("a.json"), r#"{"name": "Alice", "age": 30}"#)
+            .unwrap_or_else(|e| panic!("write failed: {e}"));
 
-        fs::write(
-            dir_path.join("b.json"),
-            r#"{"name": "Bob", "age": 25}"#,
-        )
-        .unwrap_or_else(|e| panic!("write failed: {e}"));
+        fs::write(dir_path.join("b.json"), r#"{"name": "Bob", "age": 25}"#)
+            .unwrap_or_else(|e| panic!("write failed: {e}"));
 
         // Non-JSON file should be ignored
         fs::write(dir_path.join("readme.txt"), "not json")
             .unwrap_or_else(|e| panic!("write failed: {e}"));
 
-        let files = collect_json_files(dir_path)
-            .unwrap_or_else(|e| panic!("collect failed: {e}"));
+        let files = collect_json_files(dir_path).unwrap_or_else(|e| panic!("collect failed: {e}"));
         assert_eq!(files.len(), 2);
 
-        let result = analyze_batch(&files)
-            .unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result = analyze_batch(&files).unwrap_or_else(|e| panic!("batch failed: {e}"));
         assert_eq!(result.per_document.len(), 2);
         assert!(result.errors.is_empty());
     }
@@ -423,8 +424,8 @@ mod tests {
             ("third.json".to_string(), r#"{"c": 3}"#.to_string()),
         ];
 
-        let result = analyze_batch_from_strings(&inputs)
-            .unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result =
+            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
 
         assert_eq!(result.per_document[0].file_name, "first.json");
         assert_eq!(result.per_document[1].file_name, "second.json");
@@ -442,8 +443,8 @@ mod tests {
             ("also_good.json".to_string(), r#"{"b": 2}"#.to_string()),
         ];
 
-        let result = analyze_batch_from_strings(&inputs)
-            .unwrap_or_else(|e| panic!("batch failed: {e}"));
+        let result =
+            analyze_batch_from_strings(&inputs).unwrap_or_else(|e| panic!("batch failed: {e}"));
 
         assert_eq!(result.per_document.len(), 2);
         assert_eq!(result.errors.len(), 1);
@@ -453,8 +454,8 @@ mod tests {
     #[test]
     fn empty_directory_returns_error() {
         let dir = tempfile::tempdir().unwrap_or_else(|e| panic!("tempdir failed: {e}"));
-        let files = collect_json_files(dir.path())
-            .unwrap_or_else(|e| panic!("collect failed: {e}"));
+        let files =
+            collect_json_files(dir.path()).unwrap_or_else(|e| panic!("collect failed: {e}"));
         assert!(files.is_empty());
 
         let result = analyze_batch(&files);

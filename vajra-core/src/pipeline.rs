@@ -117,12 +117,21 @@ mod tests {
 
         // DOM path
         let doc = crate::parse::parse_str(json).unwrap_or_else(|e| panic!("parse: {e}"));
-        let dom_paths: Vec<String> = doc.trie().all_paths().iter().map(|p| p.to_string()).collect();
+        let dom_paths: Vec<String> = doc
+            .trie()
+            .all_paths()
+            .iter()
+            .map(|p| p.to_string())
+            .collect();
 
         // Event path
         let events = emit_events(&value);
         let event_trie = trie_from_events(&events);
-        let event_paths: Vec<String> = event_trie.all_paths().iter().map(|p| p.to_string()).collect();
+        let event_paths: Vec<String> = event_trie
+            .all_paths()
+            .iter()
+            .map(|p| p.to_string())
+            .collect();
 
         assert_eq!(dom_paths, event_paths);
     }

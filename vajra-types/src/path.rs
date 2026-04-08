@@ -143,9 +143,15 @@ mod tests {
     fn parent_navigation() {
         let p = WildcardPath::root().push_key("a").push_key("b");
         let parent = p.parent();
-        assert_eq!(parent.as_ref().map(|p| p.to_string()), Some("$.a".to_owned()));
+        assert_eq!(
+            parent.as_ref().map(|p| p.to_string()),
+            Some("$.a".to_owned())
+        );
         let grandparent = parent.and_then(|p| p.parent());
-        assert_eq!(grandparent.as_ref().map(|p| p.to_string()), Some("$".to_owned()));
+        assert_eq!(
+            grandparent.as_ref().map(|p| p.to_string()),
+            Some("$".to_owned())
+        );
     }
 
     #[test]

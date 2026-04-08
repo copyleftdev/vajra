@@ -120,10 +120,7 @@ mod tests {
     fn rarity_one_in_ten_thousand() {
         // -log2(1/10000) = log2(10000) ~ 13.2877
         let r = rarity_score(1, 10_000);
-        assert!(
-            (r - 13.2877).abs() < EPS,
-            "expected ~13.3 bits, got {r}"
-        );
+        assert!((r - 13.2877).abs() < EPS, "expected ~13.3 bits, got {r}");
     }
 
     #[test]
@@ -178,7 +175,10 @@ mod tests {
             counts.insert(format!("val_{i}"), 100);
         }
         let result = detect_rare_values(&counts, 1000, 2.0);
-        assert!(result.is_empty(), "uniform distribution should have no rare outliers");
+        assert!(
+            result.is_empty(),
+            "uniform distribution should have no rare outliers"
+        );
     }
 
     #[test]

@@ -40,11 +40,7 @@ fn render_summary(essence: &EssenceData, out: &mut String) {
     let _ = writeln!(out, "| Total Nodes | {} |", essence.total_nodes);
     let _ = writeln!(out, "| Distinct Paths | {} |", essence.distinct_paths);
     let _ = writeln!(out, "| Max Depth | {} |", essence.max_depth);
-    let _ = writeln!(
-        out,
-        "| Observations | {} |",
-        essence.observations.len()
-    );
+    let _ = writeln!(out, "| Observations | {} |", essence.observations.len());
     let anomaly_count = essence
         .observations
         .iter()
@@ -103,17 +99,13 @@ fn render_anomalies(essence: &EssenceData, out: &mut String) {
             let _ = writeln!(
                 out,
                 "- **[{severity}]** `{}` -- {} (strength: {:.3})",
-                obs.observation.path,
-                obs.observation.description,
-                obs.observation.anomaly_strength
+                obs.observation.path, obs.observation.description, obs.observation.anomaly_strength
             );
         } else {
             let _ = writeln!(
                 out,
                 "- [{severity}] `{}` -- {} (strength: {:.3})",
-                obs.observation.path,
-                obs.observation.description,
-                obs.observation.anomaly_strength
+                obs.observation.path, obs.observation.description, obs.observation.anomaly_strength
             );
         }
     }
@@ -261,8 +253,14 @@ mod tests {
     fn markdown_contains_expected_headers() {
         let essence = make_test_essence();
         let md = render_markdown(&essence, "engineer");
-        assert!(md.contains("## Document Summary"), "should have Document Summary header");
-        assert!(md.contains("## Observations"), "should have Observations header");
+        assert!(
+            md.contains("## Document Summary"),
+            "should have Document Summary header"
+        );
+        assert!(
+            md.contains("## Observations"),
+            "should have Observations header"
+        );
         assert!(md.contains("## Anomalies"), "should have Anomalies header");
         assert!(md.contains("## Structure"), "should have Structure header");
     }
@@ -290,10 +288,7 @@ mod tests {
             .iter()
             .filter(|l| l.starts_with('|') && l.ends_with('|'))
             .collect();
-        assert!(
-            !table_lines.is_empty(),
-            "should have valid GFM table rows"
-        );
+        assert!(!table_lines.is_empty(), "should have valid GFM table rows");
     }
 
     #[test]
@@ -324,10 +319,7 @@ mod tests {
             "should have fingerprints section"
         );
         assert!(md.contains("```"), "fingerprints should be in code blocks");
-        assert!(
-            md.contains("abcd1234"),
-            "should contain the motif hash"
-        );
+        assert!(md.contains("abcd1234"), "should contain the motif hash");
     }
 
     #[test]
@@ -355,10 +347,7 @@ mod tests {
         essence.budget_limit = Some(500);
 
         let md = render_markdown(&essence, "test");
-        assert!(
-            md.contains("truncated"),
-            "should show truncation notice"
-        );
+        assert!(md.contains("truncated"), "should show truncation notice");
         assert!(
             md.contains("400") && md.contains("500"),
             "should show budget usage"

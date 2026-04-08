@@ -35,11 +35,12 @@ impl ConcernProfile for StaffProfile {
                     message: format!("JSON serialization failed: {e}"),
                 }),
             OutputFormat::CompactAi => {
-                serde_json::to_string_pretty(&render_compact_ai(essence, false))
-                    .map_err(|e| VajraError::Analysis {
+                serde_json::to_string_pretty(&render_compact_ai(essence, false)).map_err(|e| {
+                    VajraError::Analysis {
                         path: String::new(),
                         message: format!("JSON serialization failed: {e}"),
-                    })
+                    }
+                })
             }
             OutputFormat::Markdown => Ok(render_markdown(essence, "staff")),
             _ => Ok(render::render_text(essence, "staff")),
@@ -71,11 +72,12 @@ impl ConcernProfile for EngineerProfile {
                     message: format!("JSON serialization failed: {e}"),
                 }),
             OutputFormat::CompactAi => {
-                serde_json::to_string_pretty(&render_compact_ai(essence, false))
-                    .map_err(|e| VajraError::Analysis {
+                serde_json::to_string_pretty(&render_compact_ai(essence, false)).map_err(|e| {
+                    VajraError::Analysis {
                         path: String::new(),
                         message: format!("JSON serialization failed: {e}"),
-                    })
+                    }
+                })
             }
             OutputFormat::Markdown => Ok(render_markdown(essence, "engineer")),
             _ => Ok(render::render_text(essence, "engineer")),
@@ -107,11 +109,12 @@ impl ConcernProfile for FraudProfile {
                     message: format!("JSON serialization failed: {e}"),
                 }),
             OutputFormat::CompactAi => {
-                serde_json::to_string_pretty(&render_compact_ai(essence, false))
-                    .map_err(|e| VajraError::Analysis {
+                serde_json::to_string_pretty(&render_compact_ai(essence, false)).map_err(|e| {
+                    VajraError::Analysis {
                         path: String::new(),
                         message: format!("JSON serialization failed: {e}"),
-                    })
+                    }
+                })
             }
             OutputFormat::Markdown => Ok(render_markdown(essence, "fraud")),
             _ => Ok(render::render_text(essence, "fraud")),
@@ -143,11 +146,12 @@ impl ConcernProfile for AuditorProfile {
                     message: format!("JSON serialization failed: {e}"),
                 }),
             OutputFormat::CompactAi => {
-                serde_json::to_string_pretty(&render_compact_ai(essence, false))
-                    .map_err(|e| VajraError::Analysis {
+                serde_json::to_string_pretty(&render_compact_ai(essence, false)).map_err(|e| {
+                    VajraError::Analysis {
                         path: String::new(),
                         message: format!("JSON serialization failed: {e}"),
-                    })
+                    }
+                })
             }
             OutputFormat::Markdown => Ok(render_markdown(essence, "auditor")),
             _ => Ok(render::render_text(essence, "auditor")),
@@ -179,11 +183,12 @@ impl ConcernProfile for AiProfile {
                     message: format!("JSON serialization failed: {e}"),
                 }),
             OutputFormat::CompactAi => {
-                serde_json::to_string_pretty(&render_compact_ai(essence, true))
-                    .map_err(|e| VajraError::Analysis {
+                serde_json::to_string_pretty(&render_compact_ai(essence, true)).map_err(|e| {
+                    VajraError::Analysis {
                         path: String::new(),
                         message: format!("JSON serialization failed: {e}"),
-                    })
+                    }
+                })
             }
             OutputFormat::Markdown => Ok(render_markdown(essence, "ai")),
             _ => Ok(render::render_text(essence, "ai")),

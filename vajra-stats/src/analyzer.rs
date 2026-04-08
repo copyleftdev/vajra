@@ -84,12 +84,10 @@ impl Analyzer for StatsAnalyzer {
                 0.0
             };
 
-            let numeric_stats = numeric_values
-                .get(&path)
-                .and_then(|vals| {
-                    let mut v = vals.clone();
-                    numeric::compute_numeric_stats(&mut v)
-                });
+            let numeric_stats = numeric_values.get(&path).and_then(|vals| {
+                let mut v = vals.clone();
+                numeric::compute_numeric_stats(&mut v)
+            });
 
             let top_values = fc.top_k(&path, DEFAULT_TOP_K);
 
@@ -226,8 +224,8 @@ mod tests {
         assert_eq!(stats.total_count, 5);
 
         // Entropy for p=[3/5, 2/5]
-        let expected_h = -(3.0 / 5.0 * (3.0_f64 / 5.0).log2())
-            - (2.0 / 5.0 * (2.0_f64 / 5.0).log2());
+        let expected_h =
+            -(3.0 / 5.0 * (3.0_f64 / 5.0).log2()) - (2.0 / 5.0 * (2.0_f64 / 5.0).log2());
         assert!((stats.entropy - expected_h).abs() < 1e-8);
     }
 
@@ -241,7 +239,10 @@ mod tests {
         let stats = result.paths.get(&path).unwrap_or_else(|| panic!("missing"));
 
         assert!(stats.numeric_stats.is_some());
-        let ns = stats.numeric_stats.as_ref().unwrap_or_else(|| panic!("expected numeric"));
+        let ns = stats
+            .numeric_stats
+            .as_ref()
+            .unwrap_or_else(|| panic!("expected numeric"));
         assert!((ns.min - 1.0).abs() < EPS);
         assert!((ns.max - 5.0).abs() < EPS);
         assert!((ns.mean - 3.0).abs() < EPS);
@@ -280,7 +281,9 @@ mod tests {
         let result = analyzer.extract(&doc, &mut store);
         assert!(result.is_ok());
 
-        let path = WildcardPath::root().push_key("scores").push_array_wildcard();
+        let path = WildcardPath::root()
+            .push_key("scores")
+            .push_array_wildcard();
         let features = store.get(&path);
         assert!(features.is_some());
         let features = features.unwrap_or_else(|| panic!("expected features"));
@@ -291,7 +294,10 @@ mod tests {
         assert!(features.max_rarity.is_some());
         assert!(features.numeric.is_some());
 
-        let nf = features.numeric.as_ref().unwrap_or_else(|| panic!("expected numeric"));
+        let nf = features
+            .numeric
+            .as_ref()
+            .unwrap_or_else(|| panic!("expected numeric"));
         assert!((nf.min - 10.0).abs() < EPS);
         assert!((nf.max - 30.0).abs() < EPS);
         assert!((nf.mean - 20.0).abs() < EPS);
@@ -302,7 +308,9 @@ mod tests {
         let doc = parse_doc(r#"[1, null, 2]"#);
         let analyzer = StatsAnalyzer;
         let mut store = FeatureStore::new();
-        analyzer.extract(&doc, &mut store).unwrap_or_else(|e| panic!("{e}"));
+        analyzer
+            .extract(&doc, &mut store)
+            .unwrap_or_else(|e| panic!("{e}"));
 
         let path = WildcardPath::root().push_array_wildcard();
         let features = store.get(&path);

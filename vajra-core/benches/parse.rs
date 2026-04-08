@@ -66,10 +66,7 @@ fn generate_json(node_count: usize) -> String {
                     if r > 0 {
                         buf.push(',');
                     }
-                    buf.push_str(&format!(
-                        "{{\"id\":{},\"val\":\"rec_{}\"}}",
-                        r, r
-                    ));
+                    buf.push_str(&format!("{{\"id\":{},\"val\":\"rec_{}\"}}", r, r));
                     used += 3; // object + 2 scalars
                 }
                 buf.push(']');

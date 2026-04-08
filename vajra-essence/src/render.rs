@@ -88,11 +88,7 @@ fn observation_to_json(obs: &ScoredObservation) -> serde_json::Value {
 /// - `Json` -> structured JSON
 /// - `Text` / `Ndjson` -> profile-specific text
 #[must_use]
-pub fn render_format(
-    essence: &EssenceData,
-    profile_name: &str,
-    format: OutputFormat,
-) -> String {
+pub fn render_format(essence: &EssenceData, profile_name: &str, format: OutputFormat) -> String {
     match format {
         OutputFormat::CompactAi => {
             let json = render_compact_ai(essence, false);
@@ -126,7 +122,11 @@ fn render_staff_text(essence: &EssenceData, out: &mut String) {
         out.push_str("Nothing unusual was found in this document.\n\n");
     } else {
         for obs in &essence.observations {
-            let _ = writeln!(out, "- {}: {}", obs.observation.path, obs.observation.description);
+            let _ = writeln!(
+                out,
+                "- {}: {}",
+                obs.observation.path, obs.observation.description
+            );
         }
         out.push('\n');
     }
@@ -325,7 +325,11 @@ fn render_auditor_text(essence: &EssenceData, out: &mut String) {
     } else {
         out.push_str("Fields with null values:\n");
         for obs in &null_obs {
-            let _ = writeln!(out, "  - {} -- {}", obs.observation.path, obs.observation.description);
+            let _ = writeln!(
+                out,
+                "  - {} -- {}",
+                obs.observation.path, obs.observation.description
+            );
         }
         out.push('\n');
     }
@@ -347,9 +351,7 @@ fn render_auditor_text(essence: &EssenceData, out: &mut String) {
             let _ = writeln!(
                 out,
                 "  FINDING: {} -- {} (instability={:.4})",
-                obs.observation.path,
-                obs.observation.description,
-                obs.observation.instability
+                obs.observation.path, obs.observation.description, obs.observation.instability
             );
         }
         out.push('\n');

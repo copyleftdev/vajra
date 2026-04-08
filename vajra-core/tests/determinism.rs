@@ -28,7 +28,12 @@ fn determinism_parse_10_runs() {
     let mut serialized: Vec<String> = Vec::with_capacity(N);
     for _ in 0..N {
         let doc = parse_str(COMPLEX_JSON).unwrap_or_else(|e| panic!("parse failed: {e}"));
-        let paths: Vec<String> = doc.trie().all_paths().iter().map(|p| p.to_string()).collect();
+        let paths: Vec<String> = doc
+            .trie()
+            .all_paths()
+            .iter()
+            .map(|p| p.to_string())
+            .collect();
         serialized.push(format!("{paths:?}"));
     }
     for i in 1..N {
@@ -118,10 +123,7 @@ fn determinism_stats_10_runs() {
         results.push(entries.join("\n"));
     }
     for i in 1..N {
-        assert_eq!(
-            results[0], results[i],
-            "stats run 0 vs run {i} differ"
-        );
+        assert_eq!(results[0], results[i], "stats run 0 vs run {i} differ");
     }
 }
 
@@ -146,10 +148,7 @@ fn determinism_anomaly_10_runs() {
         results.push(serialized);
     }
     for i in 1..N {
-        assert_eq!(
-            results[0], results[i],
-            "anomaly run 0 vs run {i} differ"
-        );
+        assert_eq!(results[0], results[i], "anomaly run 0 vs run {i} differ");
     }
 }
 
@@ -243,7 +242,10 @@ fn determinism_essence_different_profiles_internally_deterministic() {
             pair[0], pair[1],
             "profile '{name}' is not internally deterministic"
         );
-        all_outputs.push((name.to_string(), pair.into_iter().next().unwrap_or_default()));
+        all_outputs.push((
+            name.to_string(),
+            pair.into_iter().next().unwrap_or_default(),
+        ));
     }
 
     // Verify that different profiles produce different outputs.

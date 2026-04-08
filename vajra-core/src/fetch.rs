@@ -120,9 +120,7 @@ pub fn fetch_url_with_limits(
         body.extend_from_slice(&tmp[..n]);
         if body.len() as u64 > max_bytes {
             return Err(VajraError::LimitExceeded {
-                message: format!(
-                    "response from {url} exceeds maximum size of {max_bytes} bytes"
-                ),
+                message: format!("response from {url} exceeds maximum size of {max_bytes} bytes"),
             });
         }
     }
