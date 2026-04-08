@@ -82,7 +82,11 @@ install: ## Install vajra to ~/.cargo/bin via cargo
 	@echo -e "$(C_GREEN)Installed: $$(which vajra)$(C_RESET)"
 
 .PHONY: install-local
-install-local: release man-build ## Install binary + man page to PREFIX (default /usr/local)
+install-local: ## Install binary + man page to PREFIX (default /usr/local)
+	@if [ ! -f target/release/$(BINARY) ]; then \
+		echo -e "$(C_RED)Release binary not found. Run 'make release' first.$(C_RESET)"; \
+		exit 1; \
+	fi
 	@echo -e "$(C_GOLD)Installing to $(PREFIX)...$(C_RESET)"
 	@install -d $(BINDIR)
 	@install -m 755 target/release/$(BINARY) $(BINDIR)/$(BINARY)
