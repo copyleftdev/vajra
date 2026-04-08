@@ -52,7 +52,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets
+        run: cargo clippy --workspace --all-targets -- -W clippy::all -D clippy::unwrap_used -D clippy::expect_used -D clippy::panic
 
   format:
     name: Format
