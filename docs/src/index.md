@@ -218,7 +218,7 @@ cargo install vajra-cli
 Or from source:
 
 ```bash
-git clone https://github.com/zuub-don/vajra
+git clone https://github.com/copyleftdev/vajra
 cd vajra
 cargo build --release
 ```
