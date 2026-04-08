@@ -1706,7 +1706,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "vajra-anomaly"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1720,7 +1720,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1744,7 +1744,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "blake3",
  "criterion",
@@ -1774,7 +1774,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-devops"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "regex",
@@ -1784,7 +1784,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-med"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "regex",
@@ -1793,7 +1793,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-sec"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "regex",
@@ -1803,7 +1803,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-drift"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1817,7 +1817,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-essence"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1834,7 +1834,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-fingerprint"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "blake3",
  "criterion",
@@ -1848,7 +1848,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-motif"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -1859,7 +1859,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-query"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1873,7 +1873,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-stats"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1887,7 +1887,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-types"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "serde",
