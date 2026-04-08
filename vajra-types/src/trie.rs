@@ -170,7 +170,7 @@ impl PathTrie {
     #[must_use]
     pub fn all_paths(&self) -> Vec<WildcardPath> {
         let mut paths = Vec::new();
-        self.collect_paths(&self.root, &WildcardPath::root(), &mut paths);
+        collect_paths_recursive(&self.root, &WildcardPath::root(), &mut paths);
         paths
     }
 
@@ -179,22 +179,21 @@ impl PathTrie {
     pub fn path_count(&self) -> usize {
         1 + self.root.descendant_count()
     }
+}
 
-    fn collect_paths(
-        &self,
-        node: &TrieNode,
-        current_path: &WildcardPath,
-        paths: &mut Vec<WildcardPath>,
-    ) {
-        paths.push(current_path.clone());
-        for (segment, child) in &node.children {
-            let child_path = match segment {
-                PathSegment::Root => current_path.clone(),
-                PathSegment::Key(k) => current_path.push_key(k),
-                PathSegment::ArrayWildcard => current_path.push_array_wildcard(),
-            };
-            self.collect_paths(child, &child_path, paths);
-        }
+fn collect_paths_recursive(
+    node: &TrieNode,
+    current_path: &WildcardPath,
+    paths: &mut Vec<WildcardPath>,
+) {
+    paths.push(current_path.clone());
+    for (segment, child) in &node.children {
+        let child_path = match segment {
+            PathSegment::Root => current_path.clone(),
+            PathSegment::Key(k) => current_path.push_key(k),
+            PathSegment::ArrayWildcard => current_path.push_array_wildcard(),
+        };
+        collect_paths_recursive(child, &child_path, paths);
     }
 }
 
