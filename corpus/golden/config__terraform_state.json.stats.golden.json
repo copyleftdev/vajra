@@ -1,0 +1,638 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.lineage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.outputs.public_subnets.type[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "list"
+        },
+        {
+          "count": 1,
+          "value": "string"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.outputs.public_subnets.value[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "subnet-0aaa"
+        },
+        {
+          "count": 1,
+          "value": "subnet-0bbb"
+        },
+        {
+          "count": 1,
+          "value": "subnet-0ccc"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.outputs.vpc_id.type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "string"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.outputs.vpc_id.value",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "vpc-0abcdef1234567890"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 100.0,
+        "mean": 100.0,
+        "median": 100.0,
+        "min": 100.0,
+        "p05": 100.0,
+        "p25": 100.0,
+        "p75": 100.0,
+        "p95": 100.0
+      },
+      "path": "$.resources[*].instances[*].attributes.allocated_storage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "100"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.ami",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "ami-0abcdef1234567890"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.availability_zone",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "us-east-1a"
+        },
+        {
+          "count": 1,
+          "value": "us-east-1b"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.cidr_block",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "10.0.0.0/16"
+        },
+        {
+          "count": 1,
+          "value": "10.0.1.0/24"
+        },
+        {
+          "count": 1,
+          "value": "10.0.2.0/24"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.enable_dns_hostnames",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "true"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.enable_dns_support",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "true"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.endpoint",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "mydb.cluster.us-east-1.rds.amazonaws.com:5432"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.engine",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "postgres"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.engine_version",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "15.4"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.321928094887362,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "i-0abcdef123456"
+        },
+        {
+          "count": 1,
+          "value": "mydb-instance"
+        },
+        {
+          "count": 1,
+          "value": "subnet-0aaa"
+        },
+        {
+          "count": 1,
+          "value": "subnet-0bbb"
+        },
+        {
+          "count": 1,
+          "value": "vpc-0abcdef1234567890"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.instance_class",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "db.r5.large"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.instance_type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "t3.medium"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.map_public_ip_on_launch",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "true"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.multi_az",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "true"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.security_groups[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "sg-0xyz"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.subnet_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "subnet-0aaa"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.tags.Environment",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "production"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.tags.Name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "production-vpc"
+        },
+        {
+          "count": 1,
+          "value": "web-server"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].attributes.vpc_id",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "vpc-0abcdef1234567890"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 0.9182958340544896,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 0.9182958340544896,
+      "numeric": null,
+      "path": "$.resources[*].instances[*].dependencies[*]",
+      "top_values": [
+        {
+          "count": 4,
+          "value": "module.networking.aws_vpc.main"
+        },
+        {
+          "count": 2,
+          "value": "module.networking.aws_subnet.public"
+        }
+      ],
+      "total_count": 6
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 0.5,
+        "max": 1.0,
+        "mean": 0.5,
+        "median": 0.5,
+        "min": 0.0,
+        "p05": 0.05,
+        "p25": 0.25,
+        "p75": 0.75,
+        "p95": 0.95
+      },
+      "path": "$.resources[*].instances[*].index_key",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0"
+        },
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].mode",
+      "top_values": [
+        {
+          "count": 4,
+          "value": "managed"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5,
+      "max_rarity": 2.0,
+      "normalized_entropy": 0.9463946303571862,
+      "numeric": null,
+      "path": "$.resources[*].module",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "module.networking"
+        },
+        {
+          "count": 1,
+          "value": "module.compute"
+        },
+        {
+          "count": 1,
+          "value": "module.database"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.resources[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "main"
+        },
+        {
+          "count": 1,
+          "value": "primary"
+        },
+        {
+          "count": 1,
+          "value": "public"
+        },
+        {
+          "count": 1,
+          "value": "web"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.resources[*].provider",
+      "top_values": [
+        {
+          "count": 4,
+          "value": "provider[\"registry.terraform.io/hashicorp/aws\"]"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.resources[*].type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "aws_db_instance"
+        },
+        {
+          "count": 1,
+          "value": "aws_instance"
+        },
+        {
+          "count": 1,
+          "value": "aws_subnet"
+        },
+        {
+          "count": 1,
+          "value": "aws_vpc"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 42.0,
+        "mean": 42.0,
+        "median": 42.0,
+        "min": 42.0,
+        "p05": 42.0,
+        "p25": 42.0,
+        "p75": 42.0,
+        "p95": 42.0
+      },
+      "path": "$.serial",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "42"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.terraform_version",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1.7.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 4.0,
+        "mean": 4.0,
+        "median": 4.0,
+        "min": 4.0,
+        "p05": 4.0,
+        "p25": 4.0,
+        "p75": 4.0,
+        "p95": 4.0
+      },
+      "path": "$.version",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "4"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

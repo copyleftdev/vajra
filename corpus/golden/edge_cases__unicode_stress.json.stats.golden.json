@@ -1,0 +1,139 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.arabic_العالم",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "مرحبا"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.cjk_世界",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "你好世界"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.combining",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "éë"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.emoji_key_😀",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "grinning face"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.fullwidth",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "ＡＢＣ"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.normal_key",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "normal_value"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.rtl_mixed",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "العربية and English"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.surrogate_safe",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "💩🚀🌍"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.zero_width",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "hello​world‌test‍join﻿bom"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

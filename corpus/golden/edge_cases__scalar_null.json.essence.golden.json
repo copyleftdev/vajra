@@ -1,0 +1,22 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=1, paths=1, depth=0)",
+  "observations": [
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    }
+  ],
+  "structure": {
+    "distinct_paths": 1,
+    "max_depth": 0,
+    "total_nodes": 1
+  }
+}

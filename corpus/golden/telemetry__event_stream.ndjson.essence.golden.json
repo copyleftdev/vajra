@@ -1,0 +1,33 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=9, paths=9, depth=1)",
+  "observations": [
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 6 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:1c47174c",
+      "rarity": 0.0,
+      "score": 0.024,
+      "structural_coverage": 0.06
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 2 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:bf0b731c",
+      "rarity": 0.0,
+      "score": 0.018,
+      "structural_coverage": 0.02
+    }
+  ],
+  "structure": {
+    "distinct_paths": 9,
+    "max_depth": 1,
+    "total_nodes": 9
+  }
+}

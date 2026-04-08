@@ -1,0 +1,36 @@
+{
+  "fingerprints": {
+    "path_set": "2d2a4d781b67e5eb643e50c1ce8aec20b272bb1e00d69fedf0c2451e00fd1502",
+    "shape": "2ff301f0fdd678d9052c21d05df23dad77615ac88923c4b842cbaa05a7400961",
+    "typed_path": "6dee69b0963ee614573adf55191ef8edc42147e4d1f9ac138335af0fd7883d5b"
+  },
+  "metadata": {
+    "distinct_paths": 3,
+    "max_depth": 1,
+    "raw_size_bytes": 25,
+    "total_nodes": 3
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.age",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.name",
+      "type_instability": 0.0
+    }
+  ]
+}

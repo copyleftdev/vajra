@@ -1,0 +1,124 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.a",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.array_of_nulls[*]",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "null"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.b",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.c",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.d",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.e",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.nested.f",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.nested.g",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

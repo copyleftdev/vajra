@@ -1,0 +1,49 @@
+[package]
+name = "vajra-core"
+version.workspace = true
+edition.workspace = true
+
+[features]
+default = ["http", "pdf"]
+http = ["ureq"]
+pdf = ["dep:pdf-extract"]
+
+[dependencies]
+vajra-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+unicode-normalization = { workspace = true }
+ryu = { workspace = true }
+regex = { workspace = true }
+blake3 = { workspace = true }
+serde_yaml = { workspace = true }
+csv = { workspace = true }
+flate2 = { workspace = true }
+zstd = { workspace = true }
+ureq = { workspace = true, optional = true }
+pulldown-cmark = { workspace = true }
+pdf-extract = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+criterion = { workspace = true }
+tempfile = { workspace = true }
+vajra-fingerprint = { workspace = true }
+vajra-stats = { workspace = true }
+vajra-anomaly = { workspace = true }
+vajra-essence = { workspace = true }
+vajra-drift = { workspace = true }
+vajra-query = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "parse"
+harness = false
+
+[[bench]]
+name = "canonical"
+harness = false

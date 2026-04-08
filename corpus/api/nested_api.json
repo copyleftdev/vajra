@@ -1,0 +1,124 @@
+{
+  "user": {
+    "id": "usr-001",
+    "name": "Alice Thompson",
+    "organizations": [
+      {
+        "id": "org-001",
+        "name": "Acme Corp",
+        "teams": [
+          {
+            "id": "team-001",
+            "name": "Platform",
+            "projects": [
+              {
+                "environments": [
+                  {
+                    "deployments": [
+                      {
+                        "id": "deploy-001",
+                        "logs": [
+                          {
+                            "level": "info",
+                            "message": "Deployment started",
+                            "timestamp": "2025-03-15T10:00:00Z"
+                          },
+                          {
+                            "level": "info",
+                            "message": "Health check passed",
+                            "timestamp": "2025-03-15T10:01:00Z"
+                          },
+                          {
+                            "level": "warn",
+                            "message": "High memory usage detected",
+                            "timestamp": "2025-03-15T10:02:00Z"
+                          }
+                        ],
+                        "status": "running",
+                        "version": "2.1.0"
+                      },
+                      {
+                        "id": "deploy-002",
+                        "logs": [
+                          {
+                            "level": "info",
+                            "message": "Deployment stopped",
+                            "timestamp": "2025-03-14T08:00:00Z"
+                          }
+                        ],
+                        "status": "stopped",
+                        "version": "2.0.9"
+                      }
+                    ],
+                    "id": "env-001",
+                    "name": "production"
+                  },
+                  {
+                    "deployments": [
+                      {
+                        "id": "deploy-003",
+                        "logs": [
+                          {
+                            "level": "info",
+                            "message": "Canary deployment started",
+                            "timestamp": "2025-03-15T09:00:00Z"
+                          },
+                          {
+                            "level": "error",
+                            "message": "Failed health check on port 8080",
+                            "timestamp": "2025-03-15T09:05:00Z"
+                          }
+                        ],
+                        "status": "running",
+                        "version": "2.2.0-rc1"
+                      }
+                    ],
+                    "id": "env-002",
+                    "name": "staging"
+                  }
+                ],
+                "id": "proj-001",
+                "name": "API Gateway"
+              },
+              {
+                "environments": [
+                  {
+                    "deployments": [
+                      {
+                        "id": "deploy-004",
+                        "logs": [],
+                        "status": "running",
+                        "version": "1.5.2"
+                      }
+                    ],
+                    "id": "env-003",
+                    "name": "production"
+                  }
+                ],
+                "id": "proj-002",
+                "name": "Auth Service"
+              }
+            ]
+          },
+          {
+            "id": "team-002",
+            "name": "Data",
+            "projects": [
+              {
+                "environments": [
+                  {
+                    "deployments": [],
+                    "id": "env-004",
+                    "name": "production"
+                  }
+                ],
+                "id": "proj-003",
+                "name": "ETL Pipeline"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

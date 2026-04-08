@@ -1,0 +1,452 @@
+{
+  "paths": [
+    {
+      "cardinality": 334,
+      "entropy": 8.160128439047362,
+      "max_rarity": 8.965784284662087,
+      "normalized_entropy": 0.9733320921603364,
+      "numeric": {
+        "mad": 15.299999999999997,
+        "max": 99.8,
+        "mean": 41.49875259875258,
+        "median": 41.6,
+        "min": 10.0,
+        "p05": 12.9,
+        "p25": 25.9,
+        "p75": 56.0,
+        "p95": 68.2
+      },
+      "path": "$[*].cpu_pct",
+      "top_values": [
+        {
+          "count": 19,
+          "value": "null"
+        },
+        {
+          "count": 4,
+          "value": "17.3"
+        },
+        {
+          "count": 4,
+          "value": "21.0"
+        },
+        {
+          "count": 4,
+          "value": "28.8"
+        },
+        {
+          "count": 4,
+          "value": "65.0"
+        },
+        {
+          "count": 3,
+          "value": "12.6"
+        },
+        {
+          "count": 3,
+          "value": "16.3"
+        },
+        {
+          "count": 3,
+          "value": "23.5"
+        },
+        {
+          "count": 3,
+          "value": "26.2"
+        },
+        {
+          "count": 3,
+          "value": "28.4"
+        }
+      ],
+      "total_count": 500
+    },
+    {
+      "cardinality": 481,
+      "entropy": 8.800363039151165,
+      "max_rarity": 8.965784284662087,
+      "normalized_entropy": 0.9877069181875602,
+      "numeric": {
+        "mad": 12049.0,
+        "max": 49855.0,
+        "mean": 23907.25155925156,
+        "median": 23156.0,
+        "min": 387.0,
+        "p05": 2809.0,
+        "p25": 11700.0,
+        "p75": 35806.0,
+        "p95": 46942.0
+      },
+      "path": "$[*].disk_io",
+      "top_values": [
+        {
+          "count": 19,
+          "value": "null"
+        },
+        {
+          "count": 2,
+          "value": "4843"
+        },
+        {
+          "count": 1,
+          "value": "1013"
+        },
+        {
+          "count": 1,
+          "value": "10354"
+        },
+        {
+          "count": 1,
+          "value": "10356"
+        },
+        {
+          "count": 1,
+          "value": "10388"
+        },
+        {
+          "count": 1,
+          "value": "10445"
+        },
+        {
+          "count": 1,
+          "value": "10589"
+        },
+        {
+          "count": 1,
+          "value": "10671"
+        },
+        {
+          "count": 1,
+          "value": "10805"
+        }
+      ],
+      "total_count": 500
+    },
+    {
+      "cardinality": 13,
+      "entropy": 0.6219828672694248,
+      "max_rarity": 8.965784284662087,
+      "normalized_entropy": 0.1680835021363019,
+      "numeric": {
+        "mad": 0.0,
+        "max": 19.0,
+        "mean": 0.5509355509355509,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p95": 0.0
+      },
+      "path": "$[*].error_count",
+      "top_values": [
+        {
+          "count": 460,
+          "value": "0"
+        },
+        {
+          "count": 19,
+          "value": "null"
+        },
+        {
+          "count": 3,
+          "value": "16"
+        },
+        {
+          "count": 3,
+          "value": "18"
+        },
+        {
+          "count": 3,
+          "value": "19"
+        },
+        {
+          "count": 2,
+          "value": "11"
+        },
+        {
+          "count": 2,
+          "value": "13"
+        },
+        {
+          "count": 2,
+          "value": "6"
+        },
+        {
+          "count": 2,
+          "value": "8"
+        },
+        {
+          "count": 1,
+          "value": "14"
+        }
+      ],
+      "total_count": 500
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.321928094887362,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$[*].host",
+      "top_values": [
+        {
+          "count": 100,
+          "value": "db-01"
+        },
+        {
+          "count": 100,
+          "value": "web-01"
+        },
+        {
+          "count": 100,
+          "value": "web-02"
+        },
+        {
+          "count": 100,
+          "value": "web-03"
+        },
+        {
+          "count": 100,
+          "value": "worker-01"
+        }
+      ],
+      "total_count": 500
+    },
+    {
+      "cardinality": 325,
+      "entropy": 8.10563821405169,
+      "max_rarity": 8.965784284662087,
+      "normalized_entropy": 0.9713987019998027,
+      "numeric": {
+        "mad": 14.300000000000004,
+        "max": 85.0,
+        "mean": 57.4361746361746,
+        "median": 57.6,
+        "min": 30.0,
+        "p05": 32.4,
+        "p25": 42.8,
+        "p75": 71.3,
+        "p95": 81.9
+      },
+      "path": "$[*].memory_pct",
+      "top_values": [
+        {
+          "count": 19,
+          "value": "null"
+        },
+        {
+          "count": 6,
+          "value": "76.8"
+        },
+        {
+          "count": 4,
+          "value": "43.3"
+        },
+        {
+          "count": 4,
+          "value": "52.6"
+        },
+        {
+          "count": 4,
+          "value": "63.9"
+        },
+        {
+          "count": 4,
+          "value": "66.0"
+        },
+        {
+          "count": 4,
+          "value": "71.0"
+        },
+        {
+          "count": 4,
+          "value": "77.5"
+        },
+        {
+          "count": 4,
+          "value": "82.5"
+        },
+        {
+          "count": 3,
+          "value": "30.2"
+        }
+      ],
+      "total_count": 500
+    },
+    {
+      "cardinality": 482,
+      "entropy": 8.804363039151164,
+      "max_rarity": 8.965784284662087,
+      "normalized_entropy": 0.9878236682870448,
+      "numeric": {
+        "mad": 127334.0,
+        "max": 499035.0,
+        "mean": 252664.28482328483,
+        "median": 256012.0,
+        "min": 1210.0,
+        "p05": 27510.0,
+        "p25": 122273.0,
+        "p75": 378088.0,
+        "p95": 467262.0
+      },
+      "path": "$[*].network_in",
+      "top_values": [
+        {
+          "count": 19,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "101287"
+        },
+        {
+          "count": 1,
+          "value": "101901"
+        },
+        {
+          "count": 1,
+          "value": "103591"
+        },
+        {
+          "count": 1,
+          "value": "103750"
+        },
+        {
+          "count": 1,
+          "value": "104534"
+        },
+        {
+          "count": 1,
+          "value": "104638"
+        },
+        {
+          "count": 1,
+          "value": "104860"
+        },
+        {
+          "count": 1,
+          "value": "105189"
+        },
+        {
+          "count": 1,
+          "value": "105644"
+        }
+      ],
+      "total_count": 500
+    },
+    {
+      "cardinality": 482,
+      "entropy": 8.804363039151164,
+      "max_rarity": 8.965784284662087,
+      "normalized_entropy": 0.9878236682870448,
+      "numeric": {
+        "mad": 70221.0,
+        "max": 299976.0,
+        "mean": 156152.40332640332,
+        "median": 157886.0,
+        "min": 951.0,
+        "p05": 16510.0,
+        "p25": 91471.0,
+        "p75": 229349.0,
+        "p95": 289315.0
+      },
+      "path": "$[*].network_out",
+      "top_values": [
+        {
+          "count": 19,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "100031"
+        },
+        {
+          "count": 1,
+          "value": "101020"
+        },
+        {
+          "count": 1,
+          "value": "101273"
+        },
+        {
+          "count": 1,
+          "value": "101340"
+        },
+        {
+          "count": 1,
+          "value": "101413"
+        },
+        {
+          "count": 1,
+          "value": "101440"
+        },
+        {
+          "count": 1,
+          "value": "101692"
+        },
+        {
+          "count": 1,
+          "value": "102106"
+        },
+        {
+          "count": 1,
+          "value": "102116"
+        }
+      ],
+      "total_count": 500
+    },
+    {
+      "cardinality": 100,
+      "entropy": 6.6438561897747395,
+      "max_rarity": 6.643856189774724,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$[*].timestamp",
+      "top_values": [
+        {
+          "count": 5,
+          "value": "2025-03-15T00:00:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:05:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:10:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:15:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:20:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:25:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:30:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:35:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:40:00Z"
+        },
+        {
+          "count": 5,
+          "value": "2025-03-15T00:45:00Z"
+        }
+      ],
+      "total_count": 500
+    }
+  ]
+}

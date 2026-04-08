@@ -1,0 +1,784 @@
+{
+  "paths": [
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.claims[*].claim_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "835-CLM-0001"
+        },
+        {
+          "count": 1,
+          "value": "835-CLM-0002"
+        },
+        {
+          "count": 1,
+          "value": "835-CLM-0003"
+        },
+        {
+          "count": 1,
+          "value": "835-CLM-0004"
+        },
+        {
+          "count": 1,
+          "value": "835-CLM-0005"
+        },
+        {
+          "count": 1,
+          "value": "835-CLM-0006"
+        },
+        {
+          "count": 1,
+          "value": "835-CLM-0007"
+        },
+        {
+          "count": 1,
+          "value": "835-CLM-0008"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 2,
+      "entropy": 0.954434002924965,
+      "max_rarity": 1.415037499278844,
+      "normalized_entropy": 0.954434002924965,
+      "numeric": null,
+      "path": "$.claims[*].claim_status",
+      "top_values": [
+        {
+          "count": 5,
+          "value": "paid"
+        },
+        {
+          "count": 3,
+          "value": "denied"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.claims[*].patient_name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Patient 1"
+        },
+        {
+          "count": 1,
+          "value": "Patient 2"
+        },
+        {
+          "count": 1,
+          "value": "Patient 3"
+        },
+        {
+          "count": 1,
+          "value": "Patient 4"
+        },
+        {
+          "count": 1,
+          "value": "Patient 5"
+        },
+        {
+          "count": 1,
+          "value": "Patient 6"
+        },
+        {
+          "count": 1,
+          "value": "Patient 7"
+        },
+        {
+          "count": 1,
+          "value": "Patient 8"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.claims[*].plb_adjustments[*].adjustment_reason",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "WO"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 1.6800000000000068,
+        "max": 186.79,
+        "mean": 130.61666666666667,
+        "median": 103.37,
+        "min": 101.69,
+        "p05": 101.858,
+        "p25": 102.53,
+        "p75": 145.07999999999998,
+        "p95": 178.44799999999998
+      },
+      "path": "$.claims[*].plb_adjustments[*].amount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "101.69"
+        },
+        {
+          "count": 1,
+          "value": "103.37"
+        },
+        {
+          "count": 1,
+          "value": "186.79"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.claims[*].plb_adjustments[*].fiscal_period",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "2025-03"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.claims[*].plb_adjustments[*].provider_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1569619723"
+        },
+        {
+          "count": 1,
+          "value": "1575630377"
+        },
+        {
+          "count": 1,
+          "value": "1973524366"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 21,
+      "entropy": 4.39231742277876,
+      "max_rarity": 4.392317422778761,
+      "normalized_entropy": 0.9999999999999998,
+      "numeric": {
+        "mad": 90.22000000000003,
+        "max": 410.06,
+        "mean": 241.492380952381,
+        "median": 234.44,
+        "min": 90.72,
+        "p05": 94.7,
+        "p25": 166.39,
+        "p75": 329.18,
+        "p95": 386.88
+      },
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].amount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "111.37"
+        },
+        {
+          "count": 1,
+          "value": "129.47"
+        },
+        {
+          "count": 1,
+          "value": "158.6"
+        },
+        {
+          "count": 1,
+          "value": "166.39"
+        },
+        {
+          "count": 1,
+          "value": "167.38"
+        },
+        {
+          "count": 1,
+          "value": "174.62"
+        },
+        {
+          "count": 1,
+          "value": "183.91"
+        },
+        {
+          "count": 1,
+          "value": "228.55"
+        },
+        {
+          "count": 1,
+          "value": "234.44"
+        },
+        {
+          "count": 1,
+          "value": "239.96"
+        }
+      ],
+      "total_count": 21
+    },
+    {
+      "cardinality": 4,
+      "entropy": 1.9502120649147465,
+      "max_rarity": 2.807354922057604,
+      "normalized_entropy": 0.9751060324573733,
+      "numeric": null,
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].group_code",
+      "top_values": [
+        {
+          "count": 6,
+          "value": "CO"
+        },
+        {
+          "count": 6,
+          "value": "OA"
+        },
+        {
+          "count": 6,
+          "value": "PR"
+        },
+        {
+          "count": 3,
+          "value": "PI"
+        }
+      ],
+      "total_count": 21
+    },
+    {
+      "cardinality": 20,
+      "entropy": 4.297079327540665,
+      "max_rarity": 4.392317422778761,
+      "normalized_entropy": 0.9942505366120985,
+      "numeric": {
+        "mad": 52.0,
+        "max": 248.0,
+        "mean": 133.57142857142858,
+        "median": 138.0,
+        "min": 4.0,
+        "p05": 13.0,
+        "p25": 86.0,
+        "p75": 178.0,
+        "p95": 244.0
+      },
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].reason_code",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "132"
+        },
+        {
+          "count": 1,
+          "value": "125"
+        },
+        {
+          "count": 1,
+          "value": "13"
+        },
+        {
+          "count": 1,
+          "value": "138"
+        },
+        {
+          "count": 1,
+          "value": "147"
+        },
+        {
+          "count": 1,
+          "value": "153"
+        },
+        {
+          "count": 1,
+          "value": "157"
+        },
+        {
+          "count": 1,
+          "value": "161"
+        },
+        {
+          "count": 1,
+          "value": "178"
+        },
+        {
+          "count": 1,
+          "value": "192"
+        }
+      ],
+      "total_count": 21
+    },
+    {
+      "cardinality": 21,
+      "entropy": 4.39231742277876,
+      "max_rarity": 4.392317422778761,
+      "normalized_entropy": 0.9999999999999998,
+      "numeric": {
+        "mad": 139.44,
+        "max": 499.36,
+        "mean": 322.70714285714286,
+        "median": 352.49,
+        "min": 126.31,
+        "p05": 135.81,
+        "p25": 198.06,
+        "p75": 458.93,
+        "p95": 493.52
+      },
+      "path": "$.claims[*].service_lines[*].svc_charge_amount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "126.31"
+        },
+        {
+          "count": 1,
+          "value": "135.81"
+        },
+        {
+          "count": 1,
+          "value": "140.79"
+        },
+        {
+          "count": 1,
+          "value": "190.92"
+        },
+        {
+          "count": 1,
+          "value": "196.45"
+        },
+        {
+          "count": 1,
+          "value": "198.06"
+        },
+        {
+          "count": 1,
+          "value": "208.3"
+        },
+        {
+          "count": 1,
+          "value": "213.05"
+        },
+        {
+          "count": 1,
+          "value": "263.11"
+        },
+        {
+          "count": 1,
+          "value": "274.99"
+        }
+      ],
+      "total_count": 21
+    },
+    {
+      "cardinality": 21,
+      "entropy": 4.39231742277876,
+      "max_rarity": 4.392317422778761,
+      "normalized_entropy": 0.9999999999999998,
+      "numeric": {
+        "mad": 90.68999999999997,
+        "max": 415.05,
+        "mean": 244.7190476190476,
+        "median": 238.02,
+        "min": 91.98,
+        "p05": 96.06,
+        "p25": 169.02,
+        "p75": 334.1,
+        "p95": 391.82
+      },
+      "path": "$.claims[*].service_lines[*].svc_paid_amount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "112.78"
+        },
+        {
+          "count": 1,
+          "value": "131.6"
+        },
+        {
+          "count": 1,
+          "value": "160.51"
+        },
+        {
+          "count": 1,
+          "value": "169.02"
+        },
+        {
+          "count": 1,
+          "value": "169.46"
+        },
+        {
+          "count": 1,
+          "value": "176.58"
+        },
+        {
+          "count": 1,
+          "value": "185.89"
+        },
+        {
+          "count": 1,
+          "value": "231.3"
+        },
+        {
+          "count": 1,
+          "value": "238.02"
+        },
+        {
+          "count": 1,
+          "value": "243.48"
+        }
+      ],
+      "total_count": 21
+    },
+    {
+      "cardinality": 5,
+      "entropy": 1.9580595428376295,
+      "max_rarity": 4.392317422778761,
+      "normalized_entropy": 0.8432903444120718,
+      "numeric": null,
+      "path": "$.claims[*].service_lines[*].svc_procedure_code",
+      "top_values": [
+        {
+          "count": 8,
+          "value": "99211"
+        },
+        {
+          "count": 6,
+          "value": "99212"
+        },
+        {
+          "count": 5,
+          "value": "99213"
+        },
+        {
+          "count": 1,
+          "value": "99214"
+        },
+        {
+          "count": 1,
+          "value": "99215"
+        }
+      ],
+      "total_count": 21
+    },
+    {
+      "cardinality": 21,
+      "entropy": 4.39231742277876,
+      "max_rarity": 4.392317422778761,
+      "normalized_entropy": 0.9999999999999998,
+      "numeric": null,
+      "path": "$.claims[*].service_lines[*].svc_revenue_code",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0110"
+        },
+        {
+          "count": 1,
+          "value": "0147"
+        },
+        {
+          "count": 1,
+          "value": "0159"
+        },
+        {
+          "count": 1,
+          "value": "0184"
+        },
+        {
+          "count": 1,
+          "value": "0217"
+        },
+        {
+          "count": 1,
+          "value": "0228"
+        },
+        {
+          "count": 1,
+          "value": "0266"
+        },
+        {
+          "count": 1,
+          "value": "0281"
+        },
+        {
+          "count": 1,
+          "value": "0306"
+        },
+        {
+          "count": 1,
+          "value": "0387"
+        }
+      ],
+      "total_count": 21
+    },
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 218.40999999999997,
+        "max": 1676.11,
+        "mean": 847.1062499999999,
+        "median": 841.0450000000001,
+        "min": 274.99,
+        "p05": 303.872,
+        "p25": 606.6225000000001,
+        "p75": 1009.1275,
+        "p95": 1483.7394999999997
+      },
+      "path": "$.claims[*].total_charge",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1126.48"
+        },
+        {
+          "count": 1,
+          "value": "1676.11"
+        },
+        {
+          "count": 1,
+          "value": "274.99"
+        },
+        {
+          "count": 1,
+          "value": "357.51"
+        },
+        {
+          "count": 1,
+          "value": "689.6600000000001"
+        },
+        {
+          "count": 1,
+          "value": "813.66"
+        },
+        {
+          "count": 1,
+          "value": "868.4300000000001"
+        },
+        {
+          "count": 1,
+          "value": "970.01"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 149.255,
+        "max": 1299.93,
+        "mean": 642.3875,
+        "median": 644.335,
+        "min": 231.3,
+        "p05": 233.65200000000002,
+        "p25": 464.64750000000004,
+        "p75": 736.3924999999999,
+        "p95": 1138.4995
+      },
+      "path": "$.claims[*].total_paid",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1299.93"
+        },
+        {
+          "count": 1,
+          "value": "231.3"
+        },
+        {
+          "count": 1,
+          "value": "238.02"
+        },
+        {
+          "count": 1,
+          "value": "540.19"
+        },
+        {
+          "count": 1,
+          "value": "598.39"
+        },
+        {
+          "count": 1,
+          "value": "690.2800000000001"
+        },
+        {
+          "count": 1,
+          "value": "702.29"
+        },
+        {
+          "count": 1,
+          "value": "838.7"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5139.1,
+        "mean": 5139.1,
+        "median": 5139.1,
+        "min": 5139.1,
+        "p05": 5139.1,
+        "p25": 5139.1,
+        "p75": 5139.1,
+        "p95": 5139.1
+      },
+      "path": "$.payment_amount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5139.1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payment_date",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-20"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payment_method",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "ACH"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.receiver.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Springfield Medical Group"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.receiver.npi",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1234567890"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sender.id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "BCBS-IL-001"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sender.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "BCBS Illinois"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.transaction_type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "835"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

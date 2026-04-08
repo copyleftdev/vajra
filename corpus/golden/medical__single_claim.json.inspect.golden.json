@@ -1,0 +1,316 @@
+{
+  "fingerprints": {
+    "path_set": "ac97496ffe1e91ed46fa04e923d45a06a2e1dbc8173aa1cb97800a93104063b4",
+    "shape": "7e51e83a7ba98230be4123ad08a305944974111182281912d6bded028a5be8f6",
+    "typed_path": "0a04482501ce610e56b186032ab7923964ca3c8790de4f8fd820cbf3a93daa2f"
+  },
+  "metadata": {
+    "distinct_paths": 43,
+    "max_depth": 3,
+    "raw_size_bytes": 2465,
+    "total_nodes": 87
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claim_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claim_status",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.diagnoses",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.diagnoses[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.diagnoses[*].code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.diagnoses[*].description",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.diagnoses[*].type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.filing_date",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.patient",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.patient.address",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.address.city",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.address.state",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.address.street",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.address.zip",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.date_of_birth",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.gender",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.subscriber_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.payer",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payer.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payer.payer_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payer.plan_type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.provider",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.provider.address",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.provider.address.city",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.provider.address.state",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.provider.address.street",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.provider.address.zip",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.provider.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.provider.npi",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.provider.taxonomy_code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.service_lines",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].adjustment_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].adjustment_reason",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].allowed_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].charge_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].line_number",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].paid_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].procedure_code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].service_date",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.service_lines[*].status",
+      "type_instability": 0.0
+    }
+  ]
+}

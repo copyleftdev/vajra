@@ -1,0 +1,66 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=15001, paths=4, depth=2)",
+  "observations": [
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (1 distinct values over 5000 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$[*].label",
+      "rarity": 0.9,
+      "score": 0.195,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (1 distinct values over 5000 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$[*].value",
+      "rarity": 0.9,
+      "score": 0.195,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 5000 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:1c47174c",
+      "rarity": 0.0,
+      "score": 0.16499999999999998,
+      "structural_coverage": 1.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 5000 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:bf0b731c",
+      "rarity": 0.0,
+      "score": 0.16499999999999998,
+      "structural_coverage": 1.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 5000 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:d903614e",
+      "rarity": 0.0,
+      "score": 0.16499999999999998,
+      "structural_coverage": 1.0
+    }
+  ],
+  "structure": {
+    "distinct_paths": 4,
+    "max_depth": 2,
+    "total_nodes": 15001
+  }
+}

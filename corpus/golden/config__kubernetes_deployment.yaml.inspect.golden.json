@@ -1,0 +1,512 @@
+{
+  "fingerprints": {
+    "path_set": "eaca8ff4a198ee4085234519665ee2535cdcb2bcb93937f438da7b3ff5040e82",
+    "shape": "97eb5e96693b1ecef75472d0f09417c99992c1c76858850ef9a36b8de51590c9",
+    "typed_path": "ec6eb1603585145bc928b093047b40ee1906ae0e122895b47807c0d512036964"
+  },
+  "metadata": {
+    "distinct_paths": 71,
+    "max_depth": 10,
+    "raw_size_bytes": 1190,
+    "total_nodes": 76
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.apiVersion",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.kind",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.metadata",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.metadata.labels",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.metadata.labels.app",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.metadata.labels.team",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.metadata.labels.version",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.metadata.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.metadata.namespace",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.replicas",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.selector",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.selector.matchLabels",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.selector.matchLabels.app",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.strategy",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.strategy.rollingUpdate",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.strategy.rollingUpdate.maxSurge",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.strategy.rollingUpdate.maxUnavailable",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.strategy.type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.metadata",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.metadata.labels",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.metadata.labels.app",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.metadata.labels.version",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env[*].value",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env[*].valueFrom",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env[*].valueFrom.secretKeyRef",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env[*].valueFrom.secretKeyRef.key",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].env[*].valueFrom.secretKeyRef.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].image",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].livenessProbe",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].livenessProbe.httpGet",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].livenessProbe.httpGet.path",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].livenessProbe.httpGet.port",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].livenessProbe.initialDelaySeconds",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].livenessProbe.periodSeconds",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].ports",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].ports[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].ports[*].containerPort",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].ports[*].protocol",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].readinessProbe",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].readinessProbe.httpGet",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].readinessProbe.httpGet.path",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].readinessProbe.httpGet.port",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].readinessProbe.initialDelaySeconds",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].readinessProbe.periodSeconds",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].resources",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].resources.limits",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].resources.limits.cpu",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].resources.limits.memory",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].resources.requests",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].resources.requests.cpu",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].resources.requests.memory",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].volumeMounts",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].volumeMounts[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].volumeMounts[*].mountPath",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].volumeMounts[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.containers[*].volumeMounts[*].readOnly",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.volumes",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.volumes[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.volumes[*].configMap",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.volumes[*].configMap.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.spec.template.spec.volumes[*].name",
+      "type_instability": 0.0
+    }
+  ]
+}

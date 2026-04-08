@@ -1,0 +1,376 @@
+{
+  "data": [
+    {
+      "created_at": "2025-01-09T02:47:00Z",
+      "description": "Description for resource 1",
+      "id": "item-0001",
+      "metadata": {
+        "tags": [
+          "tag-4",
+          "tag-13"
+        ],
+        "version": 7
+      },
+      "name": "Resource 1",
+      "owner": "user-002",
+      "status": "pending",
+      "updated_at": "2025-03-11T09:21:00Z"
+    },
+    {
+      "created_at": "2025-03-22T01:24:00Z",
+      "id": "item-0002",
+      "metadata": {
+        "tags": [
+          "tag-15",
+          "tag-19"
+        ],
+        "version": 1
+      },
+      "name": "Resource 2",
+      "status": "active",
+      "updated_at": "2025-03-08T17:04:00Z"
+    },
+    {
+      "created_at": "2025-02-27T22:59:00Z",
+      "id": "item-0003",
+      "metadata": {
+        "tags": [
+          "tag-13",
+          "tag-4"
+        ],
+        "version": 9
+      },
+      "name": "Resource 3",
+      "status": "inactive",
+      "updated_at": "2025-03-22T19:19:00Z"
+    },
+    {
+      "created_at": "2025-01-09T03:07:00Z",
+      "description": "Description for resource 4",
+      "id": "item-0004",
+      "metadata": {
+        "tags": [
+          "tag-16",
+          "tag-10"
+        ],
+        "version": 7
+      },
+      "name": "Resource 4",
+      "status": "pending",
+      "updated_at": "2025-03-26T19:50:00Z"
+    },
+    {
+      "created_at": "2025-01-22T03:56:00Z",
+      "id": "item-0005",
+      "metadata": {
+        "tags": [
+          "tag-2",
+          "tag-16"
+        ],
+        "version": 5
+      },
+      "name": "Resource 5",
+      "owner": "user-027",
+      "status": "inactive",
+      "updated_at": "2025-03-26T07:07:00Z"
+    },
+    {
+      "created_at": "2025-03-10T06:07:00Z",
+      "id": "item-0006",
+      "metadata": {
+        "tags": [
+          "tag-14",
+          "tag-7"
+        ],
+        "version": 3
+      },
+      "name": "Resource 6",
+      "status": "inactive",
+      "updated_at": "2025-03-27T04:21:00Z"
+    },
+    {
+      "created_at": "2025-02-07T17:24:00Z",
+      "description": "Description for resource 7",
+      "id": "item-0007",
+      "metadata": {
+        "tags": [
+          "tag-14",
+          "tag-8"
+        ],
+        "version": 7
+      },
+      "name": "Resource 7",
+      "status": "pending",
+      "updated_at": "2025-03-19T11:41:00Z"
+    },
+    {
+      "created_at": "2025-02-12T11:55:00Z",
+      "id": "item-0008",
+      "metadata": {
+        "tags": [
+          "tag-1",
+          "tag-1"
+        ],
+        "version": 1
+      },
+      "name": "Resource 8",
+      "status": "inactive",
+      "updated_at": "2025-03-13T03:22:00Z"
+    },
+    {
+      "created_at": "2025-02-25T10:06:00Z",
+      "id": "item-0009",
+      "metadata": {
+        "tags": [
+          "tag-14",
+          "tag-2"
+        ],
+        "version": 4
+      },
+      "name": "Resource 9",
+      "owner": "user-029",
+      "status": "inactive",
+      "updated_at": "2025-03-08T18:07:00Z"
+    },
+    {
+      "created_at": "2025-01-20T18:52:00Z",
+      "description": "Description for resource 10",
+      "id": "item-0010",
+      "metadata": {
+        "tags": [
+          "tag-7",
+          "tag-12"
+        ],
+        "version": 3
+      },
+      "name": "Resource 10",
+      "status": "pending",
+      "updated_at": "2025-03-14T19:45:00Z"
+    },
+    {
+      "created_at": "2025-03-10T13:34:00Z",
+      "id": "item-0011",
+      "metadata": {
+        "tags": [
+          "tag-15",
+          "tag-19"
+        ],
+        "version": 7
+      },
+      "name": "Resource 11",
+      "status": "active",
+      "updated_at": "2025-03-16T15:15:00Z"
+    },
+    {
+      "created_at": "2025-02-11T08:00:00Z",
+      "id": "item-0012",
+      "metadata": {
+        "tags": [
+          "tag-16",
+          "tag-13"
+        ],
+        "version": 4
+      },
+      "name": "Resource 12",
+      "status": "pending",
+      "updated_at": "2025-03-13T01:46:00Z"
+    },
+    {
+      "created_at": "2025-03-08T14:42:00Z",
+      "description": "Description for resource 13",
+      "id": "item-0013",
+      "metadata": {
+        "tags": [
+          "tag-6",
+          "tag-19"
+        ],
+        "version": 7
+      },
+      "name": "Resource 13",
+      "owner": "user-017",
+      "status": "active",
+      "updated_at": "2025-03-28T05:23:00Z"
+    },
+    {
+      "created_at": "2025-01-11T12:11:00Z",
+      "id": "item-0014",
+      "metadata": {
+        "tags": [
+          "tag-4",
+          "tag-3"
+        ],
+        "version": 4
+      },
+      "name": "Resource 14",
+      "status": "pending",
+      "updated_at": "2025-03-19T19:39:00Z"
+    },
+    {
+      "created_at": "2025-01-06T11:41:00Z",
+      "id": "item-0015",
+      "metadata": {
+        "tags": [
+          "tag-10",
+          "tag-4"
+        ],
+        "version": 1
+      },
+      "name": "Resource 15",
+      "status": "active",
+      "updated_at": "2025-03-15T17:40:00Z"
+    },
+    {
+      "created_at": "2025-01-05T21:28:00Z",
+      "description": "Description for resource 16",
+      "id": "item-0016",
+      "metadata": {
+        "tags": [
+          "tag-17",
+          "tag-1"
+        ],
+        "version": 3
+      },
+      "name": "Resource 16",
+      "status": "active",
+      "updated_at": "2025-03-17T08:06:00Z"
+    },
+    {
+      "created_at": "2025-02-03T14:53:00Z",
+      "id": "item-0017",
+      "metadata": {
+        "tags": [
+          "tag-12",
+          "tag-12"
+        ],
+        "version": 9
+      },
+      "name": "Resource 17",
+      "owner": "user-018",
+      "status": "active",
+      "updated_at": "2025-03-13T09:00:00Z"
+    },
+    {
+      "created_at": "2025-01-01T23:09:00Z",
+      "id": "item-0018",
+      "metadata": {
+        "tags": [
+          "tag-16",
+          "tag-5"
+        ],
+        "version": 2
+      },
+      "name": "Resource 18",
+      "status": "pending",
+      "updated_at": "2025-03-05T19:23:00Z"
+    },
+    {
+      "created_at": "2025-03-15T06:46:00Z",
+      "description": "Description for resource 19",
+      "id": "item-0019",
+      "metadata": {
+        "tags": [
+          "tag-10",
+          "tag-15"
+        ],
+        "version": 1
+      },
+      "name": "Resource 19",
+      "status": "active",
+      "updated_at": "2025-03-12T10:30:00Z"
+    },
+    {
+      "created_at": "2025-01-23T09:21:00Z",
+      "id": "item-0020",
+      "metadata": {
+        "tags": [
+          "tag-17",
+          "tag-3"
+        ],
+        "version": 5
+      },
+      "name": "Resource 20",
+      "status": "active",
+      "updated_at": "2025-03-02T15:11:00Z"
+    },
+    {
+      "created_at": "2025-02-22T11:47:00Z",
+      "id": "item-0021",
+      "metadata": {
+        "tags": [
+          "tag-13",
+          "tag-11"
+        ],
+        "version": 7
+      },
+      "name": "Resource 21",
+      "owner": "user-021",
+      "status": "active",
+      "updated_at": "2025-03-07T23:56:00Z"
+    },
+    {
+      "created_at": "2025-03-17T06:08:00Z",
+      "description": "Description for resource 22",
+      "id": "item-0022",
+      "metadata": {
+        "tags": [
+          "tag-6",
+          "tag-18"
+        ],
+        "version": 2
+      },
+      "name": "Resource 22",
+      "status": "active",
+      "updated_at": "2025-03-27T02:31:00Z"
+    },
+    {
+      "created_at": "2025-01-11T04:24:00Z",
+      "id": "item-0023",
+      "metadata": {
+        "tags": [
+          "tag-11",
+          "tag-11"
+        ],
+        "version": 4
+      },
+      "name": "Resource 23",
+      "status": "active",
+      "updated_at": "2025-03-11T17:46:00Z"
+    },
+    {
+      "created_at": "2025-01-22T13:04:00Z",
+      "id": "item-0024",
+      "metadata": {
+        "tags": [
+          "tag-8",
+          "tag-10"
+        ],
+        "version": 6
+      },
+      "name": "Resource 24",
+      "status": "pending",
+      "updated_at": "2025-03-01T12:45:00Z"
+    },
+    {
+      "created_at": "2025-03-04T23:19:00Z",
+      "description": "Description for resource 25",
+      "id": "item-0025",
+      "metadata": {
+        "tags": [
+          "tag-15",
+          "tag-5"
+        ],
+        "version": 1
+      },
+      "name": "Resource 25",
+      "owner": "user-020",
+      "status": "active",
+      "updated_at": "2025-03-20T20:10:00Z"
+    }
+  ],
+  "pagination": {
+    "next_url": "/api/v1/resources?page=2&per_page=25",
+    "page": 1,
+    "per_page": 25,
+    "total": 142
+  }
+}

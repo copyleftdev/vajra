@@ -1,0 +1,209 @@
+{
+  "api_version": "2.0",
+  "items": [
+    {
+      "category": "sports",
+      "id": 1,
+      "in_stock": false,
+      "name": "Widget 635",
+      "price": 164.59,
+      "rating": 3.2,
+      "sku": "SKU-260257",
+      "warehouse": "east"
+    },
+    {
+      "category": "sports",
+      "id": 2,
+      "in_stock": false,
+      "name": "Widget 463",
+      "price": 122.56,
+      "rating": 3.9,
+      "sku": "SKU-933705",
+      "warehouse": "east"
+    },
+    {
+      "category": "sports",
+      "id": 3,
+      "in_stock": true,
+      "name": "Widget 689",
+      "price": 23.35,
+      "rating": 1.3,
+      "sku": "SKU-125016",
+      "warehouse": "east"
+    },
+    {
+      "category": "clothing",
+      "id": 4,
+      "in_stock": false,
+      "name": "Widget 108",
+      "price": 42.26,
+      "rating": 3.2,
+      "sku": "SKU-254468",
+      "warehouse": "east"
+    },
+    {
+      "category": "sports",
+      "id": 5,
+      "in_stock": false,
+      "name": "Widget 323",
+      "price": 122.95,
+      "rating": 2.2,
+      "sku": "SKU-367264",
+      "warehouse": "west"
+    },
+    {
+      "category": "clothing",
+      "id": 6,
+      "in_stock": true,
+      "name": "Widget 648",
+      "price": 172.45,
+      "rating": 2.5,
+      "sku": "SKU-257942",
+      "warehouse": "central"
+    },
+    {
+      "category": "home",
+      "id": 7,
+      "in_stock": false,
+      "name": "Widget 288",
+      "price": 46.36,
+      "rating": 2.5,
+      "sku": "SKU-199502",
+      "warehouse": "central"
+    },
+    {
+      "category": "clothing",
+      "id": 8,
+      "in_stock": true,
+      "name": "Widget 619",
+      "price": 185.56,
+      "rating": 1.7,
+      "sku": "SKU-574376",
+      "warehouse": "east"
+    },
+    {
+      "category": "outdoor",
+      "id": 9,
+      "in_stock": true,
+      "name": "Widget 371",
+      "price": 78.16,
+      "rating": 1.7,
+      "sku": "SKU-352373",
+      "warehouse": "central"
+    },
+    {
+      "category": "home",
+      "id": 10,
+      "in_stock": false,
+      "name": "Widget 529",
+      "price": 15.35,
+      "rating": 4.3,
+      "sku": "SKU-918837",
+      "warehouse": "west"
+    },
+    {
+      "category": "sports",
+      "id": 11,
+      "in_stock": true,
+      "name": "Widget 883",
+      "price": 88.81,
+      "rating": 4.5,
+      "sku": "SKU-492793",
+      "warehouse": "west"
+    },
+    {
+      "category": "outdoor",
+      "id": 12,
+      "in_stock": false,
+      "name": "Widget 227",
+      "price": 190.64,
+      "rating": 2.7,
+      "sku": "SKU-137978",
+      "warehouse": "east"
+    },
+    {
+      "category": "sports",
+      "id": 13,
+      "in_stock": true,
+      "name": "Widget 442",
+      "price": 124.87,
+      "rating": 2.0,
+      "sku": "SKU-344961",
+      "warehouse": "east"
+    },
+    {
+      "category": "toys",
+      "id": 14,
+      "in_stock": true,
+      "name": "Widget 897",
+      "price": 114.03,
+      "rating": 2.5,
+      "sku": "SKU-376663",
+      "warehouse": "central"
+    },
+    {
+      "category": "electronics",
+      "id": 15,
+      "in_stock": false,
+      "name": "Widget 515",
+      "price": 153.17,
+      "rating": 2.0,
+      "sku": "SKU-431278",
+      "warehouse": "central"
+    },
+    {
+      "category": "clothing",
+      "id": 16,
+      "in_stock": true,
+      "name": "Widget 489",
+      "price": 67.59,
+      "rating": 2.3,
+      "sku": "SKU-713073",
+      "warehouse": "west"
+    },
+    {
+      "category": "home",
+      "id": 17,
+      "in_stock": true,
+      "name": "Widget 446",
+      "price": 28.9,
+      "rating": 3.7,
+      "sku": "SKU-373159",
+      "warehouse": "central"
+    },
+    {
+      "category": "sports",
+      "id": 18,
+      "in_stock": true,
+      "name": "Widget 861",
+      "price": 13.49,
+      "rating": 4.9,
+      "sku": "SKU-149476",
+      "warehouse": "central"
+    },
+    {
+      "category": "home",
+      "id": 19,
+      "in_stock": false,
+      "name": "Widget 343",
+      "price": 182.83,
+      "rating": 2.5,
+      "sku": "SKU-844075",
+      "warehouse": "west"
+    },
+    {
+      "category": "clothing",
+      "id": 20,
+      "in_stock": true,
+      "name": "Widget 756",
+      "price": 192.93,
+      "rating": 3.1,
+      "sku": "SKU-966661",
+      "warehouse": "central"
+    }
+  ],
+  "metadata": {
+    "generated_at": "2025-03-15T00:00:00Z",
+    "schema_version": "2.0.0"
+  }
+}

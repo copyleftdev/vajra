@@ -1,0 +1,85 @@
+{
+  "fingerprints": {
+    "path_set": "c6181f7a3805185c6e0289833975f74a2eb3e016d408fd31ff05510dc5568f76",
+    "shape": "fc106a655855d9a872cffb9c37a7189802cdcdd7d1b82ed22daaf6766da716aa",
+    "typed_path": "2a2e2ac14adb256aa9ec1fd187da7488b47b827b956755f8cb9e6d68b7b7a20a"
+  },
+  "metadata": {
+    "distinct_paths": 10,
+    "max_depth": 1,
+    "raw_size_bytes": 329,
+    "total_nodes": 10
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.arabic_العالم",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.cjk_世界",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.combining",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.emoji_key_😀",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.fullwidth",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.normal_key",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.rtl_mixed",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.surrogate_safe",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.zero_width",
+      "type_instability": 0.0
+    }
+  ]
+}

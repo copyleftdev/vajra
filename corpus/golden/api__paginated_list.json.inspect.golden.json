@@ -1,0 +1,148 @@
+{
+  "fingerprints": {
+    "path_set": "5d1862593277fa57e688cefba54d855efab0db3223eb978d9158d40624858de1",
+    "shape": "3db34f1115e4a661b16cb5a4620774bd7e5b937a2857134f83155c00168511e3",
+    "typed_path": "5af6c01ca601a5f0f6fadf747178d36d4b846e345168b628a324a5c8febf27be"
+  },
+  "metadata": {
+    "distinct_paths": 19,
+    "max_depth": 5,
+    "raw_size_bytes": 8243,
+    "total_nodes": 298
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.data",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.data[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].created_at",
+      "type_instability": 0.0
+    },
+    {
+      "count": 9,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].description",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.data[*].metadata",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.data[*].metadata.tags",
+      "type_instability": 0.0
+    },
+    {
+      "count": 50,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].metadata.tags[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.data[*].metadata.version",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 7,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].owner",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].status",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data[*].updated_at",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.pagination",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.pagination.next_url",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.pagination.page",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.pagination.per_page",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.pagination.total",
+      "type_instability": 0.0
+    }
+  ]
+}

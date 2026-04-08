@@ -1,0 +1,10 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=1, paths=1, depth=0)",
+  "observations": [],
+  "structure": {
+    "distinct_paths": 1,
+    "max_depth": 0,
+    "total_nodes": 1
+  }
+}

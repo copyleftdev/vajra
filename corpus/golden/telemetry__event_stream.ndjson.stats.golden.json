@@ -1,0 +1,144 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.element",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "button"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.event_type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "click"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.page",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "/search"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.session_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "sess-0045"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.timestamp",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-15T12:26:55.376Z"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.user_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "user-0196"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1734.0,
+        "mean": 1734.0,
+        "median": 1734.0,
+        "min": 1734.0,
+        "p05": 1734.0,
+        "p25": 1734.0,
+        "p75": 1734.0,
+        "p95": 1734.0
+      },
+      "path": "$.x",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1734"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 12.0,
+        "mean": 12.0,
+        "median": 12.0,
+        "min": 12.0,
+        "p05": 12.0,
+        "p25": 12.0,
+        "p75": 12.0,
+        "p95": 12.0
+      },
+      "path": "$.y",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "12"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

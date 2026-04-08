@@ -1,0 +1,134 @@
+{
+  "fingerprints": {
+    "path_set": "743c177646193004e08d73aa51107dd113696f37cfc893a739a2d69674f8c961",
+    "shape": "2387ceb02381d1360e2d32302c3b1ed730b6506c76787b77abce538d9a6d2c86",
+    "typed_path": "ab29d68b0caed0d78f68f744fe373f0e604904379a219bab62f7335f50822cef"
+  },
+  "metadata": {
+    "distinct_paths": 17,
+    "max_depth": 3,
+    "raw_size_bytes": 394,
+    "total_nodes": 24
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.a_big_number",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.a_bool",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.a_float",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.a_negative",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.a_null",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.a_number",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.a_small_float",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.a_string",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.an_array",
+      "type_instability": 0.0
+    },
+    {
+      "count": 7,
+      "dominant_type": "object",
+      "null_rate": 0.14285714285714285,
+      "path": "$.an_array[*]",
+      "type_instability": 0.8571428571428572
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.an_array[*].nested",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.an_array[*][*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.an_empty_array",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.an_empty_object",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.an_object",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.an_object.x",
+      "type_instability": 0.0
+    }
+  ]
+}

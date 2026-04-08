@@ -1,0 +1,284 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 9007199254740992.0,
+        "mean": 9007199254740992.0,
+        "median": 9007199254740992.0,
+        "min": 9007199254740992.0,
+        "p05": 9007199254740992.0,
+        "p25": 9007199254740992.0,
+        "p75": 9007199254740992.0,
+        "p95": 9007199254740992.0
+      },
+      "path": "$.a_big_number",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "9007199254740992"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.a_bool",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "true"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3.14,
+        "mean": 3.14,
+        "median": 3.14,
+        "min": 3.14,
+        "p05": 3.14,
+        "p25": 3.14,
+        "p75": 3.14,
+        "p95": 3.14
+      },
+      "path": "$.a_float",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3.14"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": -99.0,
+        "mean": -99.0,
+        "median": -99.0,
+        "min": -99.0,
+        "p05": -99.0,
+        "p25": -99.0,
+        "p75": -99.0,
+        "p95": -99.0
+      },
+      "path": "$.a_negative",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "-99"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.a_null",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 42.0,
+        "mean": 42.0,
+        "median": 42.0,
+        "min": 42.0,
+        "p05": 42.0,
+        "p25": 42.0,
+        "p75": 42.0,
+        "p95": 42.0
+      },
+      "path": "$.a_number",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "42"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1e-6,
+        "mean": 1e-6,
+        "median": 1e-6,
+        "min": 1e-6,
+        "p05": 1e-6,
+        "p25": 1e-6,
+        "p75": 1e-6,
+        "p95": 1e-6
+      },
+      "path": "$.a_small_float",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1e-6"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.a_string",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "hello"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.321928094887362,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 1.0,
+        "max": 3.0,
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 1.0,
+        "p05": 1.1,
+        "p25": 1.5,
+        "p75": 2.5,
+        "p95": 2.9
+      },
+      "path": "$.an_array[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        },
+        {
+          "count": 1,
+          "value": "3.0"
+        },
+        {
+          "count": 1,
+          "value": "null"
+        },
+        {
+          "count": 1,
+          "value": "true"
+        },
+        {
+          "count": 1,
+          "value": "two"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.an_array[*].nested",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "obj"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 0.5,
+        "max": 2.0,
+        "mean": 1.5,
+        "median": 1.5,
+        "min": 1.0,
+        "p05": 1.05,
+        "p25": 1.25,
+        "p75": 1.75,
+        "p95": 1.95
+      },
+      "path": "$.an_array[*][*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        },
+        {
+          "count": 1,
+          "value": "2"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.an_object.x",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

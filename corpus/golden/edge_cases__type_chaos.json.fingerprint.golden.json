@@ -1,0 +1,27 @@
+{
+  "path_set": "743c177646193004e08d73aa51107dd113696f37cfc893a739a2d69674f8c961",
+  "repeated_motifs": [
+    {
+      "count": 7,
+      "hash": "bf0b731c90564bc8c1a8b8078964f3fb4e20636f1beb54ff1cfecb06a7ca2ac8"
+    },
+    {
+      "count": 3,
+      "hash": "1c47174c0ccd034618e1a604adce0002103e088e87329f0c2fab4324e8a06c60"
+    },
+    {
+      "count": 3,
+      "hash": "88d3ce9a7ddc1cdb461b8ff3d6106ad21f17d8e970d3f69cb6e5fdc0c1d20f39"
+    },
+    {
+      "count": 2,
+      "hash": "03f88b99c3d8073bba8948d6e762aac443b265f606cc05abd4d172f03a4def6a"
+    },
+    {
+      "count": 2,
+      "hash": "04898d6f3559bfd5840dd3a30e0aa3472df8b2ffda0ae2a40815b34b4e24ac75"
+    }
+  ],
+  "shape": "2387ceb02381d1360e2d32302c3b1ed730b6506c76787b77abce538d9a6d2c86",
+  "typed_path": "ab29d68b0caed0d78f68f744fe373f0e604904379a219bab62f7335f50822cef"
+}

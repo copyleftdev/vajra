@@ -1,0 +1,701 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.apiVersion",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "apps/v1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.kind",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Deployment"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.metadata.labels.app",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "api-gateway"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.metadata.labels.team",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "platform"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.metadata.labels.version",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "v2.1.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.metadata.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "api-gateway"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.metadata.namespace",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "production"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3.0,
+        "mean": 3.0,
+        "median": 3.0,
+        "min": 3.0,
+        "p05": 3.0,
+        "p25": 3.0,
+        "p75": 3.0,
+        "p95": 3.0
+      },
+      "path": "$.spec.replicas",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.selector.matchLabels.app",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "api-gateway"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.spec.strategy.rollingUpdate.maxSurge",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.spec.strategy.rollingUpdate.maxUnavailable",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.strategy.type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "RollingUpdate"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.metadata.labels.app",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "api-gateway"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.metadata.labels.version",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "v2.1.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].env[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "DATABASE_URL"
+        },
+        {
+          "count": 1,
+          "value": "LOG_LEVEL"
+        },
+        {
+          "count": 1,
+          "value": "METRICS_PORT"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].env[*].value",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "9090"
+        },
+        {
+          "count": 1,
+          "value": "info"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].env[*].valueFrom.secretKeyRef.key",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "url"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].env[*].valueFrom.secretKeyRef.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "db-credentials"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].image",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "registry.example.com/api-gateway:2.1.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].livenessProbe.httpGet.path",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "/healthz"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 8080.0,
+        "mean": 8080.0,
+        "median": 8080.0,
+        "min": 8080.0,
+        "p05": 8080.0,
+        "p25": 8080.0,
+        "p75": 8080.0,
+        "p95": 8080.0
+      },
+      "path": "$.spec.template.spec.containers[*].livenessProbe.httpGet.port",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "8080"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 15.0,
+        "mean": 15.0,
+        "median": 15.0,
+        "min": 15.0,
+        "p05": 15.0,
+        "p25": 15.0,
+        "p75": 15.0,
+        "p95": 15.0
+      },
+      "path": "$.spec.template.spec.containers[*].livenessProbe.initialDelaySeconds",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "15"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 10.0,
+        "mean": 10.0,
+        "median": 10.0,
+        "min": 10.0,
+        "p05": 10.0,
+        "p25": 10.0,
+        "p75": 10.0,
+        "p95": 10.0
+      },
+      "path": "$.spec.template.spec.containers[*].livenessProbe.periodSeconds",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "10"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "api-gateway"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 8080.0,
+        "mean": 8080.0,
+        "median": 8080.0,
+        "min": 8080.0,
+        "p05": 8080.0,
+        "p25": 8080.0,
+        "p75": 8080.0,
+        "p95": 8080.0
+      },
+      "path": "$.spec.template.spec.containers[*].ports[*].containerPort",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "8080"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].ports[*].protocol",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "TCP"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].readinessProbe.httpGet.path",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "/ready"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 8080.0,
+        "mean": 8080.0,
+        "median": 8080.0,
+        "min": 8080.0,
+        "p05": 8080.0,
+        "p25": 8080.0,
+        "p75": 8080.0,
+        "p95": 8080.0
+      },
+      "path": "$.spec.template.spec.containers[*].readinessProbe.httpGet.port",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "8080"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5.0,
+        "mean": 5.0,
+        "median": 5.0,
+        "min": 5.0,
+        "p05": 5.0,
+        "p25": 5.0,
+        "p75": 5.0,
+        "p95": 5.0
+      },
+      "path": "$.spec.template.spec.containers[*].readinessProbe.initialDelaySeconds",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5.0,
+        "mean": 5.0,
+        "median": 5.0,
+        "min": 5.0,
+        "p05": 5.0,
+        "p25": 5.0,
+        "p75": 5.0,
+        "p95": 5.0
+      },
+      "path": "$.spec.template.spec.containers[*].readinessProbe.periodSeconds",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].resources.limits.cpu",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "500m"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].resources.limits.memory",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "512Mi"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].resources.requests.cpu",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "250m"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].resources.requests.memory",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "256Mi"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].volumeMounts[*].mountPath",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "/etc/config"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].volumeMounts[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "config-volume"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.containers[*].volumeMounts[*].readOnly",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "true"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.volumes[*].configMap.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "api-gateway-config"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.spec.template.spec.volumes[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "config-volume"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

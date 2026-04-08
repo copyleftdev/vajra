@@ -1,0 +1,92 @@
+{
+  "fingerprints": {
+    "path_set": "6e135219b52631160d3da4ecfabed9cf40e4ad84c223b1c952d5c9e45db9bc33",
+    "shape": "79d085f3dde5223fdac358813208d2d6a449dcf80455aa1069cab032d9164b19",
+    "typed_path": "d84b9e396ba850211b441a7c540001b209c3318bcada1134e24fde5e71efa542"
+  },
+  "metadata": {
+    "distinct_paths": 11,
+    "max_depth": 2,
+    "raw_size_bytes": 171,
+    "total_nodes": 13
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.a",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.array_of_nulls",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.array_of_nulls[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.b",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.c",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.d",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.e",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.nested",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.nested.f",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "null",
+      "null_rate": 1.0,
+      "path": "$.nested.g",
+      "type_instability": 0.0
+    }
+  ]
+}

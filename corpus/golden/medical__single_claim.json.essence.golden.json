@@ -1,0 +1,341 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=87, paths=43, depth=3)",
+  "observations": [
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.diagnoses[*].code",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.diagnoses[*].description",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.diagnoses[*].type",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].line_number",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.971)",
+      "entropy_signal": 0.9709505944546686,
+      "instability": 0.0,
+      "path": "$.service_lines[*].adjustment_reason",
+      "rarity": 0.0,
+      "score": 0.19064258916820023,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.961)",
+      "entropy_signal": 0.9609640474436812,
+      "instability": 0.0,
+      "path": "$.service_lines[*].service_date",
+      "rarity": 0.0,
+      "score": 0.18914460711655215,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.960)",
+      "entropy_signal": 0.9602297178607612,
+      "instability": 0.0,
+      "path": "$.service_lines[*].adjustment_amount",
+      "rarity": 0.0,
+      "score": 0.18903445767911417,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.960)",
+      "entropy_signal": 0.9602297178607612,
+      "instability": 0.0,
+      "path": "$.service_lines[*].allowed_amount",
+      "rarity": 0.0,
+      "score": 0.18903445767911417,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.960)",
+      "entropy_signal": 0.9602297178607612,
+      "instability": 0.0,
+      "path": "$.service_lines[*].charge_amount",
+      "rarity": 0.0,
+      "score": 0.18903445767911417,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.960)",
+      "entropy_signal": 0.9602297178607612,
+      "instability": 0.0,
+      "path": "$.service_lines[*].paid_amount",
+      "rarity": 0.0,
+      "score": 0.18903445767911417,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.960)",
+      "entropy_signal": 0.9602297178607612,
+      "instability": 0.0,
+      "path": "$.service_lines[*].procedure_code",
+      "rarity": 0.0,
+      "score": 0.18903445767911417,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (2 distinct values over 2 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.diagnoses[*].code",
+      "rarity": 0.8,
+      "score": 0.18,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (2 distinct values over 2 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.diagnoses[*].description",
+      "rarity": 0.8,
+      "score": 0.18,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (2 distinct values over 2 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.diagnoses[*].type",
+      "rarity": 0.8,
+      "score": 0.18,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (2 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].adjustment_reason",
+      "rarity": 0.8,
+      "score": 0.18,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.865)",
+      "entropy_signal": 0.8649735207179273,
+      "instability": 0.0,
+      "path": "$.service_lines[*].status",
+      "rarity": 0.0,
+      "score": 0.17474602810768908,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].adjustment_amount",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].allowed_amount",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].charge_amount",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].paid_amount",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].procedure_code",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].status",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (4 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].service_date",
+      "rarity": 0.6,
+      "score": 0.15,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (5 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.service_lines[*].line_number",
+      "rarity": 0.5,
+      "score": 0.135,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 47 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:1c47174c",
+      "rarity": 0.0,
+      "score": 0.08549999999999999,
+      "structural_coverage": 0.47
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 20 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:88d3ce9a",
+      "rarity": 0.0,
+      "score": 0.045,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 5 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:bf0b731c",
+      "rarity": 0.0,
+      "score": 0.0225,
+      "structural_coverage": 0.05
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 5 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:c7ec7cf6",
+      "rarity": 0.0,
+      "score": 0.0225,
+      "structural_coverage": 0.05
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 2 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:5c48187c",
+      "rarity": 0.0,
+      "score": 0.018,
+      "structural_coverage": 0.02
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 2 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:a327ce95",
+      "rarity": 0.0,
+      "score": 0.018,
+      "structural_coverage": 0.02
+    }
+  ],
+  "structure": {
+    "distinct_paths": 43,
+    "max_depth": 3,
+    "total_nodes": 87
+  }
+}

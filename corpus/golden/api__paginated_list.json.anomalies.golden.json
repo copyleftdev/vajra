@@ -1,0 +1,11 @@
+{
+  "numeric_outliers": [],
+  "rare_values": [
+    {
+      "count": 1,
+      "rarity_bits": 5.643856189774724,
+      "value": "tag-18"
+    }
+  ],
+  "type_instabilities": []
+}

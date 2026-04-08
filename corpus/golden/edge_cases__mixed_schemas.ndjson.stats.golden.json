@@ -1,0 +1,44 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 30.0,
+        "mean": 30.0,
+        "median": 30.0,
+        "min": 30.0,
+        "p05": 30.0,
+        "p25": 30.0,
+        "p75": 30.0,
+        "p95": 30.0
+      },
+      "path": "$.age",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "30"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Alice"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+[package]
+name = "vajra-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "vajra"
+path = "src/main.rs"
+
+[[bin]]
+name = "generate-corpus"
+path = "src/bin/generate_corpus.rs"
+
+[dependencies]
+vajra-types = { workspace = true }
+vajra-core = { workspace = true }
+vajra-fingerprint = { workspace = true }
+vajra-stats = { workspace = true }
+vajra-anomaly = { workspace = true }
+vajra-drift = { workspace = true }
+vajra-essence = { workspace = true }
+vajra-domain-med = { workspace = true }
+vajra-query = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+toml = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true

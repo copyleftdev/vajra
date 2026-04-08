@@ -1,0 +1,134 @@
+{
+  "lineage": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "outputs": {
+    "public_subnets": {
+      "type": [
+        "list",
+        "string"
+      ],
+      "value": [
+        "subnet-0aaa",
+        "subnet-0bbb",
+        "subnet-0ccc"
+      ]
+    },
+    "vpc_id": {
+      "type": "string",
+      "value": "vpc-0abcdef1234567890"
+    }
+  },
+  "resources": [
+    {
+      "instances": [
+        {
+          "attributes": {
+            "cidr_block": "10.0.0.0/16",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "id": "vpc-0abcdef1234567890",
+            "tags": {
+              "Environment": "production",
+              "Name": "production-vpc"
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "mode": "managed",
+      "module": "module.networking",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "type": "aws_vpc"
+    },
+    {
+      "instances": [
+        {
+          "attributes": {
+            "availability_zone": "us-east-1a",
+            "cidr_block": "10.0.1.0/24",
+            "id": "subnet-0aaa",
+            "map_public_ip_on_launch": true,
+            "vpc_id": "vpc-0abcdef1234567890"
+          },
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ],
+          "index_key": 0
+        },
+        {
+          "attributes": {
+            "availability_zone": "us-east-1b",
+            "cidr_block": "10.0.2.0/24",
+            "id": "subnet-0bbb",
+            "map_public_ip_on_launch": true,
+            "vpc_id": "vpc-0abcdef1234567890"
+          },
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ],
+          "index_key": 1
+        }
+      ],
+      "mode": "managed",
+      "module": "module.networking",
+      "name": "public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "type": "aws_subnet"
+    },
+    {
+      "instances": [
+        {
+          "attributes": {
+            "ami": "ami-0abcdef1234567890",
+            "id": "i-0abcdef123456",
+            "instance_type": "t3.medium",
+            "security_groups": [
+              "sg-0xyz"
+            ],
+            "subnet_id": "subnet-0aaa",
+            "tags": {
+              "Environment": "production",
+              "Name": "web-server"
+            }
+          },
+          "dependencies": [
+            "module.networking.aws_subnet.public",
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ],
+      "mode": "managed",
+      "module": "module.compute",
+      "name": "web",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "type": "aws_instance"
+    },
+    {
+      "instances": [
+        {
+          "attributes": {
+            "allocated_storage": 100,
+            "endpoint": "mydb.cluster.us-east-1.rds.amazonaws.com:5432",
+            "engine": "postgres",
+            "engine_version": "15.4",
+            "id": "mydb-instance",
+            "instance_class": "db.r5.large",
+            "multi_az": true
+          },
+          "dependencies": [
+            "module.networking.aws_subnet.public",
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ],
+      "mode": "managed",
+      "module": "module.database",
+      "name": "primary",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "type": "aws_db_instance"
+    }
+  ],
+  "serial": 42,
+  "terraform_version": "1.7.0",
+  "version": 4
+}

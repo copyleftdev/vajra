@@ -1,0 +1,42 @@
+{
+  "numeric_outliers": [],
+  "rare_values": [],
+  "type_instabilities": [
+    {
+      "dominant_type": "object",
+      "instability": 0.5,
+      "path": "$.Conditions.CreateReadReplica.Fn::Equals[*]",
+      "type_distribution": {
+        "object": 1,
+        "string": 1
+      }
+    },
+    {
+      "dominant_type": "object",
+      "instability": 0.5,
+      "path": "$.Conditions.IsProduction.Fn::Equals[*]",
+      "type_distribution": {
+        "object": 1,
+        "string": 1
+      }
+    },
+    {
+      "dominant_type": "boolean",
+      "instability": 0.33333333333333337,
+      "path": "$.Resources.Database.Properties.MultiAZ.Fn::If[*]",
+      "type_distribution": {
+        "boolean": 2,
+        "string": 1
+      }
+    },
+    {
+      "dominant_type": "string",
+      "instability": 0.33333333333333337,
+      "path": "$.Resources.WebServerInstance.Properties.ImageId.Fn::FindInMap[*]",
+      "type_distribution": {
+        "object": 1,
+        "string": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "notes": "Patient SSN is 987-65-4321 and card ending 4242",
+  "patient": {
+    "credit_card": "4111-1111-1111-1111",
+    "date_of_birth": "1985-06-12",
+    "email": "jane.doe@example.com",
+    "name": "Jane Doe",
+    "phone": "+1-555-867-5309",
+    "ssn": "123-45-6789"
+  },
+  "records": [
+    {
+      "name": "John Smith",
+      "ssn": "111-22-3333"
+    },
+    {
+      "email": "bob@test.org",
+      "phone": "555-123-4567"
+    }
+  ]
+}

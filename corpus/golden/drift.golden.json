@@ -1,0 +1,51 @@
+{
+  "added_paths": [
+    "$.items[*].sku",
+    "$.items[*].warehouse",
+    "$.metadata.schema_version"
+  ],
+  "distributional_drifts": [
+    {
+      "metric": "JensenShannonDivergence",
+      "path": "$.api_version",
+      "value": 1.0
+    },
+    {
+      "metric": "JensenShannonDivergence",
+      "path": "$.items[*].category",
+      "value": 0.3872740275788971
+    },
+    {
+      "metric": "JensenShannonDivergence",
+      "path": "$.items[*].name",
+      "value": 1.0
+    },
+    {
+      "metric": "JensenShannonDivergence",
+      "path": "$.items[*].price",
+      "value": 1.0
+    },
+    {
+      "metric": "WassersteinDistance",
+      "path": "$.items[*].rating",
+      "value": 0.4050000000000001
+    },
+    {
+      "metric": "JensenShannonDivergence",
+      "path": "$.metadata.generated_at",
+      "value": 1.0
+    }
+  ],
+  "removed_paths": [
+    "$.items[*].legacy_field"
+  ],
+  "severity": "Critical",
+  "structural_similarity": 0.75,
+  "type_changes": [
+    {
+      "from": "string",
+      "path": "$.items[*].price",
+      "to": "float"
+    }
+  ]
+}

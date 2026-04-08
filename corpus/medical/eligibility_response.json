@@ -1,0 +1,109 @@
+{
+  "benefits": {
+    "dental": {
+      "in_network": {
+        "annual_maximum": 2000.0,
+        "basic_coverage": 0.8,
+        "deductible": {
+          "individual": 50.0
+        },
+        "major_coverage": 0.5,
+        "preventive_coverage": 1.0
+      },
+      "out_of_network": {
+        "annual_maximum": 1500.0,
+        "basic_coverage": 0.6,
+        "deductible": {
+          "individual": 100.0
+        },
+        "major_coverage": 0.4,
+        "preventive_coverage": 0.8
+      }
+    },
+    "medical": {
+      "in_network": {
+        "coinsurance": 0.2,
+        "copay": {
+          "emergency": 250.0,
+          "primary_care": 25.0,
+          "specialist": 50.0,
+          "urgent_care": 75.0
+        },
+        "deductible": {
+          "family": 3000.0,
+          "individual": 1500.0,
+          "remaining": 750.0
+        },
+        "out_of_pocket_max": {
+          "family": 12000.0,
+          "individual": 6000.0
+        }
+      },
+      "out_of_network": {
+        "coinsurance": 0.4,
+        "copay": null,
+        "deductible": {
+          "family": 6000.0,
+          "individual": 3000.0,
+          "remaining": 3000.0
+        },
+        "out_of_pocket_max": {
+          "family": 24000.0,
+          "individual": 12000.0
+        }
+      }
+    },
+    "vision": {
+      "in_network": {
+        "contacts_allowance": 200.0,
+        "exam_copay": 10.0,
+        "frames_allowance": 200.0,
+        "frequency": {
+          "exam": "12 months",
+          "frames": "24 months",
+          "lenses": "12 months"
+        }
+      },
+      "out_of_network": {
+        "contacts_reimbursement": 105.0,
+        "exam_reimbursement": 45.0,
+        "frames_reimbursement": 70.0
+      }
+    }
+  },
+  "coverage_effective_dates": {
+    "dental": "2025-01-01",
+    "medical": "2025-01-01",
+    "vision": "2025-02-01"
+  },
+  "dependents": [
+    {
+      "date_of_birth": "1980-09-15",
+      "gender": "F",
+      "name": "Mary J. Public",
+      "relationship": "spouse"
+    },
+    {
+      "date_of_birth": "2010-01-30",
+      "gender": "M",
+      "name": "Tommy R. Public",
+      "relationship": "child"
+    }
+  ],
+  "plan": {
+    "effective_date": "2025-01-01",
+    "group_number": "GRP-887766",
+    "plan_id": "PLAN-PPO-GOLD-2025",
+    "plan_name": "Preferred PPO Gold",
+    "termination_date": null
+  },
+  "status": "active",
+  "subscriber": {
+    "date_of_birth": "1978-04-22",
+    "gender": "M",
+    "member_id": "MBR-5551234",
+    "name": "John Q. Public",
+    "relationship": "self"
+  },
+  "transaction_id": "ELIG-2025-001"
+}

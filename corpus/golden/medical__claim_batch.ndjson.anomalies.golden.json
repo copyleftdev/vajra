@@ -1,0 +1,48 @@
+{
+  "numeric_outliers": [
+    {
+      "mad": 14.340000000000003,
+      "median": 164.5,
+      "path": "$.service_lines[*].adjustment_amount",
+      "value": 66.24,
+      "z_mad": -4.621783124128311
+    },
+    {
+      "mad": 14.340000000000003,
+      "median": 164.5,
+      "path": "$.service_lines[*].adjustment_amount",
+      "value": 258.51,
+      "z_mad": 4.4218790097628995
+    },
+    {
+      "mad": 14.340000000000003,
+      "median": 164.5,
+      "path": "$.service_lines[*].adjustment_amount",
+      "value": 296.32,
+      "z_mad": 6.200320083682007
+    },
+    {
+      "mad": 14.289999999999992,
+      "median": 166.9,
+      "path": "$.service_lines[*].paid_amount",
+      "value": 67.07,
+      "z_mad": -4.712059832050388
+    },
+    {
+      "mad": 14.289999999999992,
+      "median": 166.9,
+      "path": "$.service_lines[*].paid_amount",
+      "value": 262.4,
+      "z_mad": 4.507680195941219
+    },
+    {
+      "mad": 14.289999999999992,
+      "median": 166.9,
+      "path": "$.service_lines[*].paid_amount",
+      "value": 300.1,
+      "z_mad": 6.287151854443672
+    }
+  ],
+  "rare_values": [],
+  "type_instabilities": []
+}

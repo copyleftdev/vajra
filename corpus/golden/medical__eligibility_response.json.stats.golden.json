@@ -1,0 +1,1165 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 2000.0,
+        "mean": 2000.0,
+        "median": 2000.0,
+        "min": 2000.0,
+        "p05": 2000.0,
+        "p25": 2000.0,
+        "p75": 2000.0,
+        "p95": 2000.0
+      },
+      "path": "$.benefits.dental.in_network.annual_maximum",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.8,
+        "mean": 0.8,
+        "median": 0.8,
+        "min": 0.8,
+        "p05": 0.8,
+        "p25": 0.8,
+        "p75": 0.8,
+        "p95": 0.8
+      },
+      "path": "$.benefits.dental.in_network.basic_coverage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0.8"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 50.0,
+        "mean": 50.0,
+        "median": 50.0,
+        "min": 50.0,
+        "p05": 50.0,
+        "p25": 50.0,
+        "p75": 50.0,
+        "p95": 50.0
+      },
+      "path": "$.benefits.dental.in_network.deductible.individual",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "50.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.5,
+        "mean": 0.5,
+        "median": 0.5,
+        "min": 0.5,
+        "p05": 0.5,
+        "p25": 0.5,
+        "p75": 0.5,
+        "p95": 0.5
+      },
+      "path": "$.benefits.dental.in_network.major_coverage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0.5"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.benefits.dental.in_network.preventive_coverage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1500.0,
+        "mean": 1500.0,
+        "median": 1500.0,
+        "min": 1500.0,
+        "p05": 1500.0,
+        "p25": 1500.0,
+        "p75": 1500.0,
+        "p95": 1500.0
+      },
+      "path": "$.benefits.dental.out_of_network.annual_maximum",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1500.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.6,
+        "mean": 0.6,
+        "median": 0.6,
+        "min": 0.6,
+        "p05": 0.6,
+        "p25": 0.6,
+        "p75": 0.6,
+        "p95": 0.6
+      },
+      "path": "$.benefits.dental.out_of_network.basic_coverage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0.6"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 100.0,
+        "mean": 100.0,
+        "median": 100.0,
+        "min": 100.0,
+        "p05": 100.0,
+        "p25": 100.0,
+        "p75": 100.0,
+        "p95": 100.0
+      },
+      "path": "$.benefits.dental.out_of_network.deductible.individual",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "100.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.4,
+        "mean": 0.4,
+        "median": 0.4,
+        "min": 0.4,
+        "p05": 0.4,
+        "p25": 0.4,
+        "p75": 0.4,
+        "p95": 0.4
+      },
+      "path": "$.benefits.dental.out_of_network.major_coverage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0.4"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.8,
+        "mean": 0.8,
+        "median": 0.8,
+        "min": 0.8,
+        "p05": 0.8,
+        "p25": 0.8,
+        "p75": 0.8,
+        "p95": 0.8
+      },
+      "path": "$.benefits.dental.out_of_network.preventive_coverage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0.8"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.2,
+        "mean": 0.2,
+        "median": 0.2,
+        "min": 0.2,
+        "p05": 0.2,
+        "p25": 0.2,
+        "p75": 0.2,
+        "p95": 0.2
+      },
+      "path": "$.benefits.medical.in_network.coinsurance",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0.2"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 250.0,
+        "mean": 250.0,
+        "median": 250.0,
+        "min": 250.0,
+        "p05": 250.0,
+        "p25": 250.0,
+        "p75": 250.0,
+        "p95": 250.0
+      },
+      "path": "$.benefits.medical.in_network.copay.emergency",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "250.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 25.0,
+        "mean": 25.0,
+        "median": 25.0,
+        "min": 25.0,
+        "p05": 25.0,
+        "p25": 25.0,
+        "p75": 25.0,
+        "p95": 25.0
+      },
+      "path": "$.benefits.medical.in_network.copay.primary_care",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "25.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 50.0,
+        "mean": 50.0,
+        "median": 50.0,
+        "min": 50.0,
+        "p05": 50.0,
+        "p25": 50.0,
+        "p75": 50.0,
+        "p95": 50.0
+      },
+      "path": "$.benefits.medical.in_network.copay.specialist",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "50.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 75.0,
+        "mean": 75.0,
+        "median": 75.0,
+        "min": 75.0,
+        "p05": 75.0,
+        "p25": 75.0,
+        "p75": 75.0,
+        "p95": 75.0
+      },
+      "path": "$.benefits.medical.in_network.copay.urgent_care",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "75.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3000.0,
+        "mean": 3000.0,
+        "median": 3000.0,
+        "min": 3000.0,
+        "p05": 3000.0,
+        "p25": 3000.0,
+        "p75": 3000.0,
+        "p95": 3000.0
+      },
+      "path": "$.benefits.medical.in_network.deductible.family",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1500.0,
+        "mean": 1500.0,
+        "median": 1500.0,
+        "min": 1500.0,
+        "p05": 1500.0,
+        "p25": 1500.0,
+        "p75": 1500.0,
+        "p95": 1500.0
+      },
+      "path": "$.benefits.medical.in_network.deductible.individual",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1500.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 750.0,
+        "mean": 750.0,
+        "median": 750.0,
+        "min": 750.0,
+        "p05": 750.0,
+        "p25": 750.0,
+        "p75": 750.0,
+        "p95": 750.0
+      },
+      "path": "$.benefits.medical.in_network.deductible.remaining",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "750.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 12000.0,
+        "mean": 12000.0,
+        "median": 12000.0,
+        "min": 12000.0,
+        "p05": 12000.0,
+        "p25": 12000.0,
+        "p75": 12000.0,
+        "p95": 12000.0
+      },
+      "path": "$.benefits.medical.in_network.out_of_pocket_max.family",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "12000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 6000.0,
+        "mean": 6000.0,
+        "median": 6000.0,
+        "min": 6000.0,
+        "p05": 6000.0,
+        "p25": 6000.0,
+        "p75": 6000.0,
+        "p95": 6000.0
+      },
+      "path": "$.benefits.medical.in_network.out_of_pocket_max.individual",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "6000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.4,
+        "mean": 0.4,
+        "median": 0.4,
+        "min": 0.4,
+        "p05": 0.4,
+        "p25": 0.4,
+        "p75": 0.4,
+        "p95": 0.4
+      },
+      "path": "$.benefits.medical.out_of_network.coinsurance",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0.4"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.benefits.medical.out_of_network.copay",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 6000.0,
+        "mean": 6000.0,
+        "median": 6000.0,
+        "min": 6000.0,
+        "p05": 6000.0,
+        "p25": 6000.0,
+        "p75": 6000.0,
+        "p95": 6000.0
+      },
+      "path": "$.benefits.medical.out_of_network.deductible.family",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "6000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3000.0,
+        "mean": 3000.0,
+        "median": 3000.0,
+        "min": 3000.0,
+        "p05": 3000.0,
+        "p25": 3000.0,
+        "p75": 3000.0,
+        "p95": 3000.0
+      },
+      "path": "$.benefits.medical.out_of_network.deductible.individual",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3000.0,
+        "mean": 3000.0,
+        "median": 3000.0,
+        "min": 3000.0,
+        "p05": 3000.0,
+        "p25": 3000.0,
+        "p75": 3000.0,
+        "p95": 3000.0
+      },
+      "path": "$.benefits.medical.out_of_network.deductible.remaining",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 24000.0,
+        "mean": 24000.0,
+        "median": 24000.0,
+        "min": 24000.0,
+        "p05": 24000.0,
+        "p25": 24000.0,
+        "p75": 24000.0,
+        "p95": 24000.0
+      },
+      "path": "$.benefits.medical.out_of_network.out_of_pocket_max.family",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "24000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 12000.0,
+        "mean": 12000.0,
+        "median": 12000.0,
+        "min": 12000.0,
+        "p05": 12000.0,
+        "p25": 12000.0,
+        "p75": 12000.0,
+        "p95": 12000.0
+      },
+      "path": "$.benefits.medical.out_of_network.out_of_pocket_max.individual",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "12000.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 200.0,
+        "mean": 200.0,
+        "median": 200.0,
+        "min": 200.0,
+        "p05": 200.0,
+        "p25": 200.0,
+        "p75": 200.0,
+        "p95": 200.0
+      },
+      "path": "$.benefits.vision.in_network.contacts_allowance",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "200.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 10.0,
+        "mean": 10.0,
+        "median": 10.0,
+        "min": 10.0,
+        "p05": 10.0,
+        "p25": 10.0,
+        "p75": 10.0,
+        "p95": 10.0
+      },
+      "path": "$.benefits.vision.in_network.exam_copay",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "10.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 200.0,
+        "mean": 200.0,
+        "median": 200.0,
+        "min": 200.0,
+        "p05": 200.0,
+        "p25": 200.0,
+        "p75": 200.0,
+        "p95": 200.0
+      },
+      "path": "$.benefits.vision.in_network.frames_allowance",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "200.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.benefits.vision.in_network.frequency.exam",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "12 months"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.benefits.vision.in_network.frequency.frames",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "24 months"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.benefits.vision.in_network.frequency.lenses",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "12 months"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 105.0,
+        "mean": 105.0,
+        "median": 105.0,
+        "min": 105.0,
+        "p05": 105.0,
+        "p25": 105.0,
+        "p75": 105.0,
+        "p95": 105.0
+      },
+      "path": "$.benefits.vision.out_of_network.contacts_reimbursement",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "105.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 45.0,
+        "mean": 45.0,
+        "median": 45.0,
+        "min": 45.0,
+        "p05": 45.0,
+        "p25": 45.0,
+        "p75": 45.0,
+        "p95": 45.0
+      },
+      "path": "$.benefits.vision.out_of_network.exam_reimbursement",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "45.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 70.0,
+        "mean": 70.0,
+        "median": 70.0,
+        "min": 70.0,
+        "p05": 70.0,
+        "p25": 70.0,
+        "p75": 70.0,
+        "p95": 70.0
+      },
+      "path": "$.benefits.vision.out_of_network.frames_reimbursement",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "70.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.coverage_effective_dates.dental",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-01-01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.coverage_effective_dates.medical",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-01-01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.coverage_effective_dates.vision",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-02-01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.dependents[*].date_of_birth",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1980-09-15"
+        },
+        {
+          "count": 1,
+          "value": "2010-01-30"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.dependents[*].gender",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "F"
+        },
+        {
+          "count": 1,
+          "value": "M"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.dependents[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Mary J. Public"
+        },
+        {
+          "count": 1,
+          "value": "Tommy R. Public"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.dependents[*].relationship",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "child"
+        },
+        {
+          "count": 1,
+          "value": "spouse"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.plan.effective_date",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-01-01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.plan.group_number",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "GRP-887766"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.plan.plan_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "PLAN-PPO-GOLD-2025"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.plan.plan_name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Preferred PPO Gold"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.plan.termination_date",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "null"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.status",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "active"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.subscriber.date_of_birth",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1978-04-22"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.subscriber.gender",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "M"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.subscriber.member_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "MBR-5551234"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.subscriber.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "John Q. Public"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.subscriber.relationship",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "self"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.transaction_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "ELIG-2025-001"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

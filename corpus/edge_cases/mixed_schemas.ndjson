@@ -1,0 +1,10 @@
+{"age":30,"name":"Alice"}
+{"id":1,"values":[1,2,3]}
+{"code":200,"message":"success","status":"ok"}
+["just","an","array"]
+{"deeply":{"nested":{"value":true}}}
+{"key":null}
+{"x":1.5,"y":2.5,"z":3.5}
+{"metadata":{"created":"2025-01-01"},"tags":["a","b"]}
+42
+{"empty_containers":{"arr":[],"obj":{}}}

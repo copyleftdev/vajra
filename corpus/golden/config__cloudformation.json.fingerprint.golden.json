@@ -1,0 +1,55 @@
+{
+  "path_set": "ef713745527ef7e8eea5c72dfb1638ccea8aebad17d70fa4fde4d386df3a443a",
+  "repeated_motifs": [
+    {
+      "count": 56,
+      "hash": "1c47174c0ccd034618e1a604adce0002103e088e87329f0c2fab4324e8a06c60"
+    },
+    {
+      "count": 11,
+      "hash": "51020db9e35450fb83b6c3ae99b5bbe6a15ff50fa883a7290f72ae6519ec1dd5"
+    },
+    {
+      "count": 7,
+      "hash": "bf0b731c90564bc8c1a8b8078964f3fb4e20636f1beb54ff1cfecb06a7ca2ac8"
+    },
+    {
+      "count": 3,
+      "hash": "f6cc4e47e0aebf859e5692751156fb56ce970cc8c4047be9d608486b16217036"
+    },
+    {
+      "count": 2,
+      "hash": "04898d6f3559bfd5840dd3a30e0aa3472df8b2ffda0ae2a40815b34b4e24ac75"
+    },
+    {
+      "count": 2,
+      "hash": "1f4cc774b77479e0ba089f156701669f854abc150524896a68d236a7a0251928"
+    },
+    {
+      "count": 2,
+      "hash": "74e1aaeede61cf7a1ecda3d1ccd7abd9d17846cbadf5c95c329ad12ca279f00f"
+    },
+    {
+      "count": 2,
+      "hash": "7f3be17852caca12dbf20def53c4e2811408c0f827bbfdc3c39c1af4f5ef22fe"
+    },
+    {
+      "count": 2,
+      "hash": "8a0ea912efe487c502d4a7eec34125071bf8f3b91d7f7b27469b18d39c6a9a89"
+    },
+    {
+      "count": 2,
+      "hash": "8d48e8974aa6af4861f0ced2ef7833722fee612c04bda616af87c3cf7fb746bd"
+    },
+    {
+      "count": 2,
+      "hash": "a1f526c609046fd8ac063a474471567620b802d47ac9ea3608cd7228a7dc1dd8"
+    },
+    {
+      "count": 2,
+      "hash": "b78fec19cbb2826a3dde3ebed0d5685230408e2d96811e3790f88c413168e1de"
+    }
+  ],
+  "shape": "6017af1b17b6e0510fd9dc2f9bfc73a9f957cb1b52f7d08cdfeeb951b908eab4",
+  "typed_path": "760ff3b7a8553ad565a821c058318237a901d3a1d5781f409e0e8d7e9555cea4"
+}

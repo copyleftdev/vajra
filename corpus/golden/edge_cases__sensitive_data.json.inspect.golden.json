@@ -1,0 +1,120 @@
+{
+  "fingerprints": {
+    "path_set": "e1449067bd86dbcac3a098791ae4be3f1b12fed3b07c407cc4ea59e1f9e697f6",
+    "shape": "6e2b8c1771d82796deeac7fd92e58e2cfc2d1411a65494916fee3dcaa8bd11af",
+    "typed_path": "faba2a1cb916faf315b606558e75cbfcc39d3c3f2c34e5cacd236809858ba453"
+  },
+  "metadata": {
+    "distinct_paths": 15,
+    "max_depth": 3,
+    "raw_size_bytes": 440,
+    "total_nodes": 16
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.notes",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.patient",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.credit_card",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.date_of_birth",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.email",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.phone",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.patient.ssn",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.records",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.records[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.records[*].email",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.records[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.records[*].phone",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.records[*].ssn",
+      "type_instability": 0.0
+    }
+  ]
+}

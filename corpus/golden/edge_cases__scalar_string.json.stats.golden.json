@@ -1,0 +1,19 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "hello"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

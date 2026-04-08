@@ -1,0 +1,200 @@
+{"element":"button","event_type":"click","page":"/search","session_id":"sess-0045","timestamp":"2025-03-15T12:26:55.376Z","user_id":"user-0196","x":1734,"y":12}
+{"amount":441.39,"event_type":"purchase","items":7,"page":"/products","session_id":"sess-0013","timestamp":"2025-03-15T12:50:19.726Z","user_id":"user-0125"}
+{"error_code":"timeout","event_type":"error","page":"/home","session_id":"sess-0040","stack_trace":"at main.js:42","timestamp":"2025-03-15T12:21:15.347Z","user_id":"user-0078"}
+{"amount":106.4,"event_type":"purchase","items":7,"page":"/home","session_id":"sess-0024","timestamp":"2025-03-15T13:52:24.616Z","user_id":"user-0146"}
+{"element":"button","event_type":"click","page":"/cart","session_id":"sess-0035","timestamp":"2025-03-15T10:39:20.127Z","user_id":"user-0188","x":1558,"y":883}
+{"error_code":"502","event_type":"error","page":"/search","session_id":"sess-0032","stack_trace":"at main.js:42","timestamp":"2025-03-15T14:57:56.827Z","user_id":"user-0155"}
+{"event_type":"page_view","page":"/checkout","session_id":"sess-0041","timestamp":"2025-03-15T14:11:36.736Z","user_id":"user-0022"}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0037","timestamp":"2025-03-15T11:24:28.841Z","user_id":"user-0187"}
+{"event_type":"scroll","page":"/products","session_id":"sess-0022","timestamp":"2025-03-15T13:07:53.680Z","user_id":"user-0035"}
+{"event_type":"form_submit","page":"/home","session_id":"sess-0044","timestamp":"2025-03-15T14:57:24.560Z","user_id":"user-0172"}
+{"amount":415.48,"event_type":"purchase","items":7,"page":"/home","session_id":"sess-0004","timestamp":"2025-03-15T12:18:37.921Z","user_id":"user-0018"}
+{"error_code":"timeout","event_type":"error","page":"/profile","session_id":"sess-0015","stack_trace":"at main.js:42","timestamp":"2025-03-15T11:48:25.796Z","user_id":"user-0067"}
+{"amount":17.97,"event_type":"purchase","items":1,"page":"/checkout","session_id":"sess-0015","timestamp":"2025-03-15T13:43:12.066Z","user_id":"user-0055"}
+{"event_type":"form_submit","page":"/home","session_id":"sess-0039","timestamp":"2025-03-15T11:35:46.110Z","user_id":"user-0133"}
+{"debug":{"memory_mb":107,"render_time_ms":4660},"event_type":"scroll","page":"/cart","session_id":"sess-0033","timestamp":"2025-03-15T14:43:45.809Z","user_id":"user-0044"}
+{"event_type":"page_view","page":"/search","session_id":"sess-0017","timestamp":"2025-03-15T13:01:10.175Z","user_id":"user-0067"}
+{"error_code":"502","event_type":"error","page":"/home","session_id":"sess-0047","stack_trace":"at main.js:42","timestamp":"2025-03-15T10:12:42.443Z","user_id":"user-0115"}
+{"event_type":"scroll","page":"/cart","session_id":"sess-0025","timestamp":"2025-03-15T11:57:44.570Z","user_id":"user-0061"}
+{"event_type":"scroll","page":"/home","session_id":"sess-0038","timestamp":"2025-03-15T11:57:18.105Z","user_id":"user-0077"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0023","timestamp":"2025-03-15T12:33:47.845Z","user_id":"user-0009"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0041","timestamp":"2025-03-15T14:25:21.190Z","user_id":"user-0193"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0005","timestamp":"2025-03-15T12:54:19.599Z","user_id":"user-0186"}
+{"debug":{"memory_mb":201,"render_time_ms":1144},"error_code":"503","event_type":"error","page":"/products","session_id":"sess-0007","stack_trace":"at main.js:42","timestamp":"2025-03-15T12:14:53.931Z","user_id":"user-0113"}
+{"error_code":"502","event_type":"error","page":"/profile","session_id":"sess-0002","stack_trace":"at main.js:42","timestamp":"2025-03-15T10:24:18.771Z","user_id":"user-0172"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0025","timestamp":"2025-03-15T11:29:30.106Z","user_id":"user-0004"}
+{"error_code":"502","event_type":"error","page":"/products","session_id":"sess-0025","stack_trace":"at main.js:42","timestamp":"2025-03-15T11:46:25.227Z","user_id":"user-0171"}
+{"error_code":"timeout","event_type":"error","page":"/checkout","session_id":"sess-0029","stack_trace":"at main.js:42","timestamp":"2025-03-15T10:02:15.963Z","user_id":"user-0058"}
+{"element":"link","event_type":"click","page":"/products","session_id":"sess-0022","timestamp":"2025-03-15T10:01:42.380Z","user_id":"user-0039","x":1218,"y":567}
+{"event_type":"scroll","page":"/search","session_id":"sess-0023","timestamp":"2025-03-15T13:59:31.896Z","user_id":"user-0113"}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0036","timestamp":"2025-03-15T12:03:03.805Z","user_id":"user-0052"}
+{"element":"link","event_type":"click","page":"/cart","session_id":"sess-0046","timestamp":"2025-03-15T12:16:17.745Z","user_id":"user-0158","x":1803,"y":601}
+{"event_type":"form_submit","page":"/products","session_id":"sess-0042","timestamp":"2025-03-15T13:15:53.147Z","user_id":"user-0054"}
+{"event_type":"scroll","page":"/products","session_id":"sess-0003","timestamp":"2025-03-15T12:21:20.998Z","user_id":"user-0178"}
+{"event_type":"page_view","page":"/profile","session_id":"sess-0034","timestamp":"2025-03-15T11:48:18.598Z","user_id":"user-0038"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0024","timestamp":"2025-03-15T12:56:24.390Z","user_id":"user-0055"}
+{"element":"image","event_type":"click","page":"/products","session_id":"sess-0043","timestamp":"2025-03-15T13:49:52.861Z","user_id":"user-0039","x":1667,"y":719}
+{"event_type":"page_view","page":"/products","session_id":"sess-0025","timestamp":"2025-03-15T12:02:35.549Z","user_id":"user-0022"}
+{"amount":377.54,"event_type":"purchase","items":1,"page":"/home","session_id":"sess-0024","timestamp":"2025-03-15T13:26:30.568Z","user_id":"user-0056"}
+{"event_type":"page_view","page":"/profile","session_id":"sess-0031","timestamp":"2025-03-15T11:19:51.077Z","user_id":"user-0001"}
+{"amount":467.98,"event_type":"purchase","items":5,"page":"/checkout","session_id":"sess-0024","timestamp":"2025-03-15T10:16:20.214Z","user_id":"user-0038"}
+{"error_code":"503","event_type":"error","page":"/search","session_id":"sess-0016","stack_trace":"at main.js:42","timestamp":"2025-03-15T10:42:41.941Z","user_id":"user-0039"}
+{"amount":471.22,"event_type":"purchase","items":2,"page":"/home","session_id":"sess-0005","timestamp":"2025-03-15T11:49:51.376Z","user_id":"user-0095"}
+{"debug":{"memory_mb":497,"render_time_ms":3686},"event_type":"page_view","page":"/products","session_id":"sess-0044","timestamp":"2025-03-15T14:35:43.670Z","user_id":"user-0006"}
+{"amount":56.23,"event_type":"purchase","items":6,"page":"/profile","session_id":"sess-0019","timestamp":"2025-03-15T14:18:22.733Z","user_id":"user-0084"}
+{"event_type":"scroll","page":"/checkout","session_id":"sess-0013","timestamp":"2025-03-15T10:10:22.890Z","user_id":"user-0140"}
+{"amount":110.15,"event_type":"purchase","items":5,"page":"/home","session_id":"sess-0047","timestamp":"2025-03-15T14:56:56.869Z","user_id":"user-0178"}
+{"event_type":"scroll","page":"/cart","session_id":"sess-0002","timestamp":"2025-03-15T13:03:54.365Z","user_id":"user-0162"}
+{"debug":{"memory_mb":482,"render_time_ms":4008},"event_type":"scroll","page":"/home","session_id":"sess-0011","timestamp":"2025-03-15T13:42:55.799Z","user_id":"user-0023"}
+{"error_code":"500","event_type":"error","page":"/search","session_id":"sess-0049","stack_trace":"at main.js:42","timestamp":"2025-03-15T12:42:30.197Z","user_id":"user-0029"}
+{"event_type":"form_submit","page":"/profile","session_id":"sess-0008","timestamp":"2025-03-15T13:57:07.741Z","user_id":"user-0056"}
+{"amount":260.92,"event_type":"purchase","items":5,"page":"/cart","session_id":"sess-0010","timestamp":"2025-03-15T03:01:33.279Z","user_id":"user-0192"}
+{"event_type":"form_submit","page":"/home","session_id":"sess-0038","timestamp":"2025-03-15T04:48:52.166Z","user_id":"user-0182"}
+{"amount":180.62,"event_type":"purchase","items":4,"page":"/checkout","session_id":"sess-0042","timestamp":"2025-03-15T05:26:55.911Z","user_id":"user-0196"}
+{"error_code":"502","event_type":"error","page":"/products","session_id":"sess-0015","stack_trace":"at main.js:42","timestamp":"2025-03-15T04:26:41.097Z","user_id":"user-0109"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0028","timestamp":"2025-03-15T04:21:45.946Z","user_id":"user-0178"}
+{"error_code":"500","event_type":"error","page":"/products","session_id":"sess-0044","stack_trace":"at main.js:42","timestamp":"2025-03-15T05:16:57.782Z","user_id":"user-0121"}
+{"event_type":"form_submit","page":"/products","session_id":"sess-0049","timestamp":"2025-03-15T05:43:55.377Z","user_id":"user-0197"}
+{"event_type":"scroll","page":"/checkout","session_id":"sess-0001","timestamp":"2025-03-15T04:50:46.459Z","user_id":"user-0012"}
+{"amount":26.92,"debug":{"memory_mb":456,"render_time_ms":4010},"event_type":"purchase","items":1,"page":"/checkout","session_id":"sess-0009","timestamp":"2025-03-15T04:01:51.783Z","user_id":"user-0001"}
+{"event_type":"page_view","page":"/search","session_id":"sess-0041","timestamp":"2025-03-15T04:22:41.283Z","user_id":"user-0119"}
+{"element":"button","event_type":"click","page":"/cart","session_id":"sess-0025","timestamp":"2025-03-15T14:42:26.410Z","user_id":"user-0060","x":237,"y":846}
+{"event_type":"scroll","page":"/cart","session_id":"sess-0011","timestamp":"2025-03-15T15:26:22.531Z","user_id":"user-0080"}
+{"amount":32.74,"event_type":"purchase","items":7,"page":"/home","session_id":"sess-0014","timestamp":"2025-03-15T04:46:25.512Z","user_id":"user-0061"}
+{"amount":413.89,"event_type":"purchase","items":2,"page":"/checkout","session_id":"sess-0001","timestamp":"2025-03-15T19:04:06.631Z","user_id":"user-0127"}
+{"amount":396.94,"debug":{"memory_mb":332,"render_time_ms":4006},"event_type":"purchase","items":4,"page":"/products","session_id":"sess-0039","timestamp":"2025-03-15T05:28:52.335Z","user_id":"user-0004"}
+{"event_type":"page_view","page":"/home","session_id":"sess-0014","timestamp":"2025-03-15T06:55:42.424Z","user_id":"user-0084"}
+{"error_code":"500","event_type":"error","page":"/checkout","session_id":"sess-0020","stack_trace":"at main.js:42","timestamp":"2025-03-15T07:18:45.874Z","user_id":"user-0059"}
+{"amount":34.97,"event_type":"purchase","items":1,"page":"/profile","session_id":"sess-0008","timestamp":"2025-03-15T03:47:53.403Z","user_id":"user-0097"}
+{"event_type":"form_submit","page":"/products","session_id":"sess-0031","timestamp":"2025-03-15T21:17:48.099Z","user_id":"user-0154"}
+{"amount":229.78,"event_type":"purchase","items":2,"page":"/checkout","session_id":"sess-0048","timestamp":"2025-03-15T01:27:55.075Z","user_id":"user-0131"}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0038","timestamp":"2025-03-15T06:03:09.373Z","user_id":"user-0122"}
+{"event_type":"form_submit","page":"/checkout","session_id":"sess-0049","timestamp":"2025-03-15T11:41:19.010Z","user_id":"user-0048"}
+{"element":"link","event_type":"click","page":"/cart","session_id":"sess-0004","timestamp":"2025-03-15T17:48:08.109Z","user_id":"user-0117","x":893,"y":654}
+{"amount":333.83,"event_type":"purchase","items":5,"page":"/products","session_id":"sess-0036","timestamp":"2025-03-15T10:41:44.552Z","user_id":"user-0046"}
+{"event_type":"page_view","page":"/checkout","session_id":"sess-0037","timestamp":"2025-03-15T00:37:34.956Z","user_id":"user-0106"}
+{"event_type":"scroll","page":"/cart","session_id":"sess-0004","timestamp":"2025-03-15T13:49:38.175Z","user_id":"user-0051"}
+{"error_code":"timeout","event_type":"error","page":"/cart","session_id":"sess-0004","stack_trace":"at main.js:42","timestamp":"2025-03-15T18:45:27.538Z","user_id":"user-0104"}
+{"debug":{"memory_mb":363,"render_time_ms":4487},"event_type":"form_submit","page":"/search","session_id":"sess-0005","timestamp":"2025-03-15T04:18:21.986Z","user_id":"user-0173"}
+{"amount":35.42,"event_type":"purchase","items":4,"page":"/products","session_id":"sess-0034","timestamp":"2025-03-15T18:12:55.662Z","user_id":"user-0102"}
+{"error_code":"503","event_type":"error","page":"/checkout","session_id":"sess-0006","stack_trace":"at main.js:42","timestamp":"2025-03-15T21:10:17.409Z","user_id":"user-0195"}
+{"event_type":"page_view","page":"/profile","session_id":"sess-0025","timestamp":"2025-03-15T06:26:16.918Z","user_id":"user-0105"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0045","timestamp":"2025-03-15T14:26:41.530Z","user_id":"user-0187"}
+{"error_code":"500","event_type":"error","page":"/search","session_id":"sess-0003","stack_trace":"at main.js:42","timestamp":"2025-03-15T11:41:11.633Z","user_id":"user-0183"}
+{"event_type":"page_view","page":"/products","session_id":"sess-0038","timestamp":"2025-03-15T17:02:40.244Z","user_id":"user-0081"}
+{"event_type":"scroll","page":"/search","session_id":"sess-0003","timestamp":"2025-03-15T10:47:35.378Z","user_id":"user-0104"}
+{"error_code":"500","event_type":"error","page":"/checkout","session_id":"sess-0014","stack_trace":"at main.js:42","timestamp":"2025-03-15T07:55:11.891Z","user_id":"user-0163"}
+{"amount":382.15,"event_type":"purchase","items":5,"page":"/products","session_id":"sess-0030","timestamp":"2025-03-15T18:21:22.198Z","user_id":"user-0029"}
+{"event_type":"scroll","page":"/search","session_id":"sess-0039","timestamp":"2025-03-15T04:58:34.851Z","user_id":"user-0128"}
+{"amount":165.71,"event_type":"purchase","items":7,"page":"/products","session_id":"sess-0031","timestamp":"2025-03-15T09:16:55.663Z","user_id":"user-0002"}
+{"error_code":"timeout","event_type":"error","page":"/home","session_id":"sess-0027","stack_trace":"at main.js:42","timestamp":"2025-03-15T05:10:22.469Z","user_id":"user-0061"}
+{"error_code":"500","event_type":"error","page":"/checkout","session_id":"sess-0042","stack_trace":"at main.js:42","timestamp":"2025-03-15T14:50:25.417Z","user_id":"user-0159"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0041","timestamp":"2025-03-15T04:57:14.875Z","user_id":"user-0038"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0038","timestamp":"2025-03-15T17:17:45.261Z","user_id":"user-0055"}
+{"event_type":"page_view","page":"/checkout","session_id":"sess-0027","timestamp":"2025-03-15T11:12:59.575Z","user_id":"user-0118"}
+{"error_code":"500","event_type":"error","page":"/cart","session_id":"sess-0017","stack_trace":"at main.js:42","timestamp":"2025-03-15T00:58:38.238Z","user_id":"user-0159"}
+{"event_type":"scroll","page":"/products","session_id":"sess-0024","timestamp":"2025-03-15T12:37:30.004Z","user_id":"user-0028"}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0010","timestamp":"2025-03-15T00:47:46.428Z","user_id":"user-0168"}
+{"event_type":"page_view","page":"/search","session_id":"sess-0015","timestamp":"2025-03-15T08:43:13.240Z","user_id":"user-0089"}
+{"event_type":"form_submit","page":"/products","session_id":"sess-0011","timestamp":"2025-03-15T18:13:35.810Z","user_id":"user-0078"}
+{"event_type":"form_submit","page":"/profile","session_id":"sess-0024","timestamp":"2025-03-15T08:35:23.854Z","user_id":"user-0144"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0027","timestamp":"2025-03-15T05:04:17.576Z","user_id":"user-0099"}
+{"element":"link","event_type":"click","page":"/profile","session_id":"sess-0046","timestamp":"2025-03-15T01:15:24.482Z","user_id":"user-0005","x":19,"y":217}
+{"event_type":"page_view","page":"/products","session_id":"sess-0039","timestamp":"2025-03-15T21:48:09.299Z","user_id":"user-0179"}
+{"event_type":"page_view","page":"/checkout","session_id":"sess-0016","timestamp":"2025-03-15T14:34:26.807Z","user_id":"user-0103"}
+{"element":"nav","event_type":"click","page":"/cart","session_id":"sess-0026","timestamp":"2025-03-15T10:29:03.274Z","user_id":"user-0075","x":997,"y":657}
+{"event_type":"page_view","page":"/search","session_id":"sess-0015","timestamp":"2025-03-15T15:08:47.280Z","user_id":"user-0105"}
+{"amount":267.88,"event_type":"purchase","items":4,"page":"/search","session_id":"sess-0025","timestamp":"2025-03-15T16:24:38.806Z","user_id":"user-0016"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0007","timestamp":"2025-03-15T04:04:00.424Z","user_id":"user-0080"}
+{"amount":60.07,"event_type":"purchase","items":7,"page":"/cart","session_id":"sess-0039","timestamp":"2025-03-15T15:50:07.161Z","user_id":"user-0089"}
+{"error_code":"503","event_type":"error","page":"/search","session_id":"sess-0001","stack_trace":"at main.js:42","timestamp":"2025-03-15T19:43:07.813Z","user_id":"user-0055"}
+{"event_type":"page_view","page":"/search","session_id":"sess-0030","timestamp":"2025-03-15T23:05:28.278Z","user_id":"user-0137"}
+{"element":"nav","event_type":"click","page":"/profile","session_id":"sess-0041","timestamp":"2025-03-15T13:25:02.047Z","user_id":"user-0137","x":936,"y":1005}
+{"event_type":"scroll","page":"/checkout","session_id":"sess-0006","timestamp":"2025-03-15T20:30:21.119Z","user_id":"user-0144"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0021","timestamp":"2025-03-15T03:26:52.052Z","user_id":"user-0159"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0020","timestamp":"2025-03-15T22:10:22.572Z","user_id":"user-0080"}
+{"debug":{"memory_mb":446,"render_time_ms":2457},"event_type":"form_submit","page":"/checkout","session_id":"sess-0012","timestamp":"2025-03-15T15:24:25.752Z","user_id":"user-0109"}
+{"debug":{"memory_mb":479,"render_time_ms":4391},"error_code":"timeout","event_type":"error","page":"/profile","session_id":"sess-0015","stack_trace":"at main.js:42","timestamp":"2025-03-15T21:28:44.758Z","user_id":"user-0048"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0039","timestamp":"2025-03-15T02:40:38.829Z","user_id":"user-0165"}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0001","timestamp":"2025-03-15T21:03:06.328Z","user_id":"user-0034"}
+{"debug":{"memory_mb":247,"render_time_ms":2460},"error_code":"timeout","event_type":"error","page":"/products","session_id":"sess-0025","stack_trace":"at main.js:42","timestamp":"2025-03-15T05:51:48.750Z","user_id":"user-0128"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0015","timestamp":"2025-03-15T12:35:36.838Z","user_id":"user-0013"}
+{"event_type":"page_view","page":"/checkout","session_id":"sess-0006","timestamp":"2025-03-15T13:04:32.359Z","user_id":"user-0041"}
+{"event_type":"form_submit","page":"/home","session_id":"sess-0039","timestamp":"2025-03-15T12:58:26.836Z","user_id":"user-0103"}
+{"event_type":"page_view","page":"/cart","session_id":"sess-0023","timestamp":"2025-03-15T12:20:41.332Z","user_id":"user-0089"}
+{"amount":37.29,"event_type":"purchase","items":6,"page":"/profile","session_id":"sess-0047","timestamp":"2025-03-15T19:11:25.847Z","user_id":"user-0033"}
+{"error_code":"503","event_type":"error","page":"/products","session_id":"sess-0028","stack_trace":"at main.js:42","timestamp":"2025-03-15T06:10:16.883Z","user_id":"user-0171"}
+{"event_type":"scroll","page":"/home","session_id":"sess-0033","timestamp":"2025-03-15T01:01:09.154Z","user_id":"user-0161"}
+{"element":"button","event_type":"click","page":"/profile","session_id":"sess-0007","timestamp":"2025-03-15T22:33:42.742Z","user_id":"user-0196","x":1262,"y":162}
+{"element":"link","event_type":"click","page":"/search","session_id":"sess-0008","timestamp":"2025-03-15T15:52:05.717Z","user_id":"user-0019","x":925,"y":833}
+{"element":"nav","event_type":"click","page":"/cart","session_id":"sess-0019","timestamp":"2025-03-15T18:25:14.287Z","user_id":"user-0146","x":404,"y":850}
+{"amount":460.03,"event_type":"purchase","items":6,"page":"/search","session_id":"sess-0010","timestamp":"2025-03-15T10:37:35.145Z","user_id":"user-0174"}
+{"element":"image","event_type":"click","page":"/profile","session_id":"sess-0002","timestamp":"2025-03-15T17:10:12.497Z","user_id":"user-0006","x":242,"y":208}
+{"amount":292.02,"event_type":"purchase","items":7,"page":"/home","session_id":"sess-0039","timestamp":"2025-03-15T06:48:21.900Z","user_id":"user-0045"}
+{"event_type":"scroll","page":"/checkout","session_id":"sess-0048","timestamp":"2025-03-15T04:22:09.786Z","user_id":"user-0103"}
+{"error_code":"timeout","event_type":"error","page":"/profile","session_id":"sess-0037","stack_trace":"at main.js:42","timestamp":"2025-03-15T16:22:11.770Z","user_id":"user-0181"}
+{"element":"link","event_type":"click","page":"/cart","session_id":"sess-0034","timestamp":"2025-03-15T23:08:30.397Z","user_id":"user-0195","x":1595,"y":726}
+{"element":"image","event_type":"click","page":"/cart","session_id":"sess-0034","timestamp":"2025-03-15T18:49:19.667Z","user_id":"user-0049","x":1739,"y":264}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0035","timestamp":"2025-03-15T05:34:03.659Z","user_id":"user-0129"}
+{"error_code":"502","event_type":"error","page":"/home","session_id":"sess-0042","stack_trace":"at main.js:42","timestamp":"2025-03-15T17:29:21.749Z","user_id":"user-0074"}
+{"event_type":"scroll","page":"/search","session_id":"sess-0020","timestamp":"2025-03-15T10:22:17.285Z","user_id":"user-0016"}
+{"amount":67.37,"event_type":"purchase","items":1,"page":"/profile","session_id":"sess-0045","timestamp":"2025-03-15T04:17:44.853Z","user_id":"user-0097"}
+{"error_code":"503","event_type":"error","page":"/search","session_id":"sess-0022","stack_trace":"at main.js:42","timestamp":"2025-03-15T19:24:03.787Z","user_id":"user-0116"}
+{"event_type":"form_submit","page":"/cart","session_id":"sess-0031","timestamp":"2025-03-15T11:30:30.151Z","user_id":"user-0075"}
+{"amount":284.8,"event_type":"purchase","items":2,"page":"/home","session_id":"sess-0040","timestamp":"2025-03-15T03:45:58.046Z","user_id":"user-0088"}
+{"event_type":"scroll","page":"/cart","session_id":"sess-0022","timestamp":"2025-03-15T08:30:12.829Z","user_id":"user-0013"}
+{"element":"nav","event_type":"click","page":"/checkout","session_id":"sess-0039","timestamp":"2025-03-15T16:33:53.200Z","user_id":"user-0047","x":102,"y":324}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0020","timestamp":"2025-03-15T05:07:24.930Z","user_id":"user-0099"}
+{"element":"link","event_type":"click","page":"/home","session_id":"sess-0008","timestamp":"2025-03-15T00:58:03.938Z","user_id":"user-0022","x":959,"y":451}
+{"debug":{"memory_mb":208,"render_time_ms":1789},"event_type":"scroll","page":"/profile","session_id":"sess-0047","timestamp":"2025-03-15T09:30:07.374Z","user_id":"user-0121"}
+{"element":"button","event_type":"click","page":"/search","session_id":"sess-0023","timestamp":"2025-03-15T17:17:36.426Z","user_id":"user-0168","x":1065,"y":197}
+{"event_type":"page_view","page":"/home","session_id":"sess-0019","timestamp":"2025-03-15T07:52:09.993Z","user_id":"user-0036"}
+{"element":"image","event_type":"click","page":"/cart","session_id":"sess-0038","timestamp":"2025-03-15T10:01:26.062Z","user_id":"user-0168","x":379,"y":481}
+{"event_type":"form_submit","page":"/products","session_id":"sess-0011","timestamp":"2025-03-15T14:53:08.142Z","user_id":"user-0093"}
+{"element":"button","event_type":"click","page":"/products","session_id":"sess-0027","timestamp":"2025-03-15T02:34:11.245Z","user_id":"user-0089","x":1167,"y":34}
+{"event_type":"page_view","page":"/profile","session_id":"sess-0045","timestamp":"2025-03-15T22:33:04.339Z","user_id":"user-0172"}
+{"amount":425.77,"event_type":"purchase","items":6,"page":"/products","session_id":"sess-0008","timestamp":"2025-03-15T14:42:16.312Z","user_id":"user-0135"}
+{"event_type":"scroll","page":"/checkout","session_id":"sess-0005","timestamp":"2025-03-15T13:13:15.474Z","user_id":"user-0106"}
+{"event_type":"form_submit","page":"/search","session_id":"sess-0041","timestamp":"2025-03-15T14:17:47.552Z","user_id":"user-0086"}
+{"debug":{"memory_mb":462,"render_time_ms":205},"element":"nav","event_type":"click","page":"/home","session_id":"sess-0024","timestamp":"2025-03-15T20:46:22.967Z","user_id":"user-0125","x":1322,"y":223}
+{"amount":176.21,"event_type":"purchase","items":4,"page":"/products","session_id":"sess-0040","timestamp":"2025-03-15T06:25:04.866Z","user_id":"user-0161"}
+{"event_type":"page_view","page":"/home","session_id":"sess-0038","timestamp":"2025-03-15T05:21:46.878Z","user_id":"user-0059"}
+{"event_type":"scroll","page":"/checkout","session_id":"sess-0017","timestamp":"2025-03-15T17:10:05.763Z","user_id":"user-0154"}
+{"error_code":"500","event_type":"error","page":"/products","session_id":"sess-0036","stack_trace":"at main.js:42","timestamp":"2025-03-15T09:49:06.332Z","user_id":"user-0094"}
+{"amount":21.01,"event_type":"purchase","items":2,"page":"/cart","session_id":"sess-0046","timestamp":"2025-03-15T06:40:16.849Z","user_id":"user-0047"}
+{"event_type":"scroll","page":"/home","session_id":"sess-0030","timestamp":"2025-03-15T17:39:04.499Z","user_id":"user-0069"}
+{"error_code":"503","event_type":"error","page":"/cart","session_id":"sess-0016","stack_trace":"at main.js:42","timestamp":"2025-03-15T20:56:08.687Z","user_id":"user-0189"}
+{"amount":332.5,"event_type":"purchase","items":4,"page":"/products","session_id":"sess-0010","timestamp":"2025-03-15T18:12:32.354Z","user_id":"user-0115"}
+{"debug":{"memory_mb":462,"render_time_ms":143},"error_code":"timeout","event_type":"error","page":"/profile","session_id":"sess-0038","stack_trace":"at main.js:42","timestamp":"2025-03-15T16:42:22.844Z","user_id":"user-0181"}
+{"event_type":"form_submit","page":"/products","session_id":"sess-0029","timestamp":"2025-03-15T09:26:38.488Z","user_id":"user-0047"}
+{"amount":187.84,"debug":{"memory_mb":154,"render_time_ms":4255},"event_type":"purchase","items":6,"page":"/home","session_id":"sess-0017","timestamp":"2025-03-15T22:11:00.002Z","user_id":"user-0003"}
+{"debug":{"memory_mb":414,"render_time_ms":4694},"event_type":"form_submit","page":"/checkout","session_id":"sess-0047","timestamp":"2025-03-15T13:32:04.461Z","user_id":"user-0009"}
+{"event_type":"page_view","page":"/search","session_id":"sess-0030","timestamp":"2025-03-15T01:24:38.258Z","user_id":"user-0104"}
+{"event_type":"page_view","page":"/checkout","session_id":"sess-0029","timestamp":"2025-03-15T12:03:01.728Z","user_id":"user-0078"}
+{"event_type":"form_submit","page":"/checkout","session_id":"sess-0012","timestamp":"2025-03-15T05:38:20.515Z","user_id":"user-0070"}
+{"event_type":"page_view","page":"/home","session_id":"sess-0035","timestamp":"2025-03-15T05:47:25.836Z","user_id":"user-0156"}
+{"amount":117.22,"event_type":"purchase","items":3,"page":"/home","session_id":"sess-0002","timestamp":"2025-03-15T19:15:39.001Z","user_id":"user-0068"}
+{"event_type":"form_submit","page":"/products","session_id":"sess-0047","timestamp":"2025-03-15T19:14:19.897Z","user_id":"user-0156"}
+{"error_code":"500","event_type":"error","page":"/profile","session_id":"sess-0032","stack_trace":"at main.js:42","timestamp":"2025-03-15T17:28:12.509Z","user_id":"user-0004"}
+{"element":"image","event_type":"click","page":"/home","session_id":"sess-0035","timestamp":"2025-03-15T15:39:02.948Z","user_id":"user-0036","x":186,"y":1045}
+{"event_type":"form_submit","page":"/profile","session_id":"sess-0020","timestamp":"2025-03-15T13:37:48.882Z","user_id":"user-0180"}
+{"amount":412.39,"event_type":"purchase","items":2,"page":"/checkout","session_id":"sess-0031","timestamp":"2025-03-15T08:54:59.189Z","user_id":"user-0042"}
+{"amount":342.67,"debug":{"memory_mb":457,"render_time_ms":3656},"event_type":"purchase","items":1,"page":"/home","session_id":"sess-0024","timestamp":"2025-03-15T20:18:24.691Z","user_id":"user-0002"}
+{"event_type":"scroll","page":"/profile","session_id":"sess-0006","timestamp":"2025-03-15T23:01:14.331Z","user_id":"user-0125"}
+{"event_type":"form_submit","page":"/checkout","session_id":"sess-0045","timestamp":"2025-03-15T12:01:45.047Z","user_id":"user-0026"}
+{"event_type":"scroll","page":"/cart","session_id":"sess-0002","timestamp":"2025-03-15T04:52:20.922Z","user_id":"user-0078"}
+{"debug":{"memory_mb":189,"render_time_ms":4935},"element":"button","event_type":"click","page":"/home","session_id":"sess-0001","timestamp":"2025-03-15T10:58:56.003Z","user_id":"user-0048","x":1414,"y":407}
+{"amount":359.36,"event_type":"purchase","items":1,"page":"/search","session_id":"sess-0034","timestamp":"2025-03-15T15:50:46.437Z","user_id":"user-0044"}
+{"event_type":"form_submit","page":"/home","session_id":"sess-0002","timestamp":"2025-03-15T12:06:42.399Z","user_id":"user-0116"}
+{"error_code":"502","event_type":"error","page":"/home","session_id":"sess-0024","stack_trace":"at main.js:42","timestamp":"2025-03-15T03:24:04.211Z","user_id":"user-0112"}
+{"debug":{"memory_mb":294,"render_time_ms":304},"event_type":"form_submit","page":"/checkout","session_id":"sess-0033","timestamp":"2025-03-15T00:46:22.743Z","user_id":"user-0088"}
+{"amount":171.14,"event_type":"purchase","items":1,"page":"/cart","session_id":"sess-0028","timestamp":"2025-03-15T21:10:54.536Z","user_id":"user-0065"}
+{"debug":{"memory_mb":418,"render_time_ms":231},"element":"button","event_type":"click","page":"/cart","session_id":"sess-0016","timestamp":"2025-03-15T08:06:57.384Z","user_id":"user-0183","x":242,"y":31}
+{"debug":{"memory_mb":180,"render_time_ms":4183},"error_code":"503","event_type":"error","page":"/home","session_id":"sess-0030","stack_trace":"at main.js:42","timestamp":"2025-03-15T21:14:01.598Z","user_id":"user-0171"}
+{"debug":{"memory_mb":370,"render_time_ms":2980},"event_type":"page_view","page":"/profile","session_id":"sess-0003","timestamp":"2025-03-15T00:34:32.186Z","user_id":"user-0028"}
+{"event_type":"page_view","page":"/search","session_id":"sess-0012","timestamp":"2025-03-15T01:38:03.728Z","user_id":"user-0104"}
+{"event_type":"scroll","page":"/home","session_id":"sess-0038","timestamp":"2025-03-15T18:19:53.393Z","user_id":"user-0189"}
+{"element":"button","event_type":"click","page":"/home","session_id":"sess-0031","timestamp":"2025-03-15T11:04:47.545Z","user_id":"user-0075","x":708,"y":633}
+{"error_code":"timeout","event_type":"error","page":"/checkout","session_id":"sess-0036","stack_trace":"at main.js:42","timestamp":"2025-03-15T11:41:43.228Z","user_id":"user-0082"}
+{"amount":206.66,"event_type":"purchase","items":3,"page":"/checkout","session_id":"sess-0017","timestamp":"2025-03-15T00:05:22.849Z","user_id":"user-0122"}
+{"element":"link","event_type":"click","page":"/home","session_id":"sess-0045","timestamp":"2025-03-15T10:13:15.160Z","user_id":"user-0006","x":19,"y":782}

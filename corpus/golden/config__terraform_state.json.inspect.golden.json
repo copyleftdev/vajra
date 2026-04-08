@@ -1,0 +1,351 @@
+{
+  "fingerprints": {
+    "path_set": "f56815a62ab1d981f0c2493d6e393a37ad326aac5260733c8075fb55b3e60f07",
+    "shape": "c385b36dc8d7923fb59b1d11869a6f7f2c7a70c736bb5ef2f0d00639c633ae06",
+    "typed_path": "86e0a6296b5855dcca9a4e1414274c170c090b0082c93474937d34082bc57409"
+  },
+  "metadata": {
+    "distinct_paths": 48,
+    "max_depth": 7,
+    "raw_size_bytes": 3498,
+    "total_nodes": 102
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.lineage",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.outputs",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.outputs.public_subnets",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.outputs.public_subnets.type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.outputs.public_subnets.type[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.outputs.public_subnets.value",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.outputs.public_subnets.value[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.outputs.vpc_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.outputs.vpc_id.type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.outputs.vpc_id.value",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.resources",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.resources[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.allocated_storage",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.ami",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.availability_zone",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.cidr_block",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.enable_dns_hostnames",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.enable_dns_support",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.endpoint",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.engine",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.engine_version",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.instance_class",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.instance_type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.map_public_ip_on_launch",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.multi_az",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.security_groups",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.security_groups[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.subnet_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.tags",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.tags.Environment",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.tags.Name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].attributes.vpc_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].dependencies",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].dependencies[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.resources[*].instances[*].index_key",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].mode",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].module",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].provider",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.resources[*].type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.serial",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.terraform_version",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.version",
+      "type_instability": 0.0
+    }
+  ]
+}

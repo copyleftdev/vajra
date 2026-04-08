@@ -1,0 +1,14 @@
+[package]
+name = "vajra-domain-med"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+vajra-types = { workspace = true }
+regex = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[lints]
+workspace = true

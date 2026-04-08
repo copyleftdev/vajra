@@ -1,0 +1,19 @@
+{
+  "numeric_outliers": [
+    {
+      "mad": 1.6800000000000068,
+      "median": 103.37,
+      "path": "$.claims[*].plb_adjustments[*].amount",
+      "value": 186.79,
+      "z_mad": 33.492136904761765
+    }
+  ],
+  "rare_values": [
+    {
+      "count": 3,
+      "rarity_bits": 2.807354922057604,
+      "value": "PI"
+    }
+  ],
+  "type_instabilities": []
+}

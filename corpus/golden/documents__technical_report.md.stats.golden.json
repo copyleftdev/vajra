@@ -1,0 +1,698 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.metadata.code_block_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 10.0,
+        "mean": 10.0,
+        "median": 10.0,
+        "min": 10.0,
+        "p05": 10.0,
+        "p25": 10.0,
+        "p75": 10.0,
+        "p95": 10.0
+      },
+      "path": "$.metadata.heading_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "10"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p95": 0.0
+      },
+      "path": "$.metadata.image_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.metadata.link_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3.0,
+        "mean": 3.0,
+        "median": 3.0,
+        "min": 3.0,
+        "p05": 3.0,
+        "p25": 3.0,
+        "p75": 3.0,
+        "p95": 3.0
+      },
+      "path": "$.metadata.list_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 9.0,
+        "mean": 9.0,
+        "median": 9.0,
+        "min": 9.0,
+        "p05": 9.0,
+        "p25": 9.0,
+        "p75": 9.0,
+        "p95": 9.0
+      },
+      "path": "$.metadata.paragraph_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "9"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.metadata.table_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 214.0,
+        "mean": 214.0,
+        "median": 214.0,
+        "min": 214.0,
+        "p05": 214.0,
+        "p25": 214.0,
+        "p75": 214.0,
+        "p95": 214.0
+      },
+      "path": "$.metadata.word_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "214"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].heading",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Q1 2025 Infrastructure Performance Report"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.sections[*].level",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.321928094887362,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].headers[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "February"
+        },
+        {
+          "count": 1,
+          "value": "January"
+        },
+        {
+          "count": 1,
+          "value": "March"
+        },
+        {
+          "count": 1,
+          "value": "Metric"
+        },
+        {
+          "count": 1,
+          "value": "Target"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].items[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-02-14: Database connection pool exhaustion (P1, 12 min TTR)"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-01: Certificate expiration on internal API (P2, 35 min TTR)"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].ordered",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "false"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 24,
+      "entropy": 4.5638561897747225,
+      "max_rarity": 4.643856189774724,
+      "normalized_entropy": 0.9953966229946016,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].rows[*][*]",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "99.95%"
+        },
+        {
+          "count": 1,
+          "value": "0.01%"
+        },
+        {
+          "count": 1,
+          "value": "0.02%"
+        },
+        {
+          "count": 1,
+          "value": "0.03%"
+        },
+        {
+          "count": 1,
+          "value": "12.5k rps"
+        },
+        {
+          "count": 1,
+          "value": "13.2k rps"
+        },
+        {
+          "count": 1,
+          "value": "14.1k rps"
+        },
+        {
+          "count": 1,
+          "value": "190ms"
+        },
+        {
+          "count": 1,
+          "value": "210ms"
+        },
+        {
+          "count": 1,
+          "value": "235ms"
+        }
+      ],
+      "total_count": 25
+    },
+    {
+      "cardinality": 8,
+      "entropy": 3.0,
+      "max_rarity": 3.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].text",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "For detailed metrics, see the Grafana dashboard."
+        },
+        {
+          "count": 1,
+          "value": "Grafana dashboard"
+        },
+        {
+          "count": 1,
+          "value": "Priority 1: Implement automated certificate rotation"
+        },
+        {
+          "count": 1,
+          "value": "Priority 2: Add connection pool monitoring alerts"
+        },
+        {
+          "count": 1,
+          "value": "Priority 3: Evaluate CDN for static assets"
+        },
+        {
+          "count": 1,
+          "value": "Report generated by the SRE team. Contact: sre@example.com"
+        },
+        {
+          "count": 1,
+          "value": "This report covers the performance metrics for the production infrastructure during Q1 2025. Overall system availability was 99.97%, exceeding our target of 99.95%."
+        },
+        {
+          "count": 1,
+          "value": "We had two notable incidents:"
+        }
+      ],
+      "total_count": 8
+    },
+    {
+      "cardinality": 4,
+      "entropy": 1.3567796494470397,
+      "max_rarity": 3.321928094887362,
+      "normalized_entropy": 0.6783898247235198,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].type",
+      "top_values": [
+        {
+          "count": 7,
+          "value": "paragraph"
+        },
+        {
+          "count": 1,
+          "value": "link"
+        },
+        {
+          "count": 1,
+          "value": "list"
+        },
+        {
+          "count": 1,
+          "value": "table"
+        }
+      ],
+      "total_count": 10
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].url",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "https://grafana.internal/d/prod-overview"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.584962500721156,
+      "max_rarity": 2.584962500721156,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].heading",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Appendix"
+        },
+        {
+          "count": 1,
+          "value": "Executive Summary"
+        },
+        {
+          "count": 1,
+          "value": "Incident Summary"
+        },
+        {
+          "count": 1,
+          "value": "Infrastructure Changes"
+        },
+        {
+          "count": 1,
+          "value": "Key Metrics"
+        },
+        {
+          "count": 1,
+          "value": "Recommendations"
+        }
+      ],
+      "total_count": 6
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 2.0,
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p05": 2.0,
+        "p25": 2.0,
+        "p75": 2.0,
+        "p95": 2.0
+      },
+      "path": "$.sections[*].subsections[*].level",
+      "top_values": [
+        {
+          "count": 6,
+          "value": "2"
+        }
+      ],
+      "total_count": 6
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].code",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "-- Example of the partition scheme used\nCREATE TABLE events (\n    id BIGSERIAL PRIMARY KEY,\n    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n    event_type VARCHAR(50) NOT NULL,\n    payload JSONB\n) PARTITION BY RANGE (created_at);\n"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 7,
+      "entropy": 2.807354922057604,
+      "max_rarity": 2.807354922057604,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].items[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Implemented spot instances for batch workloads: 40% savings"
+        },
+        {
+          "count": 1,
+          "value": "Right-sized database instances: $2,400/month saved"
+        },
+        {
+          "count": 1,
+          "value": "Switched to ARM-based instances: 23% cost reduction"
+        },
+        {
+          "count": 1,
+          "value": "Week 1-2: Converted all Dockerfiles and docker-compose configs"
+        },
+        {
+          "count": 1,
+          "value": "Week 3: Deployed to staging environment"
+        },
+        {
+          "count": 1,
+          "value": "Week 4: Canary deployment to production (10% traffic)"
+        },
+        {
+          "count": 1,
+          "value": "Week 5-6: Full production rollout"
+        }
+      ],
+      "total_count": 7
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].language",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "sql"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].ordered",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "false"
+        },
+        {
+          "count": 1,
+          "value": "true"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].text",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Migrated from Docker Swarm to Kubernetes:"
+        },
+        {
+          "count": 1,
+          "value": "We completed the migration from PostgreSQL 14 to PostgreSQL 15:"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5219280948873621,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9602297178607612,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].type",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "list"
+        },
+        {
+          "count": 2,
+          "value": "paragraph"
+        },
+        {
+          "count": 1,
+          "value": "code_block"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].subsections[*].heading",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Container Orchestration"
+        },
+        {
+          "count": 1,
+          "value": "Cost Optimization"
+        },
+        {
+          "count": 1,
+          "value": "Database Migration"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3.0,
+        "mean": 3.0,
+        "median": 3.0,
+        "min": 3.0,
+        "p05": 3.0,
+        "p25": 3.0,
+        "p75": 3.0,
+        "p95": 3.0
+      },
+      "path": "$.sections[*].subsections[*].subsections[*].level",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "3"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "document"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

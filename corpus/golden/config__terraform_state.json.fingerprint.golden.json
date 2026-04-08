@@ -1,0 +1,39 @@
+{
+  "path_set": "f56815a62ab1d981f0c2493d6e393a37ad326aac5260733c8075fb55b3e60f07",
+  "repeated_motifs": [
+    {
+      "count": 59,
+      "hash": "1c47174c0ccd034618e1a604adce0002103e088e87329f0c2fab4324e8a06c60"
+    },
+    {
+      "count": 5,
+      "hash": "04898d6f3559bfd5840dd3a30e0aa3472df8b2ffda0ae2a40815b34b4e24ac75"
+    },
+    {
+      "count": 5,
+      "hash": "bf0b731c90564bc8c1a8b8078964f3fb4e20636f1beb54ff1cfecb06a7ca2ac8"
+    },
+    {
+      "count": 3,
+      "hash": "ef0bee9ad082533b804ff60e7b02972c2f23bd2d0c8f7fbf775e1a3104f4119c"
+    },
+    {
+      "count": 3,
+      "hash": "f34b61df93ee24d6f3ab2a0b9edbdd23ab017d8bb37e5967ba6de4371871ea3c"
+    },
+    {
+      "count": 2,
+      "hash": "0fdc6c400d0183c04fe7b676ff1581b8dbc696b929ddc3aedee9b4c970efb907"
+    },
+    {
+      "count": 2,
+      "hash": "b562c206f2b57de9f7304d504f4310d1585de5e8ed8178f3b05c721ad01fe912"
+    },
+    {
+      "count": 2,
+      "hash": "c3569e72d7644878b6458e54e23e01649b249ff4ace623fa4ca0cd790cb708fd"
+    }
+  ],
+  "shape": "c385b36dc8d7923fb59b1d11869a6f7f2c7a70c736bb5ef2f0d00639c633ae06",
+  "typed_path": "86e0a6296b5855dcca9a4e1414274c170c090b0082c93474937d34082bc57409"
+}

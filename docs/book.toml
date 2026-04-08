@@ -1,0 +1,15 @@
+[book]
+title = "Vajra"
+authors = ["copyleftdev"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "ayu"
+preferred-dark-theme = "ayu"
+additional-css = ["theme/vajra.css"]
+additional-js = ["theme/gsap.min.js", "theme/vajra-kinetic.js"]
+no-section-label = true

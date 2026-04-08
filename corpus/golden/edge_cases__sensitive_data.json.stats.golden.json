@@ -1,0 +1,169 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.notes",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Patient SSN is 987-65-4321 and card ending 4242"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.credit_card",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "4111-1111-1111-1111"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.date_of_birth",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1985-06-12"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.email",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "jane.doe@example.com"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Jane Doe"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.phone",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "+1-555-867-5309"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.ssn",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "123-45-6789"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.records[*].email",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "bob@test.org"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.records[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "John Smith"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.records[*].phone",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "555-123-4567"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.records[*].ssn",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "111-22-3333"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

@@ -1,0 +1,390 @@
+{
+  "claims": [
+    {
+      "claim_id": "835-CLM-0001",
+      "claim_status": "denied",
+      "patient_name": "Patient 1",
+      "plb_adjustments": [
+        {
+          "adjustment_reason": "WO",
+          "amount": 101.69,
+          "fiscal_period": "2025-03",
+          "provider_id": "1973524366"
+        }
+      ],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 94.7,
+              "group_code": "PR",
+              "reason_code": 153
+            }
+          ],
+          "svc_charge_amount": 135.81,
+          "svc_paid_amount": 96.06,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0667"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 273.23,
+              "group_code": "OA",
+              "reason_code": 132
+            }
+          ],
+          "svc_charge_amount": 429.36,
+          "svc_paid_amount": 277.52,
+          "svc_procedure_code": "99212",
+          "svc_revenue_code": "0531"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 324.66,
+              "group_code": "PI",
+              "reason_code": 147
+            }
+          ],
+          "svc_charge_amount": 404.84,
+          "svc_paid_amount": 328.71,
+          "svc_procedure_code": "99213",
+          "svc_revenue_code": "0217"
+        }
+      ],
+      "total_charge": 970.01,
+      "total_paid": 702.29
+    },
+    {
+      "claim_id": "835-CLM-0002",
+      "claim_status": "paid",
+      "patient_name": "Patient 2",
+      "plb_adjustments": [
+        {
+          "adjustment_reason": "WO",
+          "amount": 103.37,
+          "fiscal_period": "2025-03",
+          "provider_id": "1569619723"
+        }
+      ],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 364.8,
+              "group_code": "PI",
+              "reason_code": 56
+            }
+          ],
+          "svc_charge_amount": 481.59,
+          "svc_paid_amount": 369.62,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0656"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 258.99,
+              "group_code": "CO",
+              "reason_code": 13
+            }
+          ],
+          "svc_charge_amount": 377.93,
+          "svc_paid_amount": 262.77,
+          "svc_procedure_code": "99212",
+          "svc_revenue_code": "0759"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 90.72,
+              "group_code": "OA",
+              "reason_code": 49
+            }
+          ],
+          "svc_charge_amount": 126.31,
+          "svc_paid_amount": 91.98,
+          "svc_procedure_code": "99213",
+          "svc_revenue_code": "0880"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 158.6,
+              "group_code": "OA",
+              "reason_code": 161
+            }
+          ],
+          "svc_charge_amount": 190.92,
+          "svc_paid_amount": 160.51,
+          "svc_procedure_code": "99214",
+          "svc_revenue_code": "0281"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 410.06,
+              "group_code": "PR",
+              "reason_code": 51
+            }
+          ],
+          "svc_charge_amount": 499.36,
+          "svc_paid_amount": 415.05,
+          "svc_procedure_code": "99215",
+          "svc_revenue_code": "0659"
+        }
+      ],
+      "total_charge": 1676.1100000000001,
+      "total_paid": 1299.93
+    },
+    {
+      "claim_id": "835-CLM-0003",
+      "claim_status": "paid",
+      "patient_name": "Patient 3",
+      "plb_adjustments": [
+        {
+          "adjustment_reason": "WO",
+          "amount": 186.79,
+          "fiscal_period": "2025-03",
+          "provider_id": "1575630377"
+        }
+      ],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 228.55,
+              "group_code": "CO",
+              "reason_code": 244
+            }
+          ],
+          "svc_charge_amount": 274.99,
+          "svc_paid_amount": 231.3,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0408"
+        }
+      ],
+      "total_charge": 274.99,
+      "total_paid": 231.3
+    },
+    {
+      "claim_id": "835-CLM-0004",
+      "claim_status": "paid",
+      "patient_name": "Patient 4",
+      "plb_adjustments": [],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 111.37,
+              "group_code": "CO",
+              "reason_code": 138
+            }
+          ],
+          "svc_charge_amount": 140.79,
+          "svc_paid_amount": 112.78,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0824"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 386.88,
+              "group_code": "CO",
+              "reason_code": 125
+            }
+          ],
+          "svc_charge_amount": 493.52,
+          "svc_paid_amount": 391.82,
+          "svc_procedure_code": "99212",
+          "svc_revenue_code": "0110"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 329.18,
+              "group_code": "PR",
+              "reason_code": 157
+            }
+          ],
+          "svc_charge_amount": 492.17,
+          "svc_paid_amount": 334.1,
+          "svc_procedure_code": "99213",
+          "svc_revenue_code": "0592"
+        }
+      ],
+      "total_charge": 1126.48,
+      "total_paid": 838.7
+    },
+    {
+      "claim_id": "835-CLM-0005",
+      "claim_status": "paid",
+      "patient_name": "Patient 5",
+      "plb_adjustments": [],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 129.47,
+              "group_code": "PR",
+              "reason_code": 213
+            }
+          ],
+          "svc_charge_amount": 213.05,
+          "svc_paid_amount": 131.6,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0745"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 377.51,
+              "group_code": "OA",
+              "reason_code": 230
+            }
+          ],
+          "svc_charge_amount": 458.93,
+          "svc_paid_amount": 382.1,
+          "svc_procedure_code": "99212",
+          "svc_revenue_code": "0306"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 174.62,
+              "group_code": "PI",
+              "reason_code": 248
+            }
+          ],
+          "svc_charge_amount": 196.45,
+          "svc_paid_amount": 176.58,
+          "svc_procedure_code": "99213",
+          "svc_revenue_code": "0704"
+        }
+      ],
+      "total_charge": 868.4300000000001,
+      "total_paid": 690.2800000000001
+    },
+    {
+      "claim_id": "835-CLM-0006",
+      "claim_status": "denied",
+      "patient_name": "Patient 6",
+      "plb_adjustments": [],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 234.44,
+              "group_code": "PR",
+              "reason_code": 178
+            }
+          ],
+          "svc_charge_amount": 357.51,
+          "svc_paid_amount": 238.02,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0147"
+        }
+      ],
+      "total_charge": 357.51,
+      "total_paid": 238.02
+    },
+    {
+      "claim_id": "835-CLM-0007",
+      "claim_status": "denied",
+      "patient_name": "Patient 7",
+      "plb_adjustments": [],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 183.91,
+              "group_code": "CO",
+              "reason_code": 96
+            }
+          ],
+          "svc_charge_amount": 198.06,
+          "svc_paid_amount": 185.89,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0184"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 239.96,
+              "group_code": "CO",
+              "reason_code": 4
+            }
+          ],
+          "svc_charge_amount": 352.49,
+          "svc_paid_amount": 243.48,
+          "svc_procedure_code": "99212",
+          "svc_revenue_code": "0387"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 166.39,
+              "group_code": "OA",
+              "reason_code": 86
+            }
+          ],
+          "svc_charge_amount": 263.11,
+          "svc_paid_amount": 169.02,
+          "svc_procedure_code": "99213",
+          "svc_revenue_code": "0159"
+        }
+      ],
+      "total_charge": 813.66,
+      "total_paid": 598.39
+    },
+    {
+      "claim_id": "835-CLM-0008",
+      "claim_status": "paid",
+      "patient_name": "Patient 8",
+      "plb_adjustments": [],
+      "service_lines": [
+        {
+          "cas_adjustments": [
+            {
+              "amount": 365.92,
+              "group_code": "OA",
+              "reason_code": 132
+            }
+          ],
+          "svc_charge_amount": 481.36,
+          "svc_paid_amount": 370.73,
+          "svc_procedure_code": "99211",
+          "svc_revenue_code": "0266"
+        },
+        {
+          "cas_adjustments": [
+            {
+              "amount": 167.38,
+              "group_code": "PR",
+              "reason_code": 192
+            }
+          ],
+          "svc_charge_amount": 208.3,
+          "svc_paid_amount": 169.46,
+          "svc_procedure_code": "99212",
+          "svc_revenue_code": "0228"
+        }
+      ],
+      "total_charge": 689.6600000000001,
+      "total_paid": 540.19
+    }
+  ],
+  "payment_amount": 5139.1,
+  "payment_date": "2025-03-20",
+  "payment_method": "ACH",
+  "receiver": {
+    "name": "Springfield Medical Group",
+    "npi": "1234567890"
+  },
+  "sender": {
+    "id": "BCBS-IL-001",
+    "name": "BCBS Illinois"
+  },
+  "transaction_type": "835"
+}

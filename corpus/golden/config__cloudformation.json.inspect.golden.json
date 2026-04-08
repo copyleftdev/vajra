@@ -1,0 +1,785 @@
+{
+  "fingerprints": {
+    "path_set": "ef713745527ef7e8eea5c72dfb1638ccea8aebad17d70fa4fde4d386df3a443a",
+    "shape": "6017af1b17b6e0510fd9dc2f9bfc73a9f957cb1b52f7d08cdfeeb951b908eab4",
+    "typed_path": "760ff3b7a8553ad565a821c058318237a901d3a1d5781f409e0e8d7e9555cea4"
+  },
+  "metadata": {
+    "distinct_paths": 110,
+    "max_depth": 8,
+    "raw_size_bytes": 4027,
+    "total_nodes": 126
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.AWSTemplateFormatVersion",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Conditions",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Conditions.CreateReadReplica",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Conditions.CreateReadReplica.Fn::Equals",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Conditions.CreateReadReplica.Fn::Equals[*]",
+      "type_instability": 0.5
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Conditions.CreateReadReplica.Fn::Equals[*].Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Conditions.IsProduction",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Conditions.IsProduction.Fn::Equals",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Conditions.IsProduction.Fn::Equals[*]",
+      "type_instability": 0.5
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Conditions.IsProduction.Fn::Equals[*].Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Description",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Mappings",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Mappings.RegionMap",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Mappings.RegionMap.us-east-1",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Mappings.RegionMap.us-east-1.AMI",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Mappings.RegionMap.us-west-2",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Mappings.RegionMap.us-west-2.AMI",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Parameters",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Parameters.DBInstanceClass",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.DBInstanceClass.Default",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.DBInstanceClass.Type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Parameters.Environment",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Parameters.Environment.AllowedValues",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.Environment.AllowedValues[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.Environment.Default",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.Environment.Type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Parameters.InstanceType",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Parameters.InstanceType.AllowedValues",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.InstanceType.AllowedValues[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.InstanceType.Default",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Parameters.InstanceType.Type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.BucketName",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.BucketName.Fn::Sub",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.EncryptionConfiguration",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.EncryptionConfiguration.Rules",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.EncryptionConfiguration.Rules[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.EncryptionConfiguration.Rules[*].ApplyServerSideEncryptionByDefault",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.EncryptionConfiguration.Rules[*].ApplyServerSideEncryptionByDefault.SSEAlgorithm",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.VersioningConfiguration",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Properties.VersioningConfiguration.Status",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.DataBucket.Type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.AllocatedStorage",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.DBInstanceClass",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.DBInstanceClass.Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.Engine",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.EngineVersion",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.MasterUserPassword",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.MasterUserPassword.Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.MasterUsername",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.MultiAZ",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.MultiAZ.Fn::If",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.MultiAZ.Fn::If[*]",
+      "type_instability": 0.33333333333333337
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.StorageType",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.VPCSecurityGroups",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.VPCSecurityGroups[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Properties.VPCSecurityGroups[*].Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.Database.Type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables.BUCKET_NAME",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables.BUCKET_NAME.Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables.DB_HOST",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables.DB_HOST.Fn::GetAtt",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables.DB_HOST.Fn::GetAtt[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.FunctionName",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.FunctionName.Fn::Sub",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Handler",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.MemorySize",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Runtime",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Properties.Timeout",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.ProcessorFunction.Type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.GroupDescription",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].CidrIp",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].FromPort",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].IpProtocol",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].ToPort",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.VpcId",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Properties.VpcId.Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebSecurityGroup.Type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.ImageId",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.ImageId.Fn::FindInMap",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.ImageId.Fn::FindInMap[*]",
+      "type_instability": 0.33333333333333337
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.ImageId.Fn::FindInMap[*].Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.InstanceType",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.InstanceType.Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.SecurityGroupIds",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.SecurityGroupIds[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.SecurityGroupIds[*].Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.SubnetId",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.SubnetId.Ref",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.Tags",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.Tags[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.Tags[*].Key",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.Tags[*].Value",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Properties.Tags[*].Value.Fn::Sub",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.Resources.WebServerInstance.Type",
+      "type_instability": 0.0
+    }
+  ]
+}

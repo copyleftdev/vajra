@@ -1,0 +1,225 @@
+{
+  "fingerprints": {
+    "path_set": "4d4241769a0ef93a2f36e7399b6fda7ecdf8c2f332872134e08ab80f4278ce4f",
+    "shape": "01d6250de285502513defc55be396f99e703c5eed23cdc05720b71804198903d",
+    "typed_path": "8f0c00bfcc8d431ef9850965bebb35e33c43bc094d49b01ad07be6ae6b8028a1"
+  },
+  "metadata": {
+    "distinct_paths": 30,
+    "max_depth": 14,
+    "raw_size_bytes": 3944,
+    "total_nodes": 89
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.user",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.user.organizations",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs[*].level",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs[*].message",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs[*].timestamp",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].status",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].version",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user.organizations[*].teams[*].projects[*].name",
+      "type_instability": 0.0
+    }
+  ]
+}

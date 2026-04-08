@@ -1,0 +1,360 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.user.id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "usr-001"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.user.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Alice Thompson"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "org-001"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Acme Corp"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "team-001"
+        },
+        {
+          "count": 1,
+          "value": "team-002"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Data"
+        },
+        {
+          "count": 1,
+          "value": "Platform"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "deploy-001"
+        },
+        {
+          "count": 1,
+          "value": "deploy-002"
+        },
+        {
+          "count": 1,
+          "value": "deploy-003"
+        },
+        {
+          "count": 1,
+          "value": "deploy-004"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.2516291673878228,
+      "max_rarity": 2.584962500721156,
+      "normalized_entropy": 0.7896900821428475,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs[*].level",
+      "top_values": [
+        {
+          "count": 4,
+          "value": "info"
+        },
+        {
+          "count": 1,
+          "value": "error"
+        },
+        {
+          "count": 1,
+          "value": "warn"
+        }
+      ],
+      "total_count": 6
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.584962500721156,
+      "max_rarity": 2.584962500721156,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs[*].message",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Canary deployment started"
+        },
+        {
+          "count": 1,
+          "value": "Deployment started"
+        },
+        {
+          "count": 1,
+          "value": "Deployment stopped"
+        },
+        {
+          "count": 1,
+          "value": "Failed health check on port 8080"
+        },
+        {
+          "count": 1,
+          "value": "Health check passed"
+        },
+        {
+          "count": 1,
+          "value": "High memory usage detected"
+        }
+      ],
+      "total_count": 6
+    },
+    {
+      "cardinality": 6,
+      "entropy": 2.584962500721156,
+      "max_rarity": 2.584962500721156,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].logs[*].timestamp",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-14T08:00:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-15T09:00:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-15T09:05:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-15T10:00:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-15T10:01:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-15T10:02:00Z"
+        }
+      ],
+      "total_count": 6
+    },
+    {
+      "cardinality": 2,
+      "entropy": 0.8112781244591328,
+      "max_rarity": 2.0,
+      "normalized_entropy": 0.8112781244591328,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].status",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "running"
+        },
+        {
+          "count": 1,
+          "value": "stopped"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].deployments[*].version",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1.5.2"
+        },
+        {
+          "count": 1,
+          "value": "2.0.9"
+        },
+        {
+          "count": 1,
+          "value": "2.1.0"
+        },
+        {
+          "count": 1,
+          "value": "2.2.0-rc1"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "env-001"
+        },
+        {
+          "count": 1,
+          "value": "env-002"
+        },
+        {
+          "count": 1,
+          "value": "env-003"
+        },
+        {
+          "count": 1,
+          "value": "env-004"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 2,
+      "entropy": 0.8112781244591328,
+      "max_rarity": 2.0,
+      "normalized_entropy": 0.8112781244591328,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].environments[*].name",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "production"
+        },
+        {
+          "count": 1,
+          "value": "staging"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "proj-001"
+        },
+        {
+          "count": 1,
+          "value": "proj-002"
+        },
+        {
+          "count": 1,
+          "value": "proj-003"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.user.organizations[*].teams[*].projects[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "API Gateway"
+        },
+        {
+          "count": 1,
+          "value": "Auth Service"
+        },
+        {
+          "count": 1,
+          "value": "ETL Pipeline"
+        }
+      ],
+      "total_count": 3
+    }
+  ]
+}

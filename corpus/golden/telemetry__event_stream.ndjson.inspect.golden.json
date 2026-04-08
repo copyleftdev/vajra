@@ -1,0 +1,78 @@
+{
+  "fingerprints": {
+    "path_set": "8e025ecf1d24c9f9c0c2c737dfbb15e7be31c2dccd172c02072a140b3353c173",
+    "shape": "c1cadf979cc1f7b5cdbdce2a078991a4b660d05bef28f5d211978d8eff0146dc",
+    "typed_path": "c5c1472ce073bdd4160e61d501a171ffe06961cc211a1f00c1bd1219a25db38a"
+  },
+  "metadata": {
+    "distinct_paths": 9,
+    "max_depth": 1,
+    "raw_size_bytes": 160,
+    "total_nodes": 9
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.element",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.event_type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.page",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.session_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.timestamp",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.user_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.x",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.y",
+      "type_instability": 0.0
+    }
+  ]
+}

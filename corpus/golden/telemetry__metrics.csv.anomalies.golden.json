@@ -1,0 +1,208 @@
+{
+  "numeric_outliers": [
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 3.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 4.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 6.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 6.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 8.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 8.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 9.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 11.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 11.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 13.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 13.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 14.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 16.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 16.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 16.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 18.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 18.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 18.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 19.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 19.0,
+      "z_mad": null
+    },
+    {
+      "mad": 0.0,
+      "median": 0.0,
+      "path": "$[*].error_count",
+      "value": 19.0,
+      "z_mad": null
+    }
+  ],
+  "rare_values": [],
+  "type_instabilities": [
+    {
+      "dominant_type": "float",
+      "instability": 0.038000000000000034,
+      "path": "$[*].cpu_pct",
+      "type_distribution": {
+        "float": 481,
+        "null": 19
+      }
+    },
+    {
+      "dominant_type": "integer",
+      "instability": 0.038000000000000034,
+      "path": "$[*].disk_io",
+      "type_distribution": {
+        "integer": 481,
+        "null": 19
+      }
+    },
+    {
+      "dominant_type": "integer",
+      "instability": 0.038000000000000034,
+      "path": "$[*].error_count",
+      "type_distribution": {
+        "integer": 481,
+        "null": 19
+      }
+    },
+    {
+      "dominant_type": "float",
+      "instability": 0.038000000000000034,
+      "path": "$[*].memory_pct",
+      "type_distribution": {
+        "float": 481,
+        "null": 19
+      }
+    },
+    {
+      "dominant_type": "integer",
+      "instability": 0.038000000000000034,
+      "path": "$[*].network_in",
+      "type_distribution": {
+        "integer": 481,
+        "null": 19
+      }
+    },
+    {
+      "dominant_type": "integer",
+      "instability": 0.038000000000000034,
+      "path": "$[*].network_out",
+      "type_distribution": {
+        "integer": 481,
+        "null": 19
+      }
+    }
+  ]
+}

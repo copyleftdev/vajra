@@ -1,0 +1,68 @@
+{
+  "claim_id": "CLM-2024-00198723",
+  "patient": {
+    "member_id": "MBR-884521",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "date_of_birth": "1985-03-14",
+    "gender": "F",
+    "address": {
+      "street": "742 Evergreen Terrace",
+      "city": "Springfield",
+      "state": "IL",
+      "zip": "62704"
+    },
+    "phone": null,
+    "email": "jane.doe@example.com"
+  },
+  "provider": {
+    "npi": "1234567890",
+    "name": "Springfield General Hospital",
+    "taxonomy": "282N00000X",
+    "tin": "36-1234567"
+  },
+  "service_date": "2024-11-15",
+  "admission_date": "2024-11-14",
+  "discharge_date": "2024-11-17",
+  "place_of_service": "21",
+  "claim_type": "institutional",
+  "total_charge": 28450.75,
+  "allowed_amount": 18200.00,
+  "paid_amount": 14560.00,
+  "patient_responsibility": 3640.00,
+  "diagnosis_codes": [
+    {"code": "J18.9", "description": "Pneumonia, unspecified organism", "pointer": 1},
+    {"code": "J96.01", "description": "Acute respiratory failure with hypoxia", "pointer": 2},
+    {"code": "E11.65", "description": "Type 2 diabetes mellitus with hyperglycemia", "pointer": 3},
+    {"code": "I10", "description": "Essential hypertension", "pointer": 4}
+  ],
+  "procedure_codes": [
+    {"code": "99223", "description": "Initial hospital care, high severity", "charge": 850.00, "units": 1, "modifier": null},
+    {"code": "99233", "description": "Subsequent hospital care, high complexity", "charge": 450.00, "units": 3, "modifier": null},
+    {"code": "94003", "description": "Ventilator management", "charge": 1200.00, "units": 2, "modifier": "26"},
+    {"code": "71046", "description": "Chest X-ray, 2 views", "charge": 275.00, "units": 1, "modifier": null},
+    {"code": "80053", "description": "Comprehensive metabolic panel", "charge": 125.00, "units": 2, "modifier": null}
+  ],
+  "authorization": {
+    "auth_number": "AUTH-20241114-0042",
+    "status": "approved",
+    "requested_days": 5,
+    "approved_days": 4
+  },
+  "status": "adjudicated",
+  "adjudication_date": "2024-12-01",
+  "is_emergency": true,
+  "notes": null,
+  "attachments": [],
+  "metadata": {
+    "source_system": "ClaimsPro v4.2",
+    "batch_id": "BATCH-2024-12-001",
+    "processing_timestamp": "2024-12-01T14:32:07.123Z",
+    "flags": ["high_dollar", "inpatient", "emergency"],
+    "custom_fields": {
+      "drg_code": "193",
+      "drg_weight": 1.4523,
+      "readmission_risk": 0.23
+    }
+  }
+}

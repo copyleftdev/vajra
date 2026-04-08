@@ -1,0 +1,28 @@
+# Build artifacts
+/target/
+**/*.rs.bk
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code artifacts — excluded from public repo
+.claude/
+MEMORY.md
+
+# mdbook build output (regenerate with: cd docs && mdbook build)
+docs/book/
+
+# Corpus golden files are checked in, but build artifacts aren't
+corpus/golden/*.tmp
+
+# Environment
+.env
+.env.*

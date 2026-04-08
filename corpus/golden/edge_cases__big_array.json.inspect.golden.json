@@ -1,0 +1,43 @@
+{
+  "fingerprints": {
+    "path_set": "4c7ffd471e9d454086bb560ee0feb98e267020e8c5cebaae2c3cde1a74f4150d",
+    "shape": "4cb39e2a50169bdb8f65ee02342549a521fb21f65ecc80b53bfa8d7d51894483",
+    "typed_path": "ea845339d8ab8fcbc71ea57b983d5fe30afc28078ee80b69cda58f31543a422a"
+  },
+  "metadata": {
+    "distinct_paths": 4,
+    "max_depth": 2,
+    "raw_size_bytes": 210002,
+    "total_nodes": 15001
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5000,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5000,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$[*].label",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5000,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$[*].value",
+      "type_instability": 0.0
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "claim_id": "CLM-2025-000142",
+  "claim_status": "paid",
+  "diagnoses": [
+    {
+      "code": "E11.9",
+      "description": "Type 2 diabetes mellitus without complications",
+      "type": "principal"
+    },
+    {
+      "code": "I10",
+      "description": "Essential (primary) hypertension",
+      "type": "secondary"
+    }
+  ],
+  "filing_date": "2025-03-15",
+  "patient": {
+    "address": {
+      "city": "Springfield",
+      "state": "IL",
+      "street": "1234 Maple Drive",
+      "zip": "62704"
+    },
+    "date_of_birth": "1985-06-12",
+    "gender": "F",
+    "name": "Jane A. Doe",
+    "subscriber_id": "SUB-9871234"
+  },
+  "payer": {
+    "name": "Blue Cross Blue Shield of Illinois",
+    "payer_id": "BCBS-IL-001",
+    "plan_type": "PPO"
+  },
+  "provider": {
+    "address": {
+      "city": "Springfield",
+      "state": "IL",
+      "street": "500 Medical Center Blvd",
+      "zip": "62701"
+    },
+    "name": "Dr. Robert Smith",
+    "npi": "1234567890",
+    "taxonomy_code": "207Q00000X"
+  },
+  "service_lines": [
+    {
+      "adjustment_amount": 25.0,
+      "adjustment_reason": "CO-45",
+      "allowed_amount": 125.0,
+      "charge_amount": 150.0,
+      "line_number": 1,
+      "paid_amount": 100.0,
+      "procedure_code": "99213",
+      "service_date": "2025-03-10",
+      "status": "paid"
+    },
+    {
+      "adjustment_amount": 38.0,
+      "adjustment_reason": "PR-1",
+      "allowed_amount": 190.0,
+      "charge_amount": 225.0,
+      "line_number": 2,
+      "paid_amount": 152.0,
+      "procedure_code": "99214",
+      "service_date": "2025-03-10",
+      "status": "paid"
+    },
+    {
+      "adjustment_amount": 50.0,
+      "adjustment_reason": "CO-45",
+      "allowed_amount": 250.0,
+      "charge_amount": 300.0,
+      "line_number": 3,
+      "paid_amount": 200.0,
+      "procedure_code": "99215",
+      "service_date": "2025-03-11",
+      "status": "paid"
+    },
+    {
+      "adjustment_amount": 25.0,
+      "adjustment_reason": "CO-45",
+      "allowed_amount": 125.0,
+      "charge_amount": 150.0,
+      "line_number": 4,
+      "paid_amount": 100.0,
+      "procedure_code": "99213",
+      "service_date": "2025-03-12",
+      "status": "denied"
+    },
+    {
+      "adjustment_amount": 38.0,
+      "adjustment_reason": "PR-1",
+      "allowed_amount": 190.0,
+      "charge_amount": 225.0,
+      "line_number": 5,
+      "paid_amount": 152.0,
+      "procedure_code": "99214",
+      "service_date": "2025-03-13",
+      "status": "pending"
+    }
+  ]
+}

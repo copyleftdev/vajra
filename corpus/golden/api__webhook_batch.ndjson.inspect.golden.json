@@ -1,0 +1,113 @@
+{
+  "fingerprints": {
+    "path_set": "5e2fedc6aaea91b681cf6873dd041bd724c415d30dfc081ce887e5e97d8700cd",
+    "shape": "6e0e309cc2717295757002ffdf65673130c2582cc9d03515ea2f667caa6a8ebb",
+    "typed_path": "309d73a0cc264eeae601545f172742d82554227ab47ce513c8d6dc13ab01d1ce"
+  },
+  "metadata": {
+    "distinct_paths": 14,
+    "max_depth": 2,
+    "raw_size_bytes": 289,
+    "total_nodes": 14
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.data",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.data.amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data.currency",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data.method",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.data.payment_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.event_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.event_type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.retry",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.retry.attempt",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.retry.original_timestamp",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.retry.reason",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.source",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.timestamp",
+      "type_instability": 0.0
+    }
+  ]
+}

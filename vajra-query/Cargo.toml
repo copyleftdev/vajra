@@ -1,0 +1,21 @@
+[package]
+name = "vajra-query"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+vajra-types = { workspace = true }
+vajra-core = { workspace = true }
+vajra-stats = { workspace = true }
+vajra-anomaly = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[lints]
+workspace = true

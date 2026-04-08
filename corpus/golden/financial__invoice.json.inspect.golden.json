@@ -1,0 +1,358 @@
+{
+  "fingerprints": {
+    "path_set": "6572d27269f61e329a0134fff8ab1a2484e52cfe442ef6cb1a762c4c2ed21104",
+    "shape": "fa635049decf81151dcf3e464127be9dc851795ab27a3947534979160d501288",
+    "typed_path": "a43d9ad801e8025a2ffba50503b4812aa0502662558addc1ab5649dfa6ae7c34"
+  },
+  "metadata": {
+    "distinct_paths": 49,
+    "max_depth": 3,
+    "raw_size_bytes": 2217,
+    "total_nodes": 82
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.buyer",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.buyer.address",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.buyer.address.city",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.buyer.address.country",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.buyer.address.state",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.buyer.address.street",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.buyer.address.zip",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.buyer.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.buyer.purchase_order",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.due_date",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.grand_total",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.invoice_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.issue_date",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.line_items",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.line_items[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].description",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].discount_pct",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].line",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].quantity",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].sku",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].subtotal",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].tax_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].tax_rate",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].total",
+      "type_instability": 0.0
+    },
+    {
+      "count": 4,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.line_items[*].unit_price",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.notes",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.payment_instructions",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payment_instructions.account_number",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payment_instructions.bank_name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payment_instructions.reference",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payment_instructions.routing_number",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payment_terms",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.subtotal",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.total_discount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.total_tax",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.vendor",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.vendor.address",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.address.city",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.address.country",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.address.state",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.address.street",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.address.zip",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.vendor.contact",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.contact.email",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.contact.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.contact.phone",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.vendor.tax_id",
+      "type_instability": 0.0
+    }
+  ]
+}

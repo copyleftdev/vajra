@@ -1,0 +1,471 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3.0,
+        "mean": 3.0,
+        "median": 3.0,
+        "min": 3.0,
+        "p05": 3.0,
+        "p25": 3.0,
+        "p75": 3.0,
+        "p95": 3.0
+      },
+      "path": "$.metadata.code_block_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5.0,
+        "mean": 5.0,
+        "median": 5.0,
+        "min": 5.0,
+        "p05": 5.0,
+        "p25": 5.0,
+        "p75": 5.0,
+        "p95": 5.0
+      },
+      "path": "$.metadata.heading_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p95": 0.0
+      },
+      "path": "$.metadata.image_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p95": 0.0
+      },
+      "path": "$.metadata.link_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.metadata.list_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 4.0,
+        "mean": 4.0,
+        "median": 4.0,
+        "min": 4.0,
+        "p05": 4.0,
+        "p25": 4.0,
+        "p75": 4.0,
+        "p95": 4.0
+      },
+      "path": "$.metadata.paragraph_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "4"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p25": 0.0,
+        "p75": 0.0,
+        "p95": 0.0
+      },
+      "path": "$.metadata.table_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 108.0,
+        "mean": 108.0,
+        "median": 108.0,
+        "min": 108.0,
+        "p05": 108.0,
+        "p25": 108.0,
+        "p75": 108.0,
+        "p95": 108.0
+      },
+      "path": "$.metadata.word_count",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "108"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].content[*].text",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "A high-performance Rust CLI that analyzes arbitrary JSON, extracts structural and semantic signal, detects anomalies and drift, and emits compact deterministic essences."
+        },
+        {
+          "count": 1,
+          "value": "Break noise. Preserve truth."
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].content[*].type",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "paragraph"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].heading",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Vajra"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.sections[*].level",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].code",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "# Inspect a JSON file\nvajra inspect data.json\n\n# Statistical summary\nvajra stats data.json\n\n# Detect anomalies\nvajra anomalies data.json\n\n# Compare two versions\nvajra drift v1.json v2.json\n"
+        },
+        {
+          "count": 1,
+          "value": "cargo install vajra-cli\n"
+        },
+        {
+          "count": 1,
+          "value": "git clone https://github.com/example/vajra.git\ncd vajra\ncargo build --release\n"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.321928094887362,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].items[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Anomaly detection: Numeric outliers, rare values, type instability"
+        },
+        {
+          "count": 1,
+          "value": "Domain plugins: Medical coding (ICD-10, CPT, NPI, NDC)"
+        },
+        {
+          "count": 1,
+          "value": "Multiple output formats: Text, JSON, Markdown, Compact AI"
+        },
+        {
+          "count": 1,
+          "value": "Schema drift: Structural and distributional comparison"
+        },
+        {
+          "count": 1,
+          "value": "Zero-config analysis: Auto-detects structure and schema"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].language",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "bash"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].ordered",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "false"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].text",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "MIT OR Apache-2.0"
+        },
+        {
+          "count": 1,
+          "value": "Or build from source:"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.4591479170272446,
+      "max_rarity": 2.584962500721156,
+      "normalized_entropy": 0.920619835714305,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].content[*].type",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "code_block"
+        },
+        {
+          "count": 2,
+          "value": "paragraph"
+        },
+        {
+          "count": 1,
+          "value": "list"
+        }
+      ],
+      "total_count": 6
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.sections[*].subsections[*].heading",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Features"
+        },
+        {
+          "count": 1,
+          "value": "Installation"
+        },
+        {
+          "count": 1,
+          "value": "License"
+        },
+        {
+          "count": 1,
+          "value": "Quick Start"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 2.0,
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p05": 2.0,
+        "p25": 2.0,
+        "p75": 2.0,
+        "p95": 2.0
+      },
+      "path": "$.sections[*].subsections[*].level",
+      "top_values": [
+        {
+          "count": 4,
+          "value": "2"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "document"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

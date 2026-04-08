@@ -1,0 +1,22 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=14, paths=14, depth=2)",
+  "observations": [
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 9 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:1c47174c",
+      "rarity": 0.0,
+      "score": 0.0285,
+      "structural_coverage": 0.09
+    }
+  ],
+  "structure": {
+    "distinct_paths": 14,
+    "max_depth": 2,
+    "total_nodes": 14
+  }
+}

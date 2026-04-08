@@ -1,0 +1,44 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$[*].label",
+      "top_values": [
+        {
+          "count": 5000,
+          "value": "x"
+        }
+      ],
+      "total_count": 5000
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$[*].value",
+      "top_values": [
+        {
+          "count": 5000,
+          "value": "1"
+        }
+      ],
+      "total_count": 5000
+    }
+  ]
+}

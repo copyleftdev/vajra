@@ -1,0 +1,319 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=149, paths=46, depth=10)",
+  "observations": [
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].heading",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (1 distinct values over 6 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].level",
+      "rarity": 0.9,
+      "score": 0.195,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].text",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].heading",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (1 distinct values over 3 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].level",
+      "rarity": 0.9,
+      "score": 0.195,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].headers[*]",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].items[*]",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].ordered",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].text",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 1.000)",
+      "entropy_signal": 1.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].items[*]",
+      "rarity": 0.0,
+      "score": 0.195,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.995)",
+      "entropy_signal": 0.9953966229946016,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].rows[*][*]",
+      "rarity": 0.0,
+      "score": 0.19430949344919024,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "informative field (normalized entropy 0.960)",
+      "entropy_signal": 0.9602297178607612,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].type",
+      "rarity": 0.0,
+      "score": 0.18903445767911417,
+      "structural_coverage": 0.0
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (2 distinct values over 2 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].items[*]",
+      "rarity": 0.8,
+      "score": 0.18,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (2 distinct values over 2 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].ordered",
+      "rarity": 0.8,
+      "score": 0.18,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (2 distinct values over 2 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].text",
+      "rarity": 0.8,
+      "score": 0.18,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 3 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].heading",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (3 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].type",
+      "rarity": 0.7,
+      "score": 0.165,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (4 distinct values over 10 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].type",
+      "rarity": 0.6,
+      "score": 0.15,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (5 distinct values over 5 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].headers[*]",
+      "rarity": 0.5,
+      "score": 0.135,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 78 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:1c47174c",
+      "rarity": 0.0,
+      "score": 0.132,
+      "structural_coverage": 0.78
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (6 distinct values over 6 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].heading",
+      "rarity": 0.4,
+      "score": 0.12,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (7 distinct values over 7 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].items[*]",
+      "rarity": 0.30000000000000004,
+      "score": 0.105,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (8 distinct values over 8 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].text",
+      "rarity": 0.19999999999999996,
+      "score": 0.09,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 18 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:bf0b731c",
+      "rarity": 0.0,
+      "score": 0.042,
+      "structural_coverage": 0.18
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 9 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:b5ffa8b5",
+      "rarity": 0.0,
+      "score": 0.0285,
+      "structural_coverage": 0.09
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 6 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:b71ac22c",
+      "rarity": 0.0,
+      "score": 0.024,
+      "structural_coverage": 0.06
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 3 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:04898d6f",
+      "rarity": 0.0,
+      "score": 0.0195,
+      "structural_coverage": 0.03
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 2 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:a1126d23",
+      "rarity": 0.0,
+      "score": 0.018,
+      "structural_coverage": 0.02
+    }
+  ],
+  "structure": {
+    "distinct_paths": 46,
+    "max_depth": 10,
+    "total_nodes": 149
+  }
+}

@@ -1,0 +1,641 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.claim_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "CLM-2025-000142"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.claim_status",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "paid"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.diagnoses[*].code",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "E11.9"
+        },
+        {
+          "count": 1,
+          "value": "I10"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.diagnoses[*].description",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Essential (primary) hypertension"
+        },
+        {
+          "count": 1,
+          "value": "Type 2 diabetes mellitus without complications"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.diagnoses[*].type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "principal"
+        },
+        {
+          "count": 1,
+          "value": "secondary"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.filing_date",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-15"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.address.city",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Springfield"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.address.state",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "IL"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.address.street",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1234 Maple Drive"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.address.zip",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "62704"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.date_of_birth",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1985-06-12"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.gender",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "F"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Jane A. Doe"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.patient.subscriber_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "SUB-9871234"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payer.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Blue Cross Blue Shield of Illinois"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payer.payer_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "BCBS-IL-001"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payer.plan_type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "PPO"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.provider.address.city",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Springfield"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.provider.address.state",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "IL"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.provider.address.street",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "500 Medical Center Blvd"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.provider.address.zip",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "62701"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.provider.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Dr. Robert Smith"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.provider.npi",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1234567890"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.provider.taxonomy_code",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "207Q00000X"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5219280948873621,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9602297178607612,
+      "numeric": {
+        "mad": 12.0,
+        "max": 50.0,
+        "mean": 35.2,
+        "median": 38.0,
+        "min": 25.0,
+        "p05": 25.0,
+        "p25": 25.0,
+        "p75": 38.0,
+        "p95": 47.599999999999994
+      },
+      "path": "$.service_lines[*].adjustment_amount",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "25.0"
+        },
+        {
+          "count": 2,
+          "value": "38.0"
+        },
+        {
+          "count": 1,
+          "value": "50.0"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 2,
+      "entropy": 0.9709505944546686,
+      "max_rarity": 1.3219280948873622,
+      "normalized_entropy": 0.9709505944546686,
+      "numeric": null,
+      "path": "$.service_lines[*].adjustment_reason",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "CO-45"
+        },
+        {
+          "count": 2,
+          "value": "PR-1"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5219280948873621,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9602297178607612,
+      "numeric": {
+        "mad": 60.0,
+        "max": 250.0,
+        "mean": 176.0,
+        "median": 190.0,
+        "min": 125.0,
+        "p05": 125.0,
+        "p25": 125.0,
+        "p75": 190.0,
+        "p95": 238.0
+      },
+      "path": "$.service_lines[*].allowed_amount",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "125.0"
+        },
+        {
+          "count": 2,
+          "value": "190.0"
+        },
+        {
+          "count": 1,
+          "value": "250.0"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5219280948873621,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9602297178607612,
+      "numeric": {
+        "mad": 75.0,
+        "max": 300.0,
+        "mean": 210.0,
+        "median": 225.0,
+        "min": 150.0,
+        "p05": 150.0,
+        "p25": 150.0,
+        "p75": 225.0,
+        "p95": 285.0
+      },
+      "path": "$.service_lines[*].charge_amount",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "150.0"
+        },
+        {
+          "count": 2,
+          "value": "225.0"
+        },
+        {
+          "count": 1,
+          "value": "300.0"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 5,
+      "entropy": 2.321928094887362,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 1.0,
+        "max": 5.0,
+        "mean": 3.0,
+        "median": 3.0,
+        "min": 1.0,
+        "p05": 1.2,
+        "p25": 2.0,
+        "p75": 4.0,
+        "p95": 4.8
+      },
+      "path": "$.service_lines[*].line_number",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        },
+        {
+          "count": 1,
+          "value": "2"
+        },
+        {
+          "count": 1,
+          "value": "3"
+        },
+        {
+          "count": 1,
+          "value": "4"
+        },
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5219280948873621,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9602297178607612,
+      "numeric": {
+        "mad": 48.0,
+        "max": 200.0,
+        "mean": 140.8,
+        "median": 152.0,
+        "min": 100.0,
+        "p05": 100.0,
+        "p25": 100.0,
+        "p75": 152.0,
+        "p95": 190.39999999999998
+      },
+      "path": "$.service_lines[*].paid_amount",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "100.0"
+        },
+        {
+          "count": 2,
+          "value": "152.0"
+        },
+        {
+          "count": 1,
+          "value": "200.0"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5219280948873621,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9602297178607612,
+      "numeric": null,
+      "path": "$.service_lines[*].procedure_code",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "99213"
+        },
+        {
+          "count": 2,
+          "value": "99214"
+        },
+        {
+          "count": 1,
+          "value": "99215"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 4,
+      "entropy": 1.9219280948873623,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9609640474436811,
+      "numeric": null,
+      "path": "$.service_lines[*].service_date",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "2025-03-10"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-11"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-12"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-13"
+        }
+      ],
+      "total_count": 5
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.3709505944546687,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.8649735207179273,
+      "numeric": null,
+      "path": "$.service_lines[*].status",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "paid"
+        },
+        {
+          "count": 1,
+          "value": "denied"
+        },
+        {
+          "count": 1,
+          "value": "pending"
+        }
+      ],
+      "total_count": 5
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "a_big_number": 9007199254740992,
+  "a_bool": true,
+  "a_float": 3.14,
+  "a_negative": -99,
+  "a_null": null,
+  "a_number": 42,
+  "a_small_float": 1e-6,
+  "a_string": "hello",
+  "an_array": [
+    1,
+    "two",
+    3.0,
+    true,
+    null,
+    {
+      "nested": "obj"
+    },
+    [
+      1,
+      2
+    ]
+  ],
+  "an_empty_array": [],
+  "an_empty_object": {},
+  "an_object": {
+    "x": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "numeric_outliers": [],
+  "rare_values": [],
+  "type_instabilities": [
+    {
+      "dominant_type": "object",
+      "instability": 0.8571428571428572,
+      "path": "$.an_array[*]",
+      "type_distribution": {
+        "array": 1,
+        "boolean": 1,
+        "float": 1,
+        "integer": 1,
+        "null": 1,
+        "object": 1,
+        "string": 1
+      }
+    }
+  ]
+}

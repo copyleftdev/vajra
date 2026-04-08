@@ -1,0 +1,828 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.buyer.address.city",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Springfield"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.buyer.address.country",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "US"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.buyer.address.state",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "IL"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.buyer.address.street",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "100 Hospital Drive"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.buyer.address.zip",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "62701"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.buyer.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Springfield Hospital"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.buyer.purchase_order",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "PO-2025-1234"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.due_date",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-04-01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3539.7,
+        "mean": 3539.7,
+        "median": 3539.7,
+        "min": 3539.7,
+        "p05": 3539.7,
+        "p25": 3539.7,
+        "p75": 3539.7,
+        "p95": 3539.7
+      },
+      "path": "$.grand_total",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3539.7"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.invoice_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "INV-2025-003456"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.issue_date",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-01"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.line_items[*].description",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Disposable face masks (box of 50)"
+        },
+        {
+          "count": 1,
+          "value": "Hand sanitizer (gallon)"
+        },
+        {
+          "count": 1,
+          "value": "Medical tape rolls"
+        },
+        {
+          "count": 1,
+          "value": "Surgical gloves (box of 100)"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.5,
+      "max_rarity": 2.0,
+      "normalized_entropy": 0.9463946303571862,
+      "numeric": {
+        "mad": 2.5,
+        "max": 10.0,
+        "mean": 3.75,
+        "median": 2.5,
+        "min": 0.0,
+        "p05": 0.0,
+        "p25": 0.0,
+        "p75": 6.25,
+        "p95": 9.249999999999998
+      },
+      "path": "$.line_items[*].discount_pct",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "0.0"
+        },
+        {
+          "count": 1,
+          "value": "10.0"
+        },
+        {
+          "count": 1,
+          "value": "5.0"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 1.0,
+        "max": 4.0,
+        "mean": 2.5,
+        "median": 2.5,
+        "min": 1.0,
+        "p05": 1.15,
+        "p25": 1.75,
+        "p75": 3.25,
+        "p95": 3.8499999999999996
+      },
+      "path": "$.line_items[*].line",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        },
+        {
+          "count": 1,
+          "value": "2"
+        },
+        {
+          "count": 1,
+          "value": "3"
+        },
+        {
+          "count": 1,
+          "value": "4"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 35.0,
+        "max": 200.0,
+        "mean": 95.0,
+        "median": 75.0,
+        "min": 30.0,
+        "p05": 33.0,
+        "p25": 45.0,
+        "p75": 125.0,
+        "p95": 184.99999999999997
+      },
+      "path": "$.line_items[*].quantity",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "100"
+        },
+        {
+          "count": 1,
+          "value": "200"
+        },
+        {
+          "count": 1,
+          "value": "30"
+        },
+        {
+          "count": 1,
+          "value": "50"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.line_items[*].sku",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "FM-50-BLU"
+        },
+        {
+          "count": 1,
+          "value": "HS-GAL-01"
+        },
+        {
+          "count": 1,
+          "value": "MT-1IN-12PK"
+        },
+        {
+          "count": 1,
+          "value": "SG-100-LG"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 187.35000000000002,
+        "max": 1528.2,
+        "mean": 817.4825000000001,
+        "median": 683.365,
+        "min": 375.0,
+        "p05": 411.3045,
+        "p25": 556.5225,
+        "p75": 944.325,
+        "p95": 1411.4249999999997
+      },
+      "path": "$.line_items[*].subtotal",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1528.2"
+        },
+        {
+          "count": 1,
+          "value": "375.0"
+        },
+        {
+          "count": 1,
+          "value": "617.03"
+        },
+        {
+          "count": 1,
+          "value": "749.7"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 15.455,
+        "max": 126.08,
+        "mean": 67.445,
+        "median": 56.379999999999995,
+        "min": 30.94,
+        "p05": 33.935500000000005,
+        "p25": 45.9175,
+        "p75": 77.9075,
+        "p95": 116.44549999999997
+      },
+      "path": "$.line_items[*].tax_amount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "126.08"
+        },
+        {
+          "count": 1,
+          "value": "30.94"
+        },
+        {
+          "count": 1,
+          "value": "50.91"
+        },
+        {
+          "count": 1,
+          "value": "61.85"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 0.0825,
+        "mean": 0.0825,
+        "median": 0.0825,
+        "min": 0.0825,
+        "p05": 0.0825,
+        "p25": 0.0825,
+        "p75": 0.0825,
+        "p95": 0.0825
+      },
+      "path": "$.line_items[*].tax_rate",
+      "top_values": [
+        {
+          "count": 4,
+          "value": "0.0825"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 202.80500000000004,
+        "max": 1654.28,
+        "mean": 884.925,
+        "median": 739.74,
+        "min": 405.94,
+        "p05": 445.2385,
+        "p25": 602.4324999999999,
+        "p75": 1022.2325,
+        "p95": 1527.8704999999995
+      },
+      "path": "$.line_items[*].total",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1654.28"
+        },
+        {
+          "count": 1,
+          "value": "405.94"
+        },
+        {
+          "count": 1,
+          "value": "667.93"
+        },
+        {
+          "count": 1,
+          "value": "811.55"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 4,
+      "entropy": 2.0,
+      "max_rarity": 2.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 4.62,
+        "max": 24.99,
+        "mean": 12.555,
+        "median": 10.74,
+        "min": 3.75,
+        "p05": 4.461,
+        "p25": 7.305,
+        "p75": 15.99,
+        "p95": 23.189999999999994
+      },
+      "path": "$.line_items[*].unit_price",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "12.99"
+        },
+        {
+          "count": 1,
+          "value": "24.99"
+        },
+        {
+          "count": 1,
+          "value": "3.75"
+        },
+        {
+          "count": 1,
+          "value": "8.49"
+        }
+      ],
+      "total_count": 4
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.notes",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Please reference PO number on remittance."
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payment_instructions.account_number",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1234567890"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payment_instructions.bank_name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "First National Bank"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payment_instructions.reference",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "INV-2025-003456"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payment_instructions.routing_number",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "071000013"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.payment_terms",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Net 30"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 3269.93,
+        "mean": 3269.93,
+        "median": 3269.93,
+        "min": 3269.93,
+        "p05": 3269.93,
+        "p25": 3269.93,
+        "p75": 3269.93,
+        "p95": 3269.93
+      },
+      "path": "$.subtotal",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "3269.93"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 161.18,
+        "mean": 161.18,
+        "median": 161.18,
+        "min": 161.18,
+        "p05": 161.18,
+        "p25": 161.18,
+        "p75": 161.18,
+        "p95": 161.18
+      },
+      "path": "$.total_discount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "161.18"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 269.78,
+        "mean": 269.78,
+        "median": 269.78,
+        "min": 269.78,
+        "p05": 269.78,
+        "p25": 269.78,
+        "p75": 269.78,
+        "p95": 269.78
+      },
+      "path": "$.total_tax",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "269.78"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.address.city",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Chicago"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.address.country",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "US"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.address.state",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "IL"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.address.street",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "789 Industrial Pkwy"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.address.zip",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "60601"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.contact.email",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "bob@acmesupply.com"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.contact.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Bob Builder"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.contact.phone",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "+1-312-555-0100"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Acme Supply Co."
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.vendor.tax_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "12-3456789"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

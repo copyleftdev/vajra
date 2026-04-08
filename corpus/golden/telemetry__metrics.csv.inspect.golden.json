@@ -1,0 +1,85 @@
+{
+  "fingerprints": {
+    "path_set": "8609c173279efd0bee86fdb734d7785ef26737aeaf32cfc13053ab67010a5b05",
+    "shape": "df4e8d04967f2b042b850e0eae6149f42909a63df7bcf783e5a0b6f813033743",
+    "typed_path": "22c99acda1cfacd259041da630e36cc286b169ca4a48a9577563e4d376925082"
+  },
+  "metadata": {
+    "distinct_paths": 10,
+    "max_depth": 2,
+    "raw_size_bytes": 79316,
+    "total_nodes": 4501
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 500,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 500,
+      "dominant_type": "float",
+      "null_rate": 0.038,
+      "path": "$[*].cpu_pct",
+      "type_instability": 0.038000000000000034
+    },
+    {
+      "count": 500,
+      "dominant_type": "integer",
+      "null_rate": 0.038,
+      "path": "$[*].disk_io",
+      "type_instability": 0.038000000000000034
+    },
+    {
+      "count": 500,
+      "dominant_type": "integer",
+      "null_rate": 0.038,
+      "path": "$[*].error_count",
+      "type_instability": 0.038000000000000034
+    },
+    {
+      "count": 500,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$[*].host",
+      "type_instability": 0.0
+    },
+    {
+      "count": 500,
+      "dominant_type": "float",
+      "null_rate": 0.038,
+      "path": "$[*].memory_pct",
+      "type_instability": 0.038000000000000034
+    },
+    {
+      "count": 500,
+      "dominant_type": "integer",
+      "null_rate": 0.038,
+      "path": "$[*].network_in",
+      "type_instability": 0.038000000000000034
+    },
+    {
+      "count": 500,
+      "dominant_type": "integer",
+      "null_rate": 0.038,
+      "path": "$[*].network_out",
+      "type_instability": 0.038000000000000034
+    },
+    {
+      "count": 500,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$[*].timestamp",
+      "type_instability": 0.0
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "buyer": {
+    "address": {
+      "city": "Springfield",
+      "country": "US",
+      "state": "IL",
+      "street": "100 Hospital Drive",
+      "zip": "62701"
+    },
+    "name": "Springfield Hospital",
+    "purchase_order": "PO-2025-1234"
+  },
+  "due_date": "2025-04-01",
+  "grand_total": 3539.7,
+  "invoice_id": "INV-2025-003456",
+  "issue_date": "2025-03-01",
+  "line_items": [
+    {
+      "description": "Surgical gloves (box of 100)",
+      "discount_pct": 5.0,
+      "line": 1,
+      "quantity": 50,
+      "sku": "SG-100-LG",
+      "subtotal": 617.03,
+      "tax_amount": 50.91,
+      "tax_rate": 0.0825,
+      "total": 667.93,
+      "unit_price": 12.99
+    },
+    {
+      "description": "Disposable face masks (box of 50)",
+      "discount_pct": 10.0,
+      "line": 2,
+      "quantity": 200,
+      "sku": "FM-50-BLU",
+      "subtotal": 1528.2,
+      "tax_amount": 126.08,
+      "tax_rate": 0.0825,
+      "total": 1654.28,
+      "unit_price": 8.49
+    },
+    {
+      "description": "Hand sanitizer (gallon)",
+      "discount_pct": 0.0,
+      "line": 3,
+      "quantity": 30,
+      "sku": "HS-GAL-01",
+      "subtotal": 749.7,
+      "tax_amount": 61.85,
+      "tax_rate": 0.0825,
+      "total": 811.55,
+      "unit_price": 24.99
+    },
+    {
+      "description": "Medical tape rolls",
+      "discount_pct": 0.0,
+      "line": 4,
+      "quantity": 100,
+      "sku": "MT-1IN-12PK",
+      "subtotal": 375.0,
+      "tax_amount": 30.94,
+      "tax_rate": 0.0825,
+      "total": 405.94,
+      "unit_price": 3.75
+    }
+  ],
+  "notes": "Please reference PO number on remittance.",
+  "payment_instructions": {
+    "account_number": "1234567890",
+    "bank_name": "First National Bank",
+    "reference": "INV-2025-003456",
+    "routing_number": "071000013"
+  },
+  "payment_terms": "Net 30",
+  "subtotal": 3269.93,
+  "total_discount": 161.18,
+  "total_tax": 269.78,
+  "vendor": {
+    "address": {
+      "city": "Chicago",
+      "country": "US",
+      "state": "IL",
+      "street": "789 Industrial Pkwy",
+      "zip": "60601"
+    },
+    "contact": {
+      "email": "bob@acmesupply.com",
+      "name": "Bob Builder",
+      "phone": "+1-312-555-0100"
+    },
+    "name": "Acme Supply Co.",
+    "tax_id": "12-3456789"
+  }
+}

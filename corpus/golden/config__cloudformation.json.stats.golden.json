@@ -1,0 +1,889 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.AWSTemplateFormatVersion",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2010-09-09"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Conditions.CreateReadReplica.Fn::Equals[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "production"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Conditions.CreateReadReplica.Fn::Equals[*].Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Environment"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Conditions.IsProduction.Fn::Equals[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "production"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Conditions.IsProduction.Fn::Equals[*].Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Environment"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Description",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Production stack with EC2, RDS, S3, and Lambda"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Mappings.RegionMap.us-east-1.AMI",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "ami-0abcdef1234567890"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Mappings.RegionMap.us-west-2.AMI",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "ami-0fedcba9876543210"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Parameters.DBInstanceClass.Default",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "db.r5.large"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Parameters.DBInstanceClass.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "String"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.Parameters.Environment.AllowedValues[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "development"
+        },
+        {
+          "count": 1,
+          "value": "production"
+        },
+        {
+          "count": 1,
+          "value": "staging"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Parameters.Environment.Default",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "production"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Parameters.Environment.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "String"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.Parameters.InstanceType.AllowedValues[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "t3.large"
+        },
+        {
+          "count": 1,
+          "value": "t3.medium"
+        },
+        {
+          "count": 1,
+          "value": "t3.small"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Parameters.InstanceType.Default",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "t3.medium"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Parameters.InstanceType.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "String"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.DataBucket.Properties.BucketName.Fn::Sub",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "${Environment}-data-bucket"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.DataBucket.Properties.EncryptionConfiguration.Rules[*].ApplyServerSideEncryptionByDefault.SSEAlgorithm",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "aws:kms"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.DataBucket.Properties.VersioningConfiguration.Status",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Enabled"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.DataBucket.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "AWS::S3::Bucket"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 100.0,
+        "mean": 100.0,
+        "median": 100.0,
+        "min": 100.0,
+        "p05": 100.0,
+        "p25": 100.0,
+        "p75": 100.0,
+        "p95": 100.0
+      },
+      "path": "$.Resources.Database.Properties.AllocatedStorage",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "100"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.DBInstanceClass.Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "DBInstanceClass"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.Engine",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "postgres"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.EngineVersion",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "15.4"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.MasterUserPassword.Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "DBPassword"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.MasterUsername",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "admin"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.584962500721156,
+      "max_rarity": 1.5849625007211563,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.MultiAZ.Fn::If[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "IsProduction"
+        },
+        {
+          "count": 1,
+          "value": "false"
+        },
+        {
+          "count": 1,
+          "value": "true"
+        }
+      ],
+      "total_count": 3
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.StorageType",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "gp3"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Properties.VPCSecurityGroups[*].Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "DBSecurityGroup"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.Database.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "AWS::RDS::DBInstance"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables.BUCKET_NAME.Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "DataBucket"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.Resources.ProcessorFunction.Properties.Environment.Variables.DB_HOST.Fn::GetAtt[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Database"
+        },
+        {
+          "count": 1,
+          "value": "Endpoint.Address"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.ProcessorFunction.Properties.FunctionName.Fn::Sub",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "${Environment}-processor"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.ProcessorFunction.Properties.Handler",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "index.handler"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 256.0,
+        "mean": 256.0,
+        "median": 256.0,
+        "min": 256.0,
+        "p05": 256.0,
+        "p25": 256.0,
+        "p75": 256.0,
+        "p95": 256.0
+      },
+      "path": "$.Resources.ProcessorFunction.Properties.MemorySize",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "256"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.ProcessorFunction.Properties.Runtime",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "python3.11"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 300.0,
+        "mean": 300.0,
+        "median": 300.0,
+        "min": 300.0,
+        "p05": 300.0,
+        "p25": 300.0,
+        "p75": 300.0,
+        "p95": 300.0
+      },
+      "path": "$.Resources.ProcessorFunction.Properties.Timeout",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "300"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.ProcessorFunction.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "AWS::Lambda::Function"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebSecurityGroup.Properties.GroupDescription",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Security group for web servers"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].CidrIp",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "0.0.0.0/0"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 181.5,
+        "max": 443.0,
+        "mean": 261.5,
+        "median": 261.5,
+        "min": 80.0,
+        "p05": 98.15,
+        "p25": 170.75,
+        "p75": 352.25,
+        "p95": 424.84999999999997
+      },
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].FromPort",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "443"
+        },
+        {
+          "count": 1,
+          "value": "80"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].IpProtocol",
+      "top_values": [
+        {
+          "count": 2,
+          "value": "tcp"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 181.5,
+        "max": 443.0,
+        "mean": 261.5,
+        "median": 261.5,
+        "min": 80.0,
+        "p05": 98.15,
+        "p25": 170.75,
+        "p75": 352.25,
+        "p95": 424.84999999999997
+      },
+      "path": "$.Resources.WebSecurityGroup.Properties.SecurityGroupIngress[*].ToPort",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "443"
+        },
+        {
+          "count": 1,
+          "value": "80"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebSecurityGroup.Properties.VpcId.Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "VPC"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebSecurityGroup.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "AWS::EC2::SecurityGroup"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 2,
+      "entropy": 1.0,
+      "max_rarity": 1.0,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Properties.ImageId.Fn::FindInMap[*]",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "AMI"
+        },
+        {
+          "count": 1,
+          "value": "RegionMap"
+        }
+      ],
+      "total_count": 2
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Properties.ImageId.Fn::FindInMap[*].Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "AWS::Region"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Properties.InstanceType.Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "InstanceType"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Properties.SecurityGroupIds[*].Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "WebSecurityGroup"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Properties.SubnetId.Ref",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "PublicSubnet"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Properties.Tags[*].Key",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Name"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Properties.Tags[*].Value.Fn::Sub",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "${Environment}-web-server"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.Resources.WebServerInstance.Type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "AWS::EC2::Instance"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

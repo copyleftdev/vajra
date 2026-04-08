@@ -1,0 +1,27 @@
+[package]
+name = "vajra-essence"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+vajra-types = { workspace = true }
+vajra-core = { workspace = true }
+vajra-stats = { workspace = true }
+vajra-anomaly = { workspace = true }
+vajra-fingerprint = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+toml = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+criterion = { workspace = true }
+vajra-types = { workspace = true }
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "essence"
+harness = false

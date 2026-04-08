@@ -1,0 +1,189 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 47.56,
+        "mean": 47.56,
+        "median": 47.56,
+        "min": 47.56,
+        "p05": 47.56,
+        "p25": 47.56,
+        "p75": 47.56,
+        "p95": 47.56
+      },
+      "path": "$.data.amount",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "47.56"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.data.currency",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "GBP"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.data.method",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "paypal"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.data.payment_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "pay-041074"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.event_id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "evt-000001"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.event_type",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "payment.refunded"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 5.0,
+        "mean": 5.0,
+        "median": 5.0,
+        "min": 5.0,
+        "p05": 5.0,
+        "p25": 5.0,
+        "p75": 5.0,
+        "p95": 5.0
+      },
+      "path": "$.retry.attempt",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "5"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.retry.original_timestamp",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-14T20:41:16Z"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.retry.reason",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "timeout"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.source",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "webhook-gateway"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.timestamp",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-15T20:41:16Z"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

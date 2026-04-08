@@ -1,0 +1,19 @@
+{
+  "path_set": "4d4241769a0ef93a2f36e7399b6fda7ecdf8c2f332872134e08ab80f4278ce4f",
+  "repeated_motifs": [
+    {
+      "count": 52,
+      "hash": "1c47174c0ccd034618e1a604adce0002103e088e87329f0c2fab4324e8a06c60"
+    },
+    {
+      "count": 6,
+      "hash": "df5c7ebb8ce162f1d9b18849b8eb85e2a4e6e4454df2e4984be5b08782db657f"
+    },
+    {
+      "count": 2,
+      "hash": "a1126d23a4adb7428d0d99dc750550d2640128a27abe46853f5457d4f4ca3f1f"
+    }
+  ],
+  "shape": "01d6250de285502513defc55be396f99e703c5eed23cdc05720b71804198903d",
+  "typed_path": "8f0c00bfcc8d431ef9850965bebb35e33c43bc094d49b01ad07be6ae6b8028a1"
+}

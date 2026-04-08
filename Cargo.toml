@@ -1,0 +1,102 @@
+[workspace]
+resolver = "2"
+members = [
+    "vajra-types",
+    "vajra-core",
+    "vajra-fingerprint",
+    "vajra-stats",
+    "vajra-anomaly",
+    "vajra-drift",
+    "vajra-motif",
+    "vajra-essence",
+    "vajra-query",
+    "vajra-cli",
+    "vajra-domain-med",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.75"
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Input format support
+serde_yaml = "0.9"
+csv = "1"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Hashing
+blake3 = "1"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Float formatting (deterministic, platform-independent)
+ryu = "1"
+
+# Unicode normalization
+unicode-normalization = "0.1"
+
+# Config
+toml = "0.8"
+
+# Pattern matching (redaction, type recognition)
+regex = "1"
+
+# Parallelism
+rayon = "1"
+
+# Testing
+proptest = "1"
+tempfile = "3"
+
+# Compression
+flate2 = "1"
+zstd = "0.13"
+
+# Markdown parsing
+pulldown-cmark = "0.12"
+
+# PDF text extraction
+pdf-extract = "0.10"
+
+# HTTP (minimal, blocking)
+ureq = "2"
+
+# Benchmarking
+criterion = { version = "0.5", features = ["html_reports"] }
+
+# Internal crates
+vajra-types = { path = "vajra-types" }
+vajra-core = { path = "vajra-core" }
+vajra-fingerprint = { path = "vajra-fingerprint" }
+vajra-stats = { path = "vajra-stats" }
+vajra-anomaly = { path = "vajra-anomaly" }
+vajra-drift = { path = "vajra-drift" }
+vajra-motif = { path = "vajra-motif" }
+vajra-essence = { path = "vajra-essence" }
+vajra-query = { path = "vajra-query" }
+vajra-domain-med = { path = "vajra-domain-med" }
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+module_name_repetitions = "allow"
+must_use_candidate = "warn"
+missing_errors_doc = "warn"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

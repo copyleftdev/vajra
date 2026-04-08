@@ -1,0 +1,337 @@
+{
+  "fingerprints": {
+    "path_set": "4a2362994d1cff31b4961bb2878c19299e37310a41cd6f23a8a563dd9a4c2b52",
+    "shape": "31a68f24659f5a76f2726146dbfbad503bbc7f052a21e1dfcf23b09a2ad4780e",
+    "typed_path": "87c3d1313e0e8b38d63c3b80b3d1341ca885a277623271a6419957d61c18aa3a"
+  },
+  "metadata": {
+    "distinct_paths": 46,
+    "max_depth": 10,
+    "raw_size_bytes": 2948,
+    "total_nodes": 149
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.metadata",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.code_block_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.heading_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.image_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.link_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.list_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.paragraph_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.table_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.metadata.word_count",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.sections[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].content",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].heading",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.sections[*].level",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content",
+      "type_instability": 0.0
+    },
+    {
+      "count": 10,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].headers",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].headers[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].items",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].items[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].ordered",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].rows",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].rows[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 25,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].rows[*][*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].text",
+      "type_instability": 0.0
+    },
+    {
+      "count": 10,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].content[*].url",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].heading",
+      "type_instability": 0.0
+    },
+    {
+      "count": 6,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].level",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].items",
+      "type_instability": 0.0
+    },
+    {
+      "count": 7,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].items[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].language",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].ordered",
+      "type_instability": 0.0
+    },
+    {
+      "count": 2,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].text",
+      "type_instability": 0.0
+    },
+    {
+      "count": 5,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].content[*].type",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].heading",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.sections[*].subsections[*].subsections[*].level",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.type",
+      "type_instability": 0.0
+    }
+  ]
+}

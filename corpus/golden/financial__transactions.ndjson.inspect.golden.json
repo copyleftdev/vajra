@@ -1,0 +1,99 @@
+{
+  "fingerprints": {
+    "path_set": "40e9414edc18dde6f4b62e01c14f8a8e9d92ed7e20b8d726c816c08d8619f0a4",
+    "shape": "6292e547112b1474ecfff6fc5fe4cc03d9fdaf2a659a9d42b3493761bdcdb1e2",
+    "typed_path": "60dbd291fd7d8eabbe20a0630a8803c67b7ebbb28dd6b2bf0089096e46907d3e"
+  },
+  "metadata": {
+    "distinct_paths": 12,
+    "max_depth": 2,
+    "raw_size_bytes": 232,
+    "total_nodes": 12
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.account_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.currency",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.merchant",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.merchant.category",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.merchant.id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.merchant.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.status",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.timestamp",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.transaction_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.type",
+      "type_instability": 0.0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+# Summary
+
+[The Forge](./index.md)
+
+---
+
+- [Quickstart](./quickstart.md)
+- [Philosophy](./philosophy.md)
+- [Commands](./commands.md)
+  - [inspect](./cmd-inspect.md)
+  - [stats](./cmd-stats.md)
+  - [anomalies](./cmd-anomalies.md)
+  - [fingerprint](./cmd-fingerprint.md)
+  - [essence](./cmd-essence.md)
+  - [drift](./cmd-drift.md)
+  - [cluster](./cmd-cluster.md)
+  - [invariants](./cmd-invariants.md)
+  - [query](./cmd-query.md)
+  - [batch](./cmd-batch.md)
+- [Profiles](./profiles.md)
+- [Input Formats](./formats.md)
+- [The Engine](./engine.md)
+  - [Algorithms](./algorithms.md)
+  - [Streaming](./streaming.md)
+  - [Determinism](./determinism.md)
+- [Domain Plugins](./plugins.md)
+- [Architecture](./architecture.md)
+- [Testing](./testing.md)

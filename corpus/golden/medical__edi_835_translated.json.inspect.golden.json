@@ -1,0 +1,260 @@
+{
+  "fingerprints": {
+    "path_set": "db77e6f1d270ccfdfd75caa30d3e1d75b2089e9dd972b7e7ebdb53f5520261cb",
+    "shape": "6a091bb0d1c621c7a902093478ff97e784f635076dc2c791a4c3f144f7681366",
+    "typed_path": "d07aa369fb455a9a0d10bd9aba69c6e132312badf2979ed7524cbc5cfb747c72"
+  },
+  "metadata": {
+    "distinct_paths": 35,
+    "max_depth": 7,
+    "raw_size_bytes": 9943,
+    "total_nodes": 301
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.claims",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.claims[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].claim_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].claim_status",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].patient_name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.claims[*].plb_adjustments",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.claims[*].plb_adjustments[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].plb_adjustments[*].adjustment_reason",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.claims[*].plb_adjustments[*].amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].plb_adjustments[*].fiscal_period",
+      "type_instability": 0.0
+    },
+    {
+      "count": 3,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].plb_adjustments[*].provider_id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].cas_adjustments",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].group_code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].reason_code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].svc_charge_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].svc_paid_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].svc_procedure_code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 21,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.claims[*].service_lines[*].svc_revenue_code",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.claims[*].total_charge",
+      "type_instability": 0.0
+    },
+    {
+      "count": 8,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.claims[*].total_paid",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.payment_amount",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payment_date",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.payment_method",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.receiver",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.receiver.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.receiver.npi",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.sender",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sender.id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.sender.name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.transaction_type",
+      "type_instability": 0.0
+    }
+  ]
+}

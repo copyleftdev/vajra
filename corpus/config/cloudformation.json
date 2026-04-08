@@ -1,0 +1,187 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": {
+    "CreateReadReplica": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "production"
+      ]
+    },
+    "IsProduction": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "production"
+      ]
+    }
+  },
+  "Description": "Production stack with EC2, RDS, S3, and Lambda",
+  "Mappings": {
+    "RegionMap": {
+      "us-east-1": {
+        "AMI": "ami-0abcdef1234567890"
+      },
+      "us-west-2": {
+        "AMI": "ami-0fedcba9876543210"
+      }
+    }
+  },
+  "Parameters": {
+    "DBInstanceClass": {
+      "Default": "db.r5.large",
+      "Type": "String"
+    },
+    "Environment": {
+      "AllowedValues": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "Default": "production",
+      "Type": "String"
+    },
+    "InstanceType": {
+      "AllowedValues": [
+        "t3.small",
+        "t3.medium",
+        "t3.large"
+      ],
+      "Default": "t3.medium",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "DataBucket": {
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "${Environment}-data-bucket"
+        },
+        "EncryptionConfiguration": {
+          "Rules": [
+            {
+              "ApplyServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "aws:kms"
+              }
+            }
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      },
+      "Type": "AWS::S3::Bucket"
+    },
+    "Database": {
+      "Properties": {
+        "AllocatedStorage": 100,
+        "DBInstanceClass": {
+          "Ref": "DBInstanceClass"
+        },
+        "Engine": "postgres",
+        "EngineVersion": "15.4",
+        "MasterUserPassword": {
+          "Ref": "DBPassword"
+        },
+        "MasterUsername": "admin",
+        "MultiAZ": {
+          "Fn::If": [
+            "IsProduction",
+            true,
+            false
+          ]
+        },
+        "StorageType": "gp3",
+        "VPCSecurityGroups": [
+          {
+            "Ref": "DBSecurityGroup"
+          }
+        ]
+      },
+      "Type": "AWS::RDS::DBInstance"
+    },
+    "ProcessorFunction": {
+      "Properties": {
+        "Environment": {
+          "Variables": {
+            "BUCKET_NAME": {
+              "Ref": "DataBucket"
+            },
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "Database",
+                "Endpoint.Address"
+              ]
+            }
+          }
+        },
+        "FunctionName": {
+          "Fn::Sub": "${Environment}-processor"
+        },
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Runtime": "python3.11",
+        "Timeout": 300
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "WebSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "Security group for web servers",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
+          }
+        ],
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "WebServerInstance": {
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "AMI"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "WebSecurityGroup"
+          }
+        ],
+        "SubnetId": {
+          "Ref": "PublicSubnet"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${Environment}-web-server"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Instance"
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "anomalies": [],
+  "identity": "document(nodes=13, paths=11, depth=2)",
+  "observations": [
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.2,
+      "description": "enum-like field (1 distinct values over 3 observations)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.array_of_nulls[*]",
+      "rarity": 0.9,
+      "score": 0.195,
+      "structural_coverage": 0.2
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.a",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.b",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.c",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.d",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.e",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.array_of_nulls[*]",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.nested.f",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.3,
+      "description": "frequently null (100.0% null rate)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "$.nested.g",
+      "rarity": 0.0,
+      "score": 0.09,
+      "structural_coverage": 0.3
+    },
+    {
+      "anomaly_strength": 0.0,
+      "concern_relevance": 0.1,
+      "description": "repeated structure (motif appears 10 times)",
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "path": "subtree:03f88b99",
+      "rarity": 0.0,
+      "score": 0.03,
+      "structural_coverage": 0.1
+    }
+  ],
+  "structure": {
+    "distinct_paths": 11,
+    "max_depth": 2,
+    "total_nodes": 13
+  }
+}

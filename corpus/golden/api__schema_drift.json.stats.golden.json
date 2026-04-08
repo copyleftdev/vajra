@@ -1,0 +1,319 @@
+{
+  "paths": [
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.api_version",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1.0"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 4,
+      "entropy": 1.7609640474436812,
+      "max_rarity": 3.321928094887362,
+      "normalized_entropy": 0.8804820237218406,
+      "numeric": null,
+      "path": "$.items[*].category",
+      "top_values": [
+        {
+          "count": 10,
+          "value": "toys"
+        },
+        {
+          "count": 4,
+          "value": "clothing"
+        },
+        {
+          "count": 4,
+          "value": "home"
+        },
+        {
+          "count": 2,
+          "value": "electronics"
+        }
+      ],
+      "total_count": 20
+    },
+    {
+      "cardinality": 20,
+      "entropy": 4.321928094887363,
+      "max_rarity": 4.321928094887363,
+      "normalized_entropy": 1.0,
+      "numeric": {
+        "mad": 5.0,
+        "max": 20.0,
+        "mean": 10.5,
+        "median": 10.5,
+        "min": 1.0,
+        "p05": 1.9500000000000002,
+        "p25": 5.75,
+        "p75": 15.25,
+        "p95": 19.05
+      },
+      "path": "$.items[*].id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        },
+        {
+          "count": 1,
+          "value": "10"
+        },
+        {
+          "count": 1,
+          "value": "11"
+        },
+        {
+          "count": 1,
+          "value": "12"
+        },
+        {
+          "count": 1,
+          "value": "13"
+        },
+        {
+          "count": 1,
+          "value": "14"
+        },
+        {
+          "count": 1,
+          "value": "15"
+        },
+        {
+          "count": 1,
+          "value": "16"
+        },
+        {
+          "count": 1,
+          "value": "17"
+        },
+        {
+          "count": 1,
+          "value": "18"
+        }
+      ],
+      "total_count": 20
+    },
+    {
+      "cardinality": 2,
+      "entropy": 0.8812908992306927,
+      "max_rarity": 1.7369655941662063,
+      "normalized_entropy": 0.8812908992306927,
+      "numeric": null,
+      "path": "$.items[*].in_stock",
+      "top_values": [
+        {
+          "count": 14,
+          "value": "true"
+        },
+        {
+          "count": 6,
+          "value": "false"
+        }
+      ],
+      "total_count": 20
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.items[*].legacy_field",
+      "top_values": [
+        {
+          "count": 20,
+          "value": "deprecated_value"
+        }
+      ],
+      "total_count": 20
+    },
+    {
+      "cardinality": 20,
+      "entropy": 4.321928094887363,
+      "max_rarity": 4.321928094887363,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.items[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Widget 105"
+        },
+        {
+          "count": 1,
+          "value": "Widget 115"
+        },
+        {
+          "count": 1,
+          "value": "Widget 199"
+        },
+        {
+          "count": 1,
+          "value": "Widget 214"
+        },
+        {
+          "count": 1,
+          "value": "Widget 225"
+        },
+        {
+          "count": 1,
+          "value": "Widget 279"
+        },
+        {
+          "count": 1,
+          "value": "Widget 314"
+        },
+        {
+          "count": 1,
+          "value": "Widget 482"
+        },
+        {
+          "count": 1,
+          "value": "Widget 520"
+        },
+        {
+          "count": 1,
+          "value": "Widget 572"
+        }
+      ],
+      "total_count": 20
+    },
+    {
+      "cardinality": 20,
+      "entropy": 4.321928094887363,
+      "max_rarity": 4.321928094887363,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.items[*].price",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "104.18"
+        },
+        {
+          "count": 1,
+          "value": "122.20"
+        },
+        {
+          "count": 1,
+          "value": "149.71"
+        },
+        {
+          "count": 1,
+          "value": "152.72"
+        },
+        {
+          "count": 1,
+          "value": "166.83"
+        },
+        {
+          "count": 1,
+          "value": "22.37"
+        },
+        {
+          "count": 1,
+          "value": "23.42"
+        },
+        {
+          "count": 1,
+          "value": "24.66"
+        },
+        {
+          "count": 1,
+          "value": "30.96"
+        },
+        {
+          "count": 1,
+          "value": "31.28"
+        }
+      ],
+      "total_count": 20
+    },
+    {
+      "cardinality": 15,
+      "entropy": 3.7841837197791888,
+      "max_rarity": 4.321928094887363,
+      "normalized_entropy": 0.9685921904321414,
+      "numeric": {
+        "mad": 1.0999999999999999,
+        "max": 4.9,
+        "mean": 2.8299999999999996,
+        "median": 3.0,
+        "min": 1.0,
+        "p05": 1.0950000000000002,
+        "p25": 1.6,
+        "p75": 3.65,
+        "p95": 4.9
+      },
+      "path": "$.items[*].rating",
+      "top_values": [
+        {
+          "count": 3,
+          "value": "4.9"
+        },
+        {
+          "count": 2,
+          "value": "1.1"
+        },
+        {
+          "count": 2,
+          "value": "1.6"
+        },
+        {
+          "count": 2,
+          "value": "3.4"
+        },
+        {
+          "count": 1,
+          "value": "1.0"
+        },
+        {
+          "count": 1,
+          "value": "1.3"
+        },
+        {
+          "count": 1,
+          "value": "1.9"
+        },
+        {
+          "count": 1,
+          "value": "2.1"
+        },
+        {
+          "count": 1,
+          "value": "2.4"
+        },
+        {
+          "count": 1,
+          "value": "2.7"
+        }
+      ],
+      "total_count": 20
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.metadata.generated_at",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-01-15T00:00:00Z"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

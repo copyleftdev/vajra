@@ -1,0 +1,370 @@
+/* ================================================================
+   VAJRA — Custom Theme
+   Color profile: obsidian black + aged gold from the logo
+   ================================================================ */
+
+:root {
+  --vajra-black: #0d0a06;
+  --vajra-deep: #1a1205;
+  --vajra-dark: #2a1f0a;
+  --vajra-bronze: #6b5a2a;
+  --vajra-gold: #c4a35a;
+  --vajra-light-gold: #e8d5a3;
+  --vajra-pale: #f0e0b0;
+  --vajra-amber: #a08030;
+  --vajra-rich: #8b7332;
+  --vajra-warm-bg: #131008;
+}
+
+/* Override mdbook ayu theme */
+.ayu .sidebar,
+.ayu .sidebar-scrollbox {
+  background: var(--vajra-black) !important;
+}
+
+.ayu .sidebar .sidebar-scrollbox a {
+  color: var(--vajra-gold) !important;
+}
+
+.ayu .sidebar .sidebar-scrollbox a:hover,
+.ayu .sidebar .sidebar-scrollbox a.active {
+  color: var(--vajra-pale) !important;
+}
+
+.ayu .content {
+  background: var(--vajra-black) !important;
+}
+
+.ayu #content {
+  max-width: 960px;
+}
+
+.ayu .content main {
+  color: var(--vajra-light-gold) !important;
+}
+
+.ayu h1, .ayu h2, .ayu h3, .ayu h4 {
+  color: var(--vajra-gold) !important;
+  border-color: var(--vajra-bronze) !important;
+}
+
+.ayu a {
+  color: var(--vajra-gold) !important;
+}
+
+.ayu code {
+  color: var(--vajra-pale) !important;
+  background: var(--vajra-deep) !important;
+}
+
+.ayu pre {
+  background: var(--vajra-deep) !important;
+  border: 1px solid var(--vajra-bronze) !important;
+  border-radius: 6px;
+}
+
+.ayu pre > code {
+  background: transparent !important;
+}
+
+.ayu table th {
+  background: var(--vajra-dark) !important;
+  color: var(--vajra-gold) !important;
+  border-color: var(--vajra-bronze) !important;
+}
+
+.ayu table td {
+  border-color: var(--vajra-dark) !important;
+}
+
+.ayu blockquote {
+  border-left: 4px solid var(--vajra-gold) !important;
+  color: var(--vajra-light-gold) !important;
+  background: var(--vajra-deep) !important;
+  padding: 0.5em 1em;
+  border-radius: 0 6px 6px 0;
+}
+
+.ayu hr {
+  border-color: var(--vajra-bronze) !important;
+  opacity: 0.3;
+}
+
+/* ================================================================
+   HERO SECTION
+   ================================================================ */
+
+.vajra-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 2rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.vajra-hero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(196, 163, 90, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.vajra-weapon {
+  position: relative;
+  z-index: 1;
+}
+
+.vajra-logo {
+  width: 180px;
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(196, 163, 90, 0.15));
+  opacity: 0;
+}
+
+.vajra-title-block {
+  text-align: center;
+  margin-top: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.vajra-title {
+  font-family: Georgia, 'Times New Roman', serif !important;
+  font-size: 4rem !important;
+  letter-spacing: 1.2rem;
+  color: var(--vajra-gold) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  text-shadow: 0 0 40px rgba(196, 163, 90, 0.2);
+  opacity: 0;
+}
+
+.vajra-subtitle {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  letter-spacing: 0.3rem;
+  color: var(--vajra-amber);
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+  opacity: 0;
+}
+
+.vajra-mantra {
+  margin-top: 2rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.15rem;
+}
+
+.mantra-break {
+  color: var(--vajra-bronze);
+  opacity: 0;
+}
+
+.mantra-preserve {
+  color: var(--vajra-gold);
+  opacity: 0;
+}
+
+/* ================================================================
+   STATS BAR
+   ================================================================ */
+
+.vajra-stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  padding: 2rem 0;
+  margin: 2rem 0;
+  border-top: 1px solid rgba(107, 90, 42, 0.3);
+  border-bottom: 1px solid rgba(107, 90, 42, 0.3);
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+  opacity: 0;
+}
+
+.stat-number {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--vajra-gold);
+  line-height: 1;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15rem;
+  color: var(--vajra-bronze);
+  margin-top: 0.3rem;
+}
+
+/* ================================================================
+   DEMO CARD GRID
+   ================================================================ */
+
+.vajra-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.demo-card {
+  background: var(--vajra-deep);
+  border: 1px solid var(--vajra-bronze);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.demo-card:hover {
+  border-color: var(--vajra-gold);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(196, 163, 90, 0.1);
+}
+
+.demo-card h3 {
+  color: var(--vajra-gold) !important;
+  font-size: 1.2rem !important;
+  margin-top: 0 !important;
+  border: none !important;
+}
+
+.demo-card p {
+  color: var(--vajra-amber);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* ================================================================
+   ENGINE GRID
+   ================================================================ */
+
+.engine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+  margin: 2rem 0;
+}
+
+.engine-card {
+  background: linear-gradient(135deg, var(--vajra-deep), var(--vajra-dark));
+  border: 1px solid rgba(107, 90, 42, 0.4);
+  border-radius: 8px;
+  padding: 1.5rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.engine-card:hover {
+  border-color: var(--vajra-gold);
+  box-shadow: 0 4px 20px rgba(196, 163, 90, 0.08);
+}
+
+.engine-icon {
+  font-size: 2rem;
+  color: var(--vajra-gold);
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 8px rgba(196, 163, 90, 0.3));
+}
+
+.engine-card h4 {
+  color: var(--vajra-light-gold) !important;
+  font-size: 1rem !important;
+  margin-top: 0.3rem !important;
+  border: none !important;
+}
+
+.engine-card p {
+  color: var(--vajra-amber);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* ================================================================
+   SECTIONS
+   ================================================================ */
+
+.vajra-section {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+
+.vajra-footer {
+  text-align: center;
+  padding: 4rem 0 2rem;
+  opacity: 0;
+}
+
+.footer-mantra {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.3rem;
+  color: var(--vajra-bronze);
+  text-shadow: 0 0 20px rgba(196, 163, 90, 0.1);
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 768px) {
+  .vajra-title {
+    font-size: 2.5rem !important;
+    letter-spacing: 0.6rem;
+  }
+
+  .vajra-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .vajra-stats-bar {
+    gap: 1.5rem;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .vajra-logo {
+    width: 140px;
+  }
+}
+
+/* ================================================================
+   PARTICLE CANVAS (injected by GSAP script)
+   ================================================================ */
+
+#vajra-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.3;
+}

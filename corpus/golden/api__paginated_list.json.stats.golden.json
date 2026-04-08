@@ -1,0 +1,511 @@
+{
+  "paths": [
+    {
+      "cardinality": 25,
+      "entropy": 4.643856189774723,
+      "max_rarity": 4.643856189774724,
+      "normalized_entropy": 0.9999999999999997,
+      "numeric": null,
+      "path": "$.data[*].created_at",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-01-01T23:09:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-05T21:28:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-06T11:41:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-09T02:47:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-09T03:07:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-11T04:24:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-11T12:11:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-20T18:52:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-22T03:56:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-01-22T13:04:00Z"
+        }
+      ],
+      "total_count": 25
+    },
+    {
+      "cardinality": 9,
+      "entropy": 3.169925001442312,
+      "max_rarity": 3.1699250014423126,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.data[*].description",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Description for resource 1"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 10"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 13"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 16"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 19"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 22"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 25"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 4"
+        },
+        {
+          "count": 1,
+          "value": "Description for resource 7"
+        }
+      ],
+      "total_count": 9
+    },
+    {
+      "cardinality": 25,
+      "entropy": 4.643856189774723,
+      "max_rarity": 4.643856189774724,
+      "normalized_entropy": 0.9999999999999997,
+      "numeric": null,
+      "path": "$.data[*].id",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "item-0001"
+        },
+        {
+          "count": 1,
+          "value": "item-0002"
+        },
+        {
+          "count": 1,
+          "value": "item-0003"
+        },
+        {
+          "count": 1,
+          "value": "item-0004"
+        },
+        {
+          "count": 1,
+          "value": "item-0005"
+        },
+        {
+          "count": 1,
+          "value": "item-0006"
+        },
+        {
+          "count": 1,
+          "value": "item-0007"
+        },
+        {
+          "count": 1,
+          "value": "item-0008"
+        },
+        {
+          "count": 1,
+          "value": "item-0009"
+        },
+        {
+          "count": 1,
+          "value": "item-0010"
+        }
+      ],
+      "total_count": 25
+    },
+    {
+      "cardinality": 18,
+      "entropy": 4.088367439558376,
+      "max_rarity": 5.643856189774724,
+      "normalized_entropy": 0.9804414799173303,
+      "numeric": null,
+      "path": "$.data[*].metadata.tags[*]",
+      "top_values": [
+        {
+          "count": 4,
+          "value": "tag-10"
+        },
+        {
+          "count": 4,
+          "value": "tag-13"
+        },
+        {
+          "count": 4,
+          "value": "tag-15"
+        },
+        {
+          "count": 4,
+          "value": "tag-16"
+        },
+        {
+          "count": 4,
+          "value": "tag-4"
+        },
+        {
+          "count": 3,
+          "value": "tag-1"
+        },
+        {
+          "count": 3,
+          "value": "tag-11"
+        },
+        {
+          "count": 3,
+          "value": "tag-12"
+        },
+        {
+          "count": 3,
+          "value": "tag-14"
+        },
+        {
+          "count": 3,
+          "value": "tag-19"
+        }
+      ],
+      "total_count": 50
+    },
+    {
+      "cardinality": 8,
+      "entropy": 2.808884070537636,
+      "max_rarity": 4.643856189774724,
+      "normalized_entropy": 0.9362946901792121,
+      "numeric": {
+        "mad": 3.0,
+        "max": 9.0,
+        "mean": 4.4,
+        "median": 4.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 2.0,
+        "p75": 7.0,
+        "p95": 8.599999999999994
+      },
+      "path": "$.data[*].metadata.version",
+      "top_values": [
+        {
+          "count": 6,
+          "value": "7"
+        },
+        {
+          "count": 5,
+          "value": "1"
+        },
+        {
+          "count": 4,
+          "value": "4"
+        },
+        {
+          "count": 3,
+          "value": "3"
+        },
+        {
+          "count": 2,
+          "value": "2"
+        },
+        {
+          "count": 2,
+          "value": "5"
+        },
+        {
+          "count": 2,
+          "value": "9"
+        },
+        {
+          "count": 1,
+          "value": "6"
+        }
+      ],
+      "total_count": 25
+    },
+    {
+      "cardinality": 25,
+      "entropy": 4.643856189774723,
+      "max_rarity": 4.643856189774724,
+      "normalized_entropy": 0.9999999999999997,
+      "numeric": null,
+      "path": "$.data[*].name",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "Resource 1"
+        },
+        {
+          "count": 1,
+          "value": "Resource 10"
+        },
+        {
+          "count": 1,
+          "value": "Resource 11"
+        },
+        {
+          "count": 1,
+          "value": "Resource 12"
+        },
+        {
+          "count": 1,
+          "value": "Resource 13"
+        },
+        {
+          "count": 1,
+          "value": "Resource 14"
+        },
+        {
+          "count": 1,
+          "value": "Resource 15"
+        },
+        {
+          "count": 1,
+          "value": "Resource 16"
+        },
+        {
+          "count": 1,
+          "value": "Resource 17"
+        },
+        {
+          "count": 1,
+          "value": "Resource 18"
+        }
+      ],
+      "total_count": 25
+    },
+    {
+      "cardinality": 7,
+      "entropy": 2.807354922057604,
+      "max_rarity": 2.807354922057604,
+      "normalized_entropy": 1.0,
+      "numeric": null,
+      "path": "$.data[*].owner",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "user-002"
+        },
+        {
+          "count": 1,
+          "value": "user-017"
+        },
+        {
+          "count": 1,
+          "value": "user-018"
+        },
+        {
+          "count": 1,
+          "value": "user-020"
+        },
+        {
+          "count": 1,
+          "value": "user-021"
+        },
+        {
+          "count": 1,
+          "value": "user-027"
+        },
+        {
+          "count": 1,
+          "value": "user-029"
+        }
+      ],
+      "total_count": 7
+    },
+    {
+      "cardinality": 3,
+      "entropy": 1.498688570451097,
+      "max_rarity": 2.321928094887362,
+      "normalized_entropy": 0.9455672104350705,
+      "numeric": null,
+      "path": "$.data[*].status",
+      "top_values": [
+        {
+          "count": 12,
+          "value": "active"
+        },
+        {
+          "count": 8,
+          "value": "pending"
+        },
+        {
+          "count": 5,
+          "value": "inactive"
+        }
+      ],
+      "total_count": 25
+    },
+    {
+      "cardinality": 25,
+      "entropy": 4.643856189774723,
+      "max_rarity": 4.643856189774724,
+      "normalized_entropy": 0.9999999999999997,
+      "numeric": null,
+      "path": "$.data[*].updated_at",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "2025-03-01T12:45:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-02T15:11:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-05T19:23:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-07T23:56:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-08T17:04:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-08T18:07:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-11T09:21:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-11T17:46:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-12T10:30:00Z"
+        },
+        {
+          "count": 1,
+          "value": "2025-03-13T01:46:00Z"
+        }
+      ],
+      "total_count": 25
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": null,
+      "path": "$.pagination.next_url",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "/api/v1/resources?page=2&per_page=25"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "p05": 1.0,
+        "p25": 1.0,
+        "p75": 1.0,
+        "p95": 1.0
+      },
+      "path": "$.pagination.page",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "1"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 25.0,
+        "mean": 25.0,
+        "median": 25.0,
+        "min": 25.0,
+        "p05": 25.0,
+        "p25": 25.0,
+        "p75": 25.0,
+        "p95": 25.0
+      },
+      "path": "$.pagination.per_page",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "25"
+        }
+      ],
+      "total_count": 1
+    },
+    {
+      "cardinality": 1,
+      "entropy": 0.0,
+      "max_rarity": -0.0,
+      "normalized_entropy": 0.0,
+      "numeric": {
+        "mad": 0.0,
+        "max": 142.0,
+        "mean": 142.0,
+        "median": 142.0,
+        "min": 142.0,
+        "p05": 142.0,
+        "p25": 142.0,
+        "p75": 142.0,
+        "p95": 142.0
+      },
+      "path": "$.pagination.total",
+      "top_values": [
+        {
+          "count": 1,
+          "value": "142"
+        }
+      ],
+      "total_count": 1
+    }
+  ]
+}

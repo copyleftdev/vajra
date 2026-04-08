@@ -1,0 +1,120 @@
+{
+  "fingerprints": {
+    "path_set": "cebf4b0dbcadcf6884c3f565f4527e11255729137ffcd5633bad47424c71f14f",
+    "shape": "c679a323defaec784f6dcd8715f2a8ae19817a976df595ffb062ed0dc09f31ab",
+    "typed_path": "3a30bef3f42bcbf6ab63a3c682555dd51eb3ebccf14a26cb1416e1cb7e643fb1"
+  },
+  "metadata": {
+    "distinct_paths": 15,
+    "max_depth": 3,
+    "raw_size_bytes": 4279,
+    "total_nodes": 186
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.api_version",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$.items",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.items[*]",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.items[*].category",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "integer",
+      "null_rate": 0.0,
+      "path": "$.items[*].id",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "boolean",
+      "null_rate": 0.0,
+      "path": "$.items[*].in_stock",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.items[*].name",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.items[*].price",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "float",
+      "null_rate": 0.0,
+      "path": "$.items[*].rating",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.items[*].sku",
+      "type_instability": 0.0
+    },
+    {
+      "count": 20,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.items[*].warehouse",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "object",
+      "null_rate": 0.0,
+      "path": "$.metadata",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.metadata.generated_at",
+      "type_instability": 0.0
+    },
+    {
+      "count": 1,
+      "dominant_type": "string",
+      "null_rate": 0.0,
+      "path": "$.metadata.schema_version",
+      "type_instability": 0.0
+    }
+  ]
+}

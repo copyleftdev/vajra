@@ -1,0 +1,16 @@
+{
+  "a": null,
+  "array_of_nulls": [
+    null,
+    null,
+    null
+  ],
+  "b": null,
+  "c": null,
+  "d": null,
+  "e": null,
+  "nested": {
+    "f": null,
+    "g": null
+  }
+}

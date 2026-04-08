@@ -1,0 +1,22 @@
+{
+  "fingerprints": {
+    "path_set": "d2ccaaff677be8d359f94dbfaad0d959152cbbef055b87fb916dcc6cba5264cb",
+    "shape": "a1126d23a4adb7428d0d99dc750550d2640128a27abe46853f5457d4f4ca3f1f",
+    "typed_path": "29f41952c18e60560590a0d8a9fdf589bd1a63029ae1535aa91a0a0fc0e67855"
+  },
+  "metadata": {
+    "distinct_paths": 1,
+    "max_depth": 0,
+    "raw_size_bytes": 2,
+    "total_nodes": 1
+  },
+  "paths": [
+    {
+      "count": 1,
+      "dominant_type": "array",
+      "null_rate": 0.0,
+      "path": "$",
+      "type_instability": 0.0
+    }
+  ]
+}
