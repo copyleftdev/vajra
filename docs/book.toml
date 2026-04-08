@@ -13,3 +13,5 @@ preferred-dark-theme = "ayu"
 additional-css = ["theme/vajra.css"]
 additional-js = ["theme/gsap.min.js", "theme/vajra-kinetic.js"]
 no-section-label = true
+git-repository-url = "https://github.com/copyleftdev/vajra"
+edit-url-template = "https://github.com/copyleftdev/vajra/edit/main/docs/src/{path}"
