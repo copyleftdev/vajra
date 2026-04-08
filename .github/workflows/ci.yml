@@ -8,7 +8,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: "-Dwarnings"
 
 jobs:
   test:
@@ -25,12 +24,18 @@ jobs:
 
       - name: Build
         run: cargo build --workspace
+        env:
+          RUSTFLAGS: "-Dwarnings"
 
       - name: Run tests
         run: cargo test --workspace
+        env:
+          RUSTFLAGS: "-Dwarnings"
 
       - name: Run property tests (extended)
         run: PROPTEST_CASES=10000 cargo test --workspace -- prop_
+        env:
+          RUSTFLAGS: "-Dwarnings"
 
   clippy:
     name: Clippy
