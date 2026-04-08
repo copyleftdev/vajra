@@ -145,9 +145,9 @@ proptest! {
         dominant_count in 10u64..1000,
         minority_count in 1u64..10,
         type_a in 0usize..7,
-        type_b in 0usize..7,
+        offset in 1usize..7,
     ) {
-        prop_assume!(type_a != type_b);
+        let type_b = (type_a + offset) % 7;
 
         // Single type: instability = 0
         let mut single = [0u64; 7];
