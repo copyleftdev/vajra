@@ -208,12 +208,6 @@ fn load_document(input: &str, cli: &Cli) -> Result<Document> {
     Ok(docs.remove(0))
 }
 
-/// Load all documents from input (supports NDJSON, multi-doc YAML, etc.).
-fn load_all_documents(input: &str, cli: &Cli) -> Result<Vec<Document>> {
-    let fmt = to_input_format(cli.input_format);
-    load_documents(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))
-}
-
 fn hex(bytes: &[u8; 32]) -> String {
     use std::fmt::Write;
     bytes.iter().fold(String::with_capacity(64), |mut s, b| {

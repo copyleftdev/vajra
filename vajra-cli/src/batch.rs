@@ -11,7 +11,9 @@ use rayon::prelude::*;
 use serde::Serialize;
 
 use vajra_anomaly::{AnomalyAnalyzer, AnomalyReport};
-use vajra_core::{parse_file, parse_str};
+use vajra_core::parse_file;
+#[cfg(test)]
+use vajra_core::parse_str;
 use vajra_fingerprint::{FingerprintAnalyzer, FingerprintResult};
 use vajra_stats::{StatsAnalyzer, StatsResult};
 use vajra_types::traits::Analyzer;
@@ -19,6 +21,7 @@ use vajra_types::Document;
 
 /// Per-document analysis results.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct DocumentAnalysis {
     /// Index in the original input list.
     pub index: usize,
@@ -135,6 +138,7 @@ pub fn analyze_batch(file_paths: &[PathBuf]) -> Result<BatchResult> {
 /// # Errors
 ///
 /// Returns an error if the input is empty.
+#[cfg(test)]
 pub fn analyze_batch_from_strings(inputs: &[(String, String)]) -> Result<BatchResult> {
     if inputs.is_empty() {
         anyhow::bail!("no documents to analyze (empty batch)");
@@ -194,6 +198,7 @@ fn analyze_single(
 }
 
 /// Analyze a single JSON string.
+#[cfg(test)]
 fn analyze_single_str(
     json: &str,
 ) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
