@@ -1,0 +1,256 @@
+.\" Vajra — Break noise. Preserve truth.
+.TH VAJRA 1 "2026-04-08" "vajra 0.1.0" "Vajra Manual"
+.SH NAME
+vajra \- deterministic semantic reduction engine for structured data
+.SH SYNOPSIS
+.B vajra
+[\fIGLOBAL OPTIONS\fR]
+.I COMMAND
+[\fICOMMAND OPTIONS\fR]
+[\fIARGS\fR]
+.SH DESCRIPTION
+.B Vajra
+analyzes arbitrary structured data \(em JSON, YAML, CSV, NDJSON, Markdown, and PDF
+\(em extracts structural fingerprints, computes entropy and statistical profiles,
+detects anomalies and schema drift, discovers cross-field relationships, and
+renders deterministic essences optimized for humans, auditors, and AI pipelines.
+.PP
+Every analysis is deterministic: the same input with the same configuration
+always produces byte-identical output.
+.SH COMMANDS
+.TP
+.B inspect \fIINPUT\fR
+Full structural analysis. Shows document metadata, all wildcard paths with
+types and counts, BLAKE3 fingerprints, and domain type recognition.
+.TP
+.B stats \fIINPUT\fR
+Statistical summary. Per-path Shannon entropy, cardinality, frequency
+distributions, numeric statistics (min, max, median, MAD, percentiles),
+and top values.
+.TP
+.B anomalies \fIINPUT\fR
+Anomaly detection. MAD-based numeric outliers, rarity scoring via
+self-information, and type instability detection.
+.TP
+.B fingerprint \fIINPUT\fR
+Structural fingerprints. BLAKE3 path-set hash, typed-path hash, Merkle
+shape hash, and repeated motif frequencies.
+.TP
+.B essence \fIINPUT\fR
+Generate a concern-oriented essence. Scores observations using the active
+profile's weight vector, ranks by importance, and renders in the requested
+format. Supports token budgets for LLM context window optimization.
+.TP
+.B drift \fIBASELINE\fR \fICANDIDATE\fR
+Schema drift detection between two documents. Reports added/removed paths,
+type changes, and distributional shifts measured by Jensen-Shannon Divergence
+and 1D Wasserstein distance. Classifies severity as None/Low/Medium/High/Critical.
+.TP
+.B cluster \fIINPUTS...\fR
+Cluster similar documents by structural similarity. Uses MinHash signatures
+with Locality-Sensitive Hashing for scalable nearest-neighbor search.
+Accepts files or directories.
+.TP
+.B invariants \fIINPUT\fR [\fB\-\-top\-k\fR \fIN\fR]
+Discover cross-field relationships via conditional entropy and pointwise
+mutual information. Reports functional dependencies and co-occurrence patterns.
+.TP
+.B query \fIINPUT\fR \fIEXPRESSION\fR
+Run a query expression against a document. Supports path expressions
+($.a[*].b), analysis functions (entropy, cardinality, null_rate, instability,
+count, rarity, depth), and comparisons (entropy($.x) > 0.5).
+.TP
+.B batch \fIDIRECTORY\fR
+Parallel batch analysis of all JSON files in a directory using Rayon.
+Reports per-document summaries and aggregate statistics including common
+and rare paths.
+.TP
+.B profiles
+List all available profiles (built-in and custom from \fB\-\-config\fR).
+.SH GLOBAL OPTIONS
+.TP
+.BI \-\-format " FORMAT"
+Output format. One of: \fBtext\fR (default), \fBjson\fR, \fBmarkdown\fR,
+\fBcompact-ai\fR. The compact-ai format uses short keys and aggressive
+compression for LLM token efficiency.
+.TP
+.BI \-\-profile " NAME"
+Concern profile for scoring and rendering. Built-in profiles: \fBstaff\fR
+(plain language, narrative), \fBengineer\fR (technical, balanced),
+\fBauditor\fR (formal, completeness-focused), \fBai\fR (compact, machine-parseable),
+\fBfraud\fR (investigative, outlier-focused). Default: \fBengineer\fR.
+.TP
+.BI \-\-config " PATH"
+Path to a TOML configuration file containing custom profile definitions.
+.TP
+.BI \-\-budget " N"
+Token budget for essence output. Observations are selected by score-per-token
+ratio using a greedy knapsack algorithm until the budget is exhausted.
+.TP
+.BI \-\-input\-format " FORMAT"
+Force input format instead of auto-detecting. One of: \fBjson\fR, \fBndjson\fR,
+\fByaml\fR, \fBcsv\fR, \fBtsv\fR, \fBmarkdown\fR, \fBpdf\fR.
+.TP
+.B \-\-redact
+Apply built-in redaction patterns (SSN, email, phone, credit card) before output.
+Uses deterministic BLAKE3 hashing so redacted values can still be correlated.
+.TP
+.B \-\-streaming
+Force streaming analysis pipeline. Uses DDSketch for quantiles, Count-Min
+Sketch for frequency estimation, and Space-Saving for top-k detection.
+Bounded memory regardless of document size.
+.TP
+.B \-\-quiet
+Suppress progress output.
+.TP
+.B \-\-explain
+Include score decomposition in essence output.
+.SH INPUT FORMATS
+.B Vajra
+auto-detects input format from file extension and content:
+.PP
+.RS
+.nf
+.B Extension        Format
+\&.json             JSON
+\&.ndjson, .jsonl   Newline-delimited JSON
+\&.yaml, .yml       YAML (multi-document supported)
+\&.csv              Comma-separated values
+\&.tsv              Tab-separated values
+\&.md, .markdown    Markdown
+\&.pdf              PDF (text extraction)
+\&.gz               Gzip compressed (any format)
+\&.zst, .zstd       Zstd compressed (any format)
+http://, https://  HTTP URL (fetched automatically)
+\-                  Standard input
+.fi
+.RE
+.PP
+Double extensions are supported: \fB.json.gz\fR decompresses then parses as JSON.
+.SH PROFILES
+.SS staff
+Weights: anomaly_strength=0.30, structural_coverage=0.25, concern_relevance=0.20.
+Plain vocabulary, narrative sections: "What Stands Out", "What This Likely Means".
+.SS engineer
+Weights: instability=0.25, balanced across all dimensions.
+Technical vocabulary with JSONPath paths and metric values.
+.SS auditor
+Weights: concern_relevance=0.30, instability=0.20, anomaly_strength=0.20.
+Formal language with numbered findings and completeness assessment.
+.SS ai
+Weights: entropy_signal=0.20, structural_coverage=0.20, anomaly_strength=0.20.
+Terse machine-parseable output. In compact-ai format, uses short keys
+(p=path, t=type, s=score) and includes a "drill" section for follow-up queries.
+.SS fraud
+Weights: anomaly_strength=0.35, rarity=0.25.
+Investigative framing with RISK/ALERT labels for outliers and suspicious patterns.
+.SH ALGORITHMS
+All algorithms satisfy three gates: O(n) or O(n log n) time complexity,
+published and peer-reviewed, and fully deterministic.
+.PP
+.B BLAKE3
+\(em All hashing (O'Connor et al. 2020). 3-7x faster than SHA-256.
+.PP
+.B Shannon Entropy
+\(em Value diversity measurement. Distinguishes boilerplate from signal.
+.PP
+.B MAD
+\(em Median Absolute Deviation for robust outlier detection. 50% breakdown point.
+.PP
+.B DDSketch
+\(em Streaming quantile estimation with relative error guarantees (Masson et al. 2019).
+.PP
+.B Count-Min Sketch
+\(em Streaming frequency estimation with conservative update (Cormode & Muthukrishnan 2005).
+.PP
+.B Jensen-Shannon Divergence
+\(em Distribution comparison. Symmetric, bounded [0,1], proper metric via sqrt
+(Endres & Schindelin 2003).
+.PP
+.B MinHash + LSH
+\(em Scalable similarity search. O(n) indexing, sublinear queries
+(Broder 1997, Indyk & Motwani 1998).
+.SH EXAMPLES
+Inspect a JSON file:
+.PP
+.RS
+.nf
+vajra inspect data.json
+.fi
+.RE
+.PP
+Generate an essence for non-technical staff:
+.PP
+.RS
+.nf
+vajra essence claims.json --profile staff --format markdown
+.fi
+.RE
+.PP
+Detect drift between API versions:
+.PP
+.RS
+.nf
+vajra drift v1.json v2.json
+.fi
+.RE
+.PP
+Compact AI-ready output with token budget:
+.PP
+.RS
+.nf
+vajra essence data.json --profile ai --format compact-ai --budget 500
+.fi
+.RE
+.PP
+Query entropy of a specific field:
+.PP
+.RS
+.nf
+vajra query data.json 'entropy($.claims[*].status)'
+.fi
+.RE
+.PP
+Analyze a gzipped NDJSON batch from a URL:
+.PP
+.RS
+.nf
+vajra stats https://api.example.com/events.ndjson.gz
+.fi
+.RE
+.PP
+Pipe from stdin with redaction:
+.PP
+.RS
+.nf
+curl -s https://api.example.com/patient | vajra essence - --profile staff --redact
+.fi
+.RE
+.SH FILES
+.TP
+.B ~/.vajra/config.toml
+Default configuration file location (optional).
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Analysis completed but anomalies found (with \fB\-\-strict\fR).
+.TP
+.B 2
+Input error (file not found, parse failure).
+.TP
+.B 3
+Configuration error (invalid profile, bad config file).
+.SH AUTHORS
+Vajra Contributors
+.SH LICENSE
+MIT OR Apache-2.0
+.SH SEE ALSO
+.BR jq (1),
+.BR mlr (1)
+.PP
+Documentation: https://copyleftdev.github.io/vajra
+.PP
+Repository: https://github.com/copyleftdev/vajra

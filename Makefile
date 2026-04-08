@@ -13,6 +13,12 @@ BINARY      := vajra
 CORPUS_DIR  := corpus
 GOLDEN_DIR  := corpus/golden
 DOCS_DIR    := docs
+MAN_DIR     := man
+
+# Install paths (override with: make install-local PREFIX=/opt/vajra)
+PREFIX      := /usr/local
+BINDIR      := $(PREFIX)/bin
+MANDIR      := $(PREFIX)/share/man/man1
 
 # Rust tooling
 CARGO       := cargo
@@ -70,16 +76,52 @@ release: ## Build optimized release binary
 	@ls -lh target/release/$(BINARY)
 
 .PHONY: install
-install: ## Install vajra to ~/.cargo/bin
-	@echo -e "$(C_GOLD)Installing vajra...$(C_RESET)"
+install: ## Install vajra to ~/.cargo/bin via cargo
+	@echo -e "$(C_GOLD)Installing vajra via cargo...$(C_RESET)"
 	@$(CARGO) install --path vajra-cli --bin $(BINARY)
 	@echo -e "$(C_GREEN)Installed: $$(which vajra)$(C_RESET)"
+
+.PHONY: install-local
+install-local: release man-build ## Install binary + man page to PREFIX (default /usr/local)
+	@echo -e "$(C_GOLD)Installing to $(PREFIX)...$(C_RESET)"
+	@install -d $(BINDIR)
+	@install -m 755 target/release/$(BINARY) $(BINDIR)/$(BINARY)
+	@echo -e "$(C_GREEN)  $(BINDIR)/$(BINARY)$(C_RESET)"
+	@install -d $(MANDIR)
+	@install -m 644 $(MAN_DIR)/$(BINARY).1 $(MANDIR)/$(BINARY).1
+	@echo -e "$(C_GREEN)  $(MANDIR)/$(BINARY).1$(C_RESET)"
+	@echo -e "$(C_GREEN)Done. Run 'vajra --help' or 'man vajra'.$(C_RESET)"
+
+.PHONY: uninstall-local
+uninstall-local: ## Remove binary + man page from PREFIX
+	@echo -e "$(C_GOLD)Removing from $(PREFIX)...$(C_RESET)"
+	@rm -f $(BINDIR)/$(BINARY)
+	@rm -f $(MANDIR)/$(BINARY).1
+	@echo -e "$(C_DIM)Removed.$(C_RESET)"
 
 .PHONY: clean
 clean: ## Remove build artifacts
 	@$(CARGO) clean
 	@rm -rf $(DOCS_DIR)/book
 	@echo -e "$(C_DIM)Cleaned.$(C_RESET)"
+
+# ============================================================================
+#  MAN PAGES
+# ============================================================================
+
+.PHONY: man-build
+man-build: ## Build man pages (verify with man-preview)
+	@echo -e "$(C_GOLD)Man pages ready: $(MAN_DIR)/$(BINARY).1$(C_RESET)"
+
+.PHONY: man-preview
+man-preview: ## Preview the man page in terminal
+	@man $(MAN_DIR)/$(BINARY).1
+
+.PHONY: man-lint
+man-lint: ## Check man page for errors
+	@echo -e "$(C_GOLD)Linting man pages...$(C_RESET)"
+	@mandoc -T lint $(MAN_DIR)/$(BINARY).1 2>&1 || true
+	@echo -e "$(C_GREEN)Done.$(C_RESET)"
 
 # ============================================================================
 #  TEST
