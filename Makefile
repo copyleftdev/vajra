@@ -15,8 +15,8 @@ GOLDEN_DIR  := corpus/golden
 DOCS_DIR    := docs
 MAN_DIR     := man
 
-# Install paths (override with: make install-local PREFIX=/opt/vajra)
-PREFIX      := /usr/local
+# Install paths (default ~/.local, override with: make install-local PREFIX=/usr/local)
+PREFIX      := $(HOME)/.local
 BINDIR      := $(PREFIX)/bin
 MANDIR      := $(PREFIX)/share/man/man1
 
