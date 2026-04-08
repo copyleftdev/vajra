@@ -59,14 +59,19 @@ impl SpaceSaving {
 
         // At capacity: evict the minimum-count item.
         // Find minimum count, then the lexicographically-first item with that count.
-        let min_count = *self.counters.values().min().unwrap();
-        let min_key = self
+        // Safety: we checked len >= k > 0 above, so counters is non-empty.
+        let Some(&min_count) = self.counters.values().min() else {
+            return;
+        };
+        let Some(min_key) = self
             .counters
             .iter()
             .filter(|(_, v)| **v == min_count)
             .map(|(k, _)| k.clone())
             .next()
-            .unwrap();
+        else {
+            return;
+        };
 
         self.counters.remove(&min_key);
         self.counters.insert(item.to_string(), min_count + 1);

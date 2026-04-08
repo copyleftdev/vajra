@@ -1574,7 +1574,7 @@ fn generate_edge_cases(root: &Path) {
         &json!({
             "a_string": "hello",
             "a_number": 42,
-            "a_float": 3.14,
+            "a_float": 3.125,
             "a_bool": true,
             "a_null": null,
             "an_array": [1, "two", 3.0, true, null, {"nested": "obj"}, [1, 2]],

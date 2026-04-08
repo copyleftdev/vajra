@@ -1,7 +1,7 @@
 {
   "a_big_number": 9007199254740992,
   "a_bool": true,
-  "a_float": 3.14,
+  "a_float": 3.125,
   "a_negative": -99,
   "a_null": null,
   "a_number": 42,
