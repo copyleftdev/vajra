@@ -34,7 +34,9 @@ vajra/
 ├── vajra-cli/           # CLI commands, argument parsing, output formatting
 ├── vajra-domain-med/    # optional medical/EDI plugin
 ├── vajra-domain-sec/    # optional security plugin (CVE, MITRE, IPs, hashes, JWT)
-└── vajra-domain-devops/ # optional DevOps plugin (K8s, Docker, Terraform, ARN, semver)
+├── vajra-domain-devops/ # optional DevOps plugin (K8s, Docker, Terraform, ARN, semver)
+├── vajra-source/        # source code parsing via tree-sitter (9 languages)
+└── vajra-domain-source/ # source code recognizers (naming conventions, paths)
 ```
 
 Dependencies flow downward. `vajra-core` and `vajra-types` depend on nothing internal. `vajra-cli` depends on everything.

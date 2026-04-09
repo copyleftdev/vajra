@@ -267,24 +267,26 @@ A plugin **may not:**
 
 ## Shipped Plugins
 
-Three domain plugins ship with Vajra, all enabled by default via feature flags:
+Four domain plugins ship with Vajra, all enabled by default via feature flags:
 
 | Domain | Plugin | Type Recognizers | Hints |
 |---|---|---|---|
 | Medical / EDI | `vajra-domain-med` | ICD-10, CPT, HCPCS, NDC, NPI, Diagnosis Code | 6 (claim service line, diagnosis, patient, provider, adjudication, denial) |
 | Security | `vajra-domain-sec` | CVE, IPv4, IPv6, CIDR, MAC, SHA-256, SHA-1, MD5, JWT, MITRE ATT&CK Technique, MITRE Tactic, CVSS | 6 (network flow, alert classification, vulnerability, auth, process execution, DNS) |
 | DevOps | `vajra-domain-devops` | Container ID, Semver, Git SHA, Docker Image, AWS ARN, GCP Resource, CIDR, Cron, K8s Namespace, Terraform Resource | 6 (K8s pod spec, deployment metadata, service endpoint, Terraform, CI pipeline, container spec) |
+| Source Code | `vajra-domain-source` | snake_case, camelCase, PascalCase, SCREAMING_SNAKE, import paths, source file paths | 6 (function definition, class definition, import statement, parameter list, conditional, loop) |
 
 ### Feature Flags
 
 ```toml
 # vajra-cli/Cargo.toml
 [features]
-default = ["medical", "security", "devops"]
+default = ["medical", "security", "devops", "source"]
 medical = ["vajra-domain-med"]
 security = ["vajra-domain-sec"]
 devops = ["vajra-domain-devops"]
-all-plugins = ["medical", "security", "devops"]
+source = ["vajra-source", "vajra-domain-source"]
+all-plugins = ["medical", "security", "devops", "source"]
 ```
 
 Build without a plugin: `cargo build --no-default-features --features security,devops`
@@ -332,6 +334,34 @@ The DevOps plugin recognizes types in Kubernetes manifests, Terraform state, CI/
 | Cron Expression | 5-field cron pattern | `0 */6 * * *` |
 | K8s Namespace | DNS-1123 labels, known system namespaces | `kube-system`, `my-app-staging` |
 | Terraform Resource | `provider_type.name` | `aws_instance.web` |
+
+---
+
+## The Source Code Plugin: vajra-domain-source
+
+The source code plugin recognizes patterns in the JSON trees produced by `vajra-source` (tree-sitter CST-to-JSON output). It works alongside `vajra-source`, which handles the parsing.
+
+### Type Recognizers
+
+| Recognized Type | Pattern | Example Values |
+|---|---|---|
+| snake_case identifier | `[a-z][a-z0-9]*(_[a-z0-9]+)+` | `my_function`, `get_value` |
+| camelCase identifier | `[a-z]...[A-Z]...` | `myFunction`, `getValue` |
+| PascalCase identifier | `[A-Z][a-zA-Z0-9]+` | `MyClass`, `HttpClient` |
+| SCREAMING_SNAKE_CASE | `[A-Z][A-Z0-9]*(_[A-Z0-9]+)+` | `MAX_SIZE`, `HTTP_STATUS` |
+| Import path | `mod::path` or `pkg.Class` or `@scope/pkg` | `std::collections::HashMap` |
+| Source file path | Path ending in `.rs`, `.py`, `.go`, etc. | `src/main.rs`, `lib/utils.py` |
+
+### Relationship Hints
+
+| Hint | Pattern | Meaning |
+|---|---|---|
+| Function definition | name + parameters + body | A function or method |
+| Class definition | name + body + inheritance | A class or struct |
+| Import statement | path + optional alias | A use/import declaration |
+| Parameter list | type + name pairs | Function parameters |
+| Conditional block | condition + consequence + alternative | An if/else construct |
+| Loop block | condition/iterator + body | A for/while loop |
 
 ---
 

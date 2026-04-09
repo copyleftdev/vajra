@@ -70,6 +70,9 @@ fn generate_json(node_count: usize) -> String {
     buf
 }
 
+// Benchmark setup must abort on failure — there's no way to propagate
+// errors from a Criterion benchmark function, so `expect` is appropriate here.
+#[allow(clippy::expect_used)]
 fn bench_canonicalize(c: &mut Criterion) {
     let small = generate_json(10);
     let medium = generate_json(100);
@@ -85,8 +88,7 @@ fn bench_canonicalize(c: &mut Criterion) {
     ]
     .into_iter()
     .map(|(name, json)| {
-        let val: serde_json::Value =
-            serde_json::from_str(json).unwrap_or_else(|e| panic!("parse failed: {e}"));
+        let val: serde_json::Value = serde_json::from_str(json).expect("bench setup: parse failed");
         (name, val)
     })
     .collect();

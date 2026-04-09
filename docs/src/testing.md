@@ -1,6 +1,6 @@
 # Testing
 
-Vajra's test suite is not an afterthought. It is a structural guarantee. 908 tests across 7 testing strategies ensure that every algorithm, every command, and every output contract works as specified — and continues to work as the codebase evolves.
+Vajra's test suite is not an afterthought. It is a structural guarantee. 990 tests across 7 testing strategies ensure that every algorithm, every command, and every output contract works as specified — and continues to work as the codebase evolves.
 
 ---
 
@@ -22,7 +22,7 @@ Vajra's test suite is not an afterthought. It is a structural guarantee. 908 tes
 
 ### Unit Tests
 
-908 tests across all 14 crates. Each primitive, each algorithm, each data structure has targeted tests with known inputs and expected outputs. Domain plugins (medical, security, DevOps) each carry their own property tests, determinism tests, and golden corpus validation.
+990 tests across all 16 crates. Each primitive, each algorithm, each data structure has targeted tests with known inputs and expected outputs. Domain plugins (medical, security, DevOps) each carry their own property tests, determinism tests, and golden corpus validation.
 
 **Examples from each crate:**
 

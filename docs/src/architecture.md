@@ -1,27 +1,29 @@
 # Architecture
 
-Vajra is a Rust workspace of 14 crates. Each crate has a single responsibility. Dependencies flow downward. Nothing cycles.
+Vajra is a Rust workspace of 16 crates. Each crate has a single responsibility. Dependencies flow downward. Nothing cycles.
 
 ---
 
-## The 14-Crate Workspace
+## The 16-Crate Workspace
 
 ```text
 vajra/
-├── vajra-types/         Shared types, traits, contracts
-├── vajra-core/          Parsing, traversal, canonicalization, path extraction
-├── vajra-fingerprint/   BLAKE3 hashing, Merkle trees, MinHash, SimHash, LSH
-├── vajra-stats/         CMS, Space-Saving, DDSketch, MAD, entropy, frequency
-├── vajra-anomaly/       Outlier scoring, instability, rarity, structural anomaly
-├── vajra-drift/         JSD, Wasserstein, path diff, drift classification
-├── vajra-motif/         Motif counting, near-motif grouping, motif compression
-├── vajra-essence/       Profiles, scoring, ranking, rendering, templates
-├── vajra-query/         Expression parsing, path filtering, analysis functions
-├── vajra-cli/           CLI argument parsing, command dispatch, output formatting
-├── vajra-domain-med/    Medical/EDI type recognizers (ICD-10, CPT, NPI, NDC, HCPCS)
-├── vajra-domain-sec/    Security type recognizers (CVE, MITRE ATT&CK, IPs, hashes, JWT)
-├── vajra-domain-devops/ DevOps type recognizers (K8s, Docker, Terraform, ARN, semver)
-└── Cargo.toml           Workspace root
+├── vajra-types/          Shared types, traits, contracts
+├── vajra-core/           Parsing, traversal, canonicalization, path extraction
+├── vajra-fingerprint/    BLAKE3 hashing, Merkle trees, MinHash, SimHash, LSH
+├── vajra-stats/          CMS, Space-Saving, DDSketch, MAD, entropy, frequency
+├── vajra-anomaly/        Outlier scoring, instability, rarity, structural anomaly
+├── vajra-drift/          JSD, Wasserstein, path diff, drift classification
+├── vajra-motif/          Motif counting, near-motif grouping, motif compression
+├── vajra-essence/        Profiles, scoring, ranking, rendering, templates
+├── vajra-query/          Expression parsing, path filtering, analysis functions
+├── vajra-source/         Source code parsing via tree-sitter (Rust, Python, Go, JS, +5)
+├── vajra-cli/            CLI argument parsing, command dispatch, output formatting
+├── vajra-domain-med/     Medical/EDI type recognizers (ICD-10, CPT, NPI, NDC, HCPCS)
+├── vajra-domain-sec/     Security type recognizers (CVE, MITRE ATT&CK, IPs, hashes, JWT)
+├── vajra-domain-devops/  DevOps type recognizers (K8s, Docker, Terraform, ARN, semver)
+├── vajra-domain-source/  Source code recognizers (naming conventions, import paths)
+└── Cargo.toml            Workspace root
 ```
 
 ---

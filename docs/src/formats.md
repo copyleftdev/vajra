@@ -18,6 +18,7 @@ Vajra reads more than JSON. It reads anything that can be interpreted as structu
 | Gzip | `.gz`, `.json.gz` | Gzip magic bytes (`1f 8b`) | Decompressed transparently. Inner format auto-detected. |
 | Zstd | `.zst`, `.json.zst` | Zstd magic bytes | Decompressed transparently. Inner format auto-detected. |
 | HTTP URL | `http://`, `https://` | URL scheme prefix | Fetched via blocking HTTP GET. Response body auto-detected. |
+| Source Code | `.rs`, `.py`, `.js`, `.ts`, `.go`, `.java`, `.c`, `.cpp`, `.rb` | File extension matches known language | Parsed via tree-sitter into AST. Requires `vajra-source` feature. |
 | Stdin | `-` | Explicit `-` argument | Content auto-detected from first bytes. |
 
 ---
@@ -28,7 +29,7 @@ When no `--input-format` is specified, Vajra detects the format in this order:
 
 1. **Check the argument.** If it is `-`, read from stdin. If it starts with `http://` or `https://`, fetch via HTTP.
 
-2. **Check the extension.** `.json` -> JSON. `.ndjson`/`.jsonl` -> NDJSON. `.yaml`/`.yml` -> YAML. `.csv` -> CSV. `.tsv` -> TSV. `.md` -> Markdown. `.pdf` -> PDF.
+2. **Check the extension.** `.json` -> JSON. `.ndjson`/`.jsonl` -> NDJSON. `.yaml`/`.yml` -> YAML. `.csv` -> CSV. `.tsv` -> TSV. `.md` -> Markdown. `.pdf` -> PDF. `.rs`/`.py`/`.js`/`.go`/etc. -> Source Code (via tree-sitter).
 
 3. **Check for compression.** If the extension is `.gz` or `.zst`, decompress and re-detect the inner format from the next extension (e.g., `.json.gz` -> decompress -> JSON).
 
@@ -172,6 +173,48 @@ vajra inspect document.pdf
 ```
 
 PDF support depends on the `pdf-extract` crate. Complex layouts may lose structure during extraction.
+
+### Source Code
+
+Vajra can analyze source code from any language supported by tree-sitter. The source file is parsed into a concrete syntax tree (CST), converted to a JSON structure, and analyzed through the full Vajra pipeline — entropy, anomalies, fingerprinting, drift, motifs, and essence all work on code.
+
+```bash
+vajra inspect main.rs                       # auto-detect Rust
+vajra stats app.py                          # auto-detect Python
+vajra drift v1/server.go v2/server.go       # code structural drift
+vajra essence lib.rs --profile engineer     # code essence
+vajra inspect main.rs --lang rust           # explicit language
+vajra inspect code.txt --input-format source --lang python  # override format + language
+```
+
+**Supported languages** (each enabled by a feature flag, all on by default):
+
+| Language | Extensions | Feature Flag |
+|---|---|---|
+| Rust | `.rs` | `rust` |
+| Python | `.py`, `.pyi` | `python` |
+| JavaScript | `.js`, `.mjs`, `.cjs`, `.jsx` | `javascript` |
+| TypeScript | `.ts`, `.tsx`, `.mts`, `.cts` | `typescript` |
+| Go | `.go` | `go` |
+| Java | `.java` | `java` |
+| C | `.c`, `.h` | `c` |
+| C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` | `cpp` |
+| Ruby | `.rb` | `ruby` |
+
+**What Vajra reveals on code:**
+
+| Analysis | What It Finds |
+|---|---|
+| Entropy of AST node types | Structural diversity — boilerplate vs complex code |
+| Rarity of node types | Unusual constructs — `goto`, `unsafe`, `eval` |
+| Nesting depth anomalies | Complexity hotspots |
+| Fingerprint comparison | Structural clones across files |
+| Drift between versions | Added functions, removed classes, changed signatures |
+| Motifs | Repeated structural patterns — copy-paste code |
+
+Source code analysis requires the `vajra-source` crate (included by default). The companion `vajra-domain-source` plugin adds recognizers for naming conventions (snake_case, camelCase, PascalCase) and code structure relationships.
+
+---
 
 ### Compressed Files (Gzip, Zstd)
 

@@ -1,0 +1,43 @@
+[package]
+name = "vajra-source"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[features]
+default = ["rust", "python", "javascript", "go"]
+rust = ["dep:tree-sitter-rust"]
+python = ["dep:tree-sitter-python"]
+javascript = ["dep:tree-sitter-javascript"]
+typescript = ["dep:tree-sitter-typescript"]
+go = ["dep:tree-sitter-go"]
+java = ["dep:tree-sitter-java"]
+c = ["dep:tree-sitter-c"]
+cpp = ["dep:tree-sitter-cpp"]
+ruby = ["dep:tree-sitter-ruby"]
+all-languages = ["rust", "python", "javascript", "typescript", "go", "java", "c", "cpp", "ruby"]
+
+[dependencies]
+vajra-types = { workspace = true }
+vajra-core = { workspace = true }
+serde_json = { workspace = true }
+tree-sitter = { workspace = true }
+
+# Language grammars (all optional, feature-gated)
+tree-sitter-rust = { workspace = true, optional = true }
+tree-sitter-python = { workspace = true, optional = true }
+tree-sitter-javascript = { workspace = true, optional = true }
+tree-sitter-typescript = { workspace = true, optional = true }
+tree-sitter-go = { workspace = true, optional = true }
+tree-sitter-java = { workspace = true, optional = true }
+tree-sitter-c = { workspace = true, optional = true }
+tree-sitter-cpp = { workspace = true, optional = true }
+tree-sitter-ruby = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

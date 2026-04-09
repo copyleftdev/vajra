@@ -1362,6 +1362,7 @@ version = "1.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "serde",
@@ -1425,6 +1426,12 @@ name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
+
+[[package]]
+name = "streaming-iterator"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b2231b7c3057d5e4ad0156fb3dc807d900806020c5ffa3ee6ff2c8c76fb8520"
 
 [[package]]
 name = "stringprep"
@@ -1581,6 +1588,116 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
+name = "tree-sitter"
+version = "0.26.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "887bd495d0582c5e3e0d8ece2233666169fa56a9644d172fc22ad179ab2d0538"
+dependencies = [
+ "cc",
+ "regex",
+ "regex-syntax",
+ "serde_json",
+ "streaming-iterator",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-c"
+version = "0.24.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a3aad8f0129083a59fe8596157552d2bb7148c492d44c21558d68ca1c722707"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-cpp"
+version = "0.23.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df2196ea9d47b4ab4a31b9297eaa5a5d19a0b121dceb9f118f6790ad0ab94743"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-go"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8560a4d2f835cc0d4d2c2e03cbd0dde2f6114b43bc491164238d333e28b16ea"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-java"
+version = "0.23.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0aa6cbcdc8c679b214e616fd3300da67da0e492e066df01bcf5a5921a71e90d6"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-javascript"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68204f2abc0627a90bdf06e605f5c470aa26fdcb2081ea553a04bdad756693f5"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-language"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "009994f150cc0cd50ff54917d5bc8bffe8cad10ca10d81c34da2ec421ae61782"
+
+[[package]]
+name = "tree-sitter-python"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6bf85fd39652e740bf60f46f4cda9492c3a9ad75880575bf14960f775cb74a1c"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-ruby"
+version = "0.23.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be0484ea4ef6bb9c575b4fdabde7e31340a8d2dbc7d52b321ac83da703249f95"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-rust"
+version = "0.24.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "439e577dbe07423ec2582ac62c7531120dbfccfa6e5f92406f93dd271a120e45"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-typescript"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c5f76ed8d947a75cc446d5fccd8b602ebf0cde64ccf2ffa434d873d7a575eff"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
 name = "ttf-parser"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1706,7 +1823,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "vajra-anomaly"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1720,7 +1837,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1734,17 +1851,19 @@ dependencies = [
  "vajra-domain-devops",
  "vajra-domain-med",
  "vajra-domain-sec",
+ "vajra-domain-source",
  "vajra-drift",
  "vajra-essence",
  "vajra-fingerprint",
  "vajra-query",
+ "vajra-source",
  "vajra-stats",
  "vajra-types",
 ]
 
 [[package]]
 name = "vajra-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "blake3",
  "criterion",
@@ -1774,7 +1893,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-devops"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "regex",
@@ -1784,7 +1903,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-med"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "regex",
@@ -1793,7 +1912,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-sec"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "regex",
@@ -1802,8 +1921,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "vajra-domain-source"
+version = "0.3.0"
+dependencies = [
+ "proptest",
+ "regex",
+ "vajra-types",
+]
+
+[[package]]
 name = "vajra-drift"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1817,7 +1945,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-essence"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1834,7 +1962,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-fingerprint"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "blake3",
  "criterion",
@@ -1848,7 +1976,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-motif"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -1859,7 +1987,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-query"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1872,8 +2000,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "vajra-source"
+version = "0.3.0"
+dependencies = [
+ "proptest",
+ "serde_json",
+ "tree-sitter",
+ "tree-sitter-c",
+ "tree-sitter-cpp",
+ "tree-sitter-go",
+ "tree-sitter-java",
+ "tree-sitter-javascript",
+ "tree-sitter-python",
+ "tree-sitter-ruby",
+ "tree-sitter-rust",
+ "tree-sitter-typescript",
+ "vajra-core",
+ "vajra-types",
+]
+
+[[package]]
 name = "vajra-stats"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -1887,7 +2035,7 @@ dependencies = [
 
 [[package]]
 name = "vajra-types"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",

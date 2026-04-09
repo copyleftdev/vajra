@@ -64,9 +64,13 @@ struct Cli {
     #[arg(long, global = true)]
     streaming: bool,
 
-    /// Force input format instead of auto-detecting (json, ndjson, yaml, csv, tsv, markdown, pdf)
+    /// Force input format instead of auto-detecting (json, ndjson, yaml, csv, tsv, markdown, pdf, source)
     #[arg(long, global = true)]
     input_format: Option<InputFormatArg>,
+
+    /// Source code language (rust, python, javascript, go, etc.) — used with source code input
+    #[arg(long, global = true)]
+    lang: Option<String>,
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -78,6 +82,7 @@ enum InputFormatArg {
     Tsv,
     Markdown,
     Pdf,
+    Source,
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -187,19 +192,66 @@ fn main() {
 // ---------------------------------------------------------------------------
 
 fn to_input_format(arg: Option<InputFormatArg>) -> Option<InputFormat> {
-    arg.map(|a| match a {
-        InputFormatArg::Json => InputFormat::Json,
-        InputFormatArg::Ndjson => InputFormat::Ndjson,
-        InputFormatArg::Yaml => InputFormat::Yaml,
-        InputFormatArg::Csv => InputFormat::Csv,
-        InputFormatArg::Tsv => InputFormat::Tsv,
-        InputFormatArg::Markdown => InputFormat::Markdown,
-        InputFormatArg::Pdf => InputFormat::Pdf,
+    arg.and_then(|a| match a {
+        InputFormatArg::Json => Some(InputFormat::Json),
+        InputFormatArg::Ndjson => Some(InputFormat::Ndjson),
+        InputFormatArg::Yaml => Some(InputFormat::Yaml),
+        InputFormatArg::Csv => Some(InputFormat::Csv),
+        InputFormatArg::Tsv => Some(InputFormat::Tsv),
+        InputFormatArg::Markdown => Some(InputFormat::Markdown),
+        InputFormatArg::Pdf => Some(InputFormat::Pdf),
+        InputFormatArg::Source => None, // handled separately in load_document
     })
+}
+
+/// Check if the input should be parsed as source code.
+#[cfg(feature = "source")]
+fn is_source_input(input: &str, cli: &Cli) -> bool {
+    if matches!(cli.input_format, Some(InputFormatArg::Source)) {
+        return true;
+    }
+    // Auto-detect: if no format specified, check file extension
+    if cli.input_format.is_none() {
+        let path = std::path::Path::new(input);
+        return vajra_source::is_source_file(path);
+    }
+    false
+}
+
+/// Parse a source language name string into a SourceLanguage.
+#[cfg(feature = "source")]
+fn parse_lang_flag(lang: &str) -> Result<vajra_source::SourceLanguage> {
+    match lang.to_lowercase().as_str() {
+        #[cfg(feature = "source")]
+        "rust" | "rs" => Ok(vajra_source::SourceLanguage::Rust),
+        "python" | "py" => Ok(vajra_source::SourceLanguage::Python),
+        "javascript" | "js" => Ok(vajra_source::SourceLanguage::JavaScript),
+        "go" => Ok(vajra_source::SourceLanguage::Go),
+        other => anyhow::bail!(
+            "unsupported language: '{other}'. Available: rust, python, javascript, go"
+        ),
+    }
+}
+
+/// Load a source code file via vajra-source.
+#[cfg(feature = "source")]
+fn load_source_document(input: &str, cli: &Cli) -> Result<Document> {
+    let mut config = vajra_source::SourceConfig::default();
+    if let Some(ref lang_str) = cli.lang {
+        config.language = Some(parse_lang_flag(lang_str)?);
+    }
+    let path = std::path::Path::new(input);
+    vajra_source::parse_source_file(path, &config).map_err(|e| anyhow::anyhow!("{e}"))
 }
 
 /// Load a single document (first document if multi-doc format like NDJSON/YAML).
 fn load_document(input: &str, cli: &Cli) -> Result<Document> {
+    // Check for source code input first
+    #[cfg(feature = "source")]
+    if is_source_input(input, cli) {
+        return load_source_document(input, cli);
+    }
+
     let fmt = to_input_format(cli.input_format);
     let mut docs = load_documents(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))?;
     if docs.is_empty() {
@@ -379,6 +431,12 @@ fn collect_recognizers() -> Vec<Box<dyn vajra_types::traits::TypeRecognizer>> {
     #[cfg(feature = "devops")]
     {
         let plugin = vajra_domain_devops::DevOpsPlugin;
+        recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
+    }
+
+    #[cfg(feature = "source")]
+    {
+        let plugin = vajra_domain_source::SourcePlugin;
         recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
     }
 
