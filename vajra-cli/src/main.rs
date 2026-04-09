@@ -129,12 +129,15 @@ enum Command {
         /// Path to JSON file, or `-` for stdin
         input: String,
     },
-    /// Detect drift between two JSON documents
+    /// Detect drift between two JSON documents (or population-level drift with --group-by)
     Drift {
-        /// Baseline JSON file
+        /// Baseline JSON file (or single file when using --group-by)
         baseline: String,
-        /// Candidate JSON file to compare
-        candidate: String,
+        /// Candidate JSON file to compare (omit when using --group-by)
+        candidate: Option<String>,
+        /// JSONPath field to partition records by for population-level drift
+        #[arg(long)]
+        group_by: Option<String>,
     },
     /// Cluster similar documents in a batch
     Cluster {
@@ -182,7 +185,20 @@ fn main() {
         Command::Drift {
             baseline,
             candidate,
-        } => cmd_drift(baseline, candidate, &cli),
+            group_by,
+        } => {
+            if let Some(field) = group_by {
+                cmd_population_drift(baseline, field, &cli)
+            } else {
+                match candidate {
+                    Some(c) => cmd_drift(baseline, c, &cli),
+                    None => {
+                        eprintln!("vajra: drift requires a candidate file, or use --group-by for population-level drift");
+                        std::process::exit(1);
+                    }
+                }
+            }
+        }
         Command::Cluster { inputs } => cmd_cluster(inputs, &cli),
         Command::Invariants { input, top_k } => cmd_invariants(input, *top_k, &cli),
         Command::Query { input, expression } => cmd_query(input, expression, &cli),
@@ -1231,6 +1247,198 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// population drift (--group-by)
+// ---------------------------------------------------------------------------
+
+/// Extract a field value from a JSON record using a simple path expression.
+fn extract_group_value(record: &serde_json::Value, path: &str) -> Option<String> {
+    let key = path.strip_prefix("$.").unwrap_or(path);
+    let mut current = record;
+    for segment in key.split('.') {
+        current = current.get(segment)?;
+    }
+    match current {
+        serde_json::Value::String(s) => Some(s.clone()),
+        serde_json::Value::Number(n) => Some(n.to_string()),
+        serde_json::Value::Bool(b) => Some(b.to_string()),
+        _ => None,
+    }
+}
+
+/// Serialize a per-pair drift report to a JSON value for output.
+fn drift_pair_to_json(
+    group_a: &str,
+    group_b: &str,
+    report: &vajra_drift::FullDriftReport,
+) -> serde_json::Value {
+    serde_json::json!({
+        "group_a": group_a,
+        "group_b": group_b,
+        "severity": format!("{:?}", report.severity),
+        "structural_similarity": report.structural_similarity,
+        "added_paths": report.path_diff.added.iter().map(|p| p.to_string()).collect::<Vec<_>>(),
+        "removed_paths": report.path_diff.removed.iter().map(|p| p.to_string()).collect::<Vec<_>>(),
+        "type_changes": report.type_changes.iter().map(|tc| serde_json::json!({
+            "path": tc.path,
+            "from": tc.from,
+            "to": tc.to,
+        })).collect::<Vec<serde_json::Value>>(),
+        "distributional_drifts": report.distributional_drifts.iter().map(|dd| serde_json::json!({
+            "path": dd.path,
+            "metric": format!("{:?}", dd.metric),
+            "value": dd.value,
+        })).collect::<Vec<serde_json::Value>>(),
+    })
+}
+
+#[allow(clippy::too_many_lines)]
+fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
+    let raw_content = if input == "-" {
+        let mut buf = String::new();
+        std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf)
+            .context("failed to read from stdin")?;
+        buf
+    } else {
+        std::fs::read_to_string(input).with_context(|| format!("failed to read file: {input}"))?
+    };
+    let raw_value: serde_json::Value = serde_json::from_str(&raw_content)
+        .with_context(|| format!("failed to parse JSON from: {input}"))?;
+    let records = match raw_value.as_array() {
+        Some(arr) => arr,
+        None => anyhow::bail!(
+            "population drift requires a JSON array of records, but got {}",
+            match &raw_value {
+                serde_json::Value::Object(_) => "an object",
+                serde_json::Value::String(_) => "a string",
+                serde_json::Value::Number(_) => "a number",
+                serde_json::Value::Bool(_) => "a boolean",
+                serde_json::Value::Null => "null",
+                serde_json::Value::Array(_) => "an array",
+            }
+        ),
+    };
+    let mut groups: BTreeMap<String, Vec<serde_json::Value>> = BTreeMap::new();
+    let mut missing_count: usize = 0;
+    for record in records {
+        match extract_group_value(record, group_by) {
+            Some(key) => groups.entry(key).or_default().push(record.clone()),
+            None => missing_count += 1,
+        }
+    }
+    if groups.is_empty() {
+        anyhow::bail!(
+            "group-by field '{}' not found in any record (checked {} records)",
+            group_by,
+            records.len()
+        );
+    }
+    if groups.len() == 1 {
+        let group_name = groups
+            .keys()
+            .next()
+            .map(String::as_str)
+            .unwrap_or("unknown");
+        anyhow::bail!(
+            "only one group found ('{}' with {} records), nothing to compare",
+            group_name,
+            groups.values().next().map_or(0, Vec::len)
+        );
+    }
+    let group_count = groups.len();
+    let pair_count = group_count * (group_count - 1) / 2;
+    if group_count > 10 && !cli.quiet {
+        eprintln!(
+            "vajra: warning: {} groups produce {} pairwise comparisons",
+            group_count, pair_count
+        );
+    }
+    if missing_count > 0 && !cli.quiet {
+        eprintln!(
+            "vajra: warning: {} records skipped (missing '{}' field)",
+            missing_count, group_by
+        );
+    }
+    let group_names: Vec<String> = groups.keys().cloned().collect();
+    let group_sizes: BTreeMap<String, usize> =
+        groups.iter().map(|(k, v)| (k.clone(), v.len())).collect();
+    let mut pairwise_drift = Vec::new();
+    for i in 0..group_names.len() {
+        for j in (i + 1)..group_names.len() {
+            let name_a = &group_names[i];
+            let name_b = &group_names[j];
+            let records_a = &groups[name_a];
+            let records_b = &groups[name_b];
+            let json_a = serde_json::to_string(&serde_json::Value::Array(records_a.clone()))
+                .context("failed to serialize group A")?;
+            let json_b = serde_json::to_string(&serde_json::Value::Array(records_b.clone()))
+                .context("failed to serialize group B")?;
+            let doc_a = vajra_core::parse_str(&json_a)
+                .map_err(|e| anyhow::anyhow!("failed to parse group '{}': {}", name_a, e))?;
+            let doc_b = vajra_core::parse_str(&json_b)
+                .map_err(|e| anyhow::anyhow!("failed to parse group '{}': {}", name_b, e))?;
+            let report = full_drift(&doc_a, &doc_b);
+            pairwise_drift.push((name_a.clone(), name_b.clone(), report));
+        }
+    }
+    match cli.format {
+        Format::Json => {
+            let json_output = serde_json::json!({"groups": group_names, "group_sizes": group_sizes, "pairwise_drift": pairwise_drift.iter().map(|(a, b, report)| drift_pair_to_json(a, b, report)).collect::<Vec<_>>()});
+            let json_str =
+                serde_json::to_string_pretty(&json_output).context("JSON serialization failed")?;
+            println!("{json_str}");
+        }
+        Format::Text | Format::Markdown | Format::CompactAi => {
+            println!("Population Drift Report");
+            println!("Group-by: {group_by}");
+            println!("Groups: {group_count} ({pair_count} pairwise comparisons)");
+            println!();
+            println!("Group sizes:");
+            for (name, size) in &group_sizes {
+                println!("  {name}: {size} records");
+            }
+            println!();
+            for (name_a, name_b, report) in &pairwise_drift {
+                println!("--- {name_a} vs {name_b} ---");
+                println!(
+                    "  Structural similarity: {:.4} (Jaccard)",
+                    report.structural_similarity
+                );
+                println!("  Severity: {:?}", report.severity);
+                if !report.path_diff.added.is_empty() {
+                    println!("  Added paths ({}):", report.path_diff.added.len());
+                    for p in &report.path_diff.added {
+                        println!("    + {p}");
+                    }
+                }
+                if !report.path_diff.removed.is_empty() {
+                    println!("  Removed paths ({}):", report.path_diff.removed.len());
+                    for p in &report.path_diff.removed {
+                        println!("    - {p}");
+                    }
+                }
+                if !report.type_changes.is_empty() {
+                    println!("  Type changes ({}):", report.type_changes.len());
+                    for tc in &report.type_changes {
+                        println!("    {} : {} -> {}", tc.path, tc.from, tc.to);
+                    }
+                }
+                if !report.distributional_drifts.is_empty() {
+                    println!(
+                        "  Distribution shifts ({}):",
+                        report.distributional_drifts.len()
+                    );
+                    for dd in &report.distributional_drifts {
+                        println!("    {} : {:?} = {:.4}", dd.path, dd.metric, dd.value);
+                    }
+                }
+                println!();
+            }
+        }
+    }
     Ok(())
 }
 
