@@ -841,9 +841,7 @@ fn cmd_stats_windowed(
     time_field: Option<&str>,
     cli: &Cli,
 ) -> Result<()> {
-    use vajra_stats::temporal::{
-        auto_detect_time_field, windowed_analysis, WindowGranularity,
-    };
+    use vajra_stats::temporal::{auto_detect_time_field, windowed_analysis, WindowGranularity};
 
     let granularity = match window {
         WindowArg::Month => WindowGranularity::Month,
@@ -1375,7 +1373,6 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
     Ok(())
 }
 
-
 // ---------------------------------------------------------------------------
 // population drift (--group-by)
 // ---------------------------------------------------------------------------
@@ -1429,8 +1426,7 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
             .context("failed to read from stdin")?;
         buf
     } else {
-        std::fs::read_to_string(input)
-            .with_context(|| format!("failed to read file: {input}"))?
+        std::fs::read_to_string(input).with_context(|| format!("failed to read file: {input}"))?
     };
     let raw_value: serde_json::Value = serde_json::from_str(&raw_content)
         .with_context(|| format!("failed to parse JSON from: {input}"))?;
@@ -1459,26 +1455,39 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
     if groups.is_empty() {
         anyhow::bail!(
             "group-by field '{}' not found in any record (checked {} records)",
-            group_by, records.len()
+            group_by,
+            records.len()
         );
     }
     if groups.len() == 1 {
-        let group_name = groups.keys().next().map(String::as_str).unwrap_or("unknown");
+        let group_name = groups
+            .keys()
+            .next()
+            .map(String::as_str)
+            .unwrap_or("unknown");
         anyhow::bail!(
             "only one group found ('{}' with {} records), nothing to compare",
-            group_name, groups.values().next().map_or(0, Vec::len)
+            group_name,
+            groups.values().next().map_or(0, Vec::len)
         );
     }
     let group_count = groups.len();
     let pair_count = group_count * (group_count - 1) / 2;
     if group_count > 10 && !cli.quiet {
-        eprintln!("vajra: warning: {} groups produce {} pairwise comparisons", group_count, pair_count);
+        eprintln!(
+            "vajra: warning: {} groups produce {} pairwise comparisons",
+            group_count, pair_count
+        );
     }
     if missing_count > 0 && !cli.quiet {
-        eprintln!("vajra: warning: {} records skipped (missing '{}' field)", missing_count, group_by);
+        eprintln!(
+            "vajra: warning: {} records skipped (missing '{}' field)",
+            missing_count, group_by
+        );
     }
     let group_names: Vec<String> = groups.keys().cloned().collect();
-    let group_sizes: BTreeMap<String, usize> = groups.iter().map(|(k, v)| (k.clone(), v.len())).collect();
+    let group_sizes: BTreeMap<String, usize> =
+        groups.iter().map(|(k, v)| (k.clone(), v.len())).collect();
     let mut pairwise_drift = Vec::new();
     for i in 0..group_names.len() {
         for j in (i + 1)..group_names.len() {
@@ -1486,10 +1495,14 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
             let name_b = &group_names[j];
             let records_a = &groups[name_a];
             let records_b = &groups[name_b];
-            let json_a = serde_json::to_string(&serde_json::Value::Array(records_a.clone())).context("failed to serialize group A")?;
-            let json_b = serde_json::to_string(&serde_json::Value::Array(records_b.clone())).context("failed to serialize group B")?;
-            let doc_a = vajra_core::parse_str(&json_a).map_err(|e| anyhow::anyhow!("failed to parse group '{}': {}", name_a, e))?;
-            let doc_b = vajra_core::parse_str(&json_b).map_err(|e| anyhow::anyhow!("failed to parse group '{}': {}", name_b, e))?;
+            let json_a = serde_json::to_string(&serde_json::Value::Array(records_a.clone()))
+                .context("failed to serialize group A")?;
+            let json_b = serde_json::to_string(&serde_json::Value::Array(records_b.clone()))
+                .context("failed to serialize group B")?;
+            let doc_a = vajra_core::parse_str(&json_a)
+                .map_err(|e| anyhow::anyhow!("failed to parse group '{}': {}", name_a, e))?;
+            let doc_b = vajra_core::parse_str(&json_b)
+                .map_err(|e| anyhow::anyhow!("failed to parse group '{}': {}", name_b, e))?;
             let report = full_drift(&doc_a, &doc_b);
             pairwise_drift.push((name_a.clone(), name_b.clone(), report));
         }
@@ -1497,7 +1510,8 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
     match cli.format {
         Format::Json => {
             let json_output = serde_json::json!({"groups": group_names, "group_sizes": group_sizes, "pairwise_drift": pairwise_drift.iter().map(|(a, b, report)| drift_pair_to_json(a, b, report)).collect::<Vec<_>>()});
-            let json_str = serde_json::to_string_pretty(&json_output).context("JSON serialization failed")?;
+            let json_str =
+                serde_json::to_string_pretty(&json_output).context("JSON serialization failed")?;
             println!("{json_str}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
@@ -1506,23 +1520,50 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
             println!("Groups: {group_count} ({pair_count} pairwise comparisons)");
             println!();
             println!("Group sizes:");
-            for (name, size) in &group_sizes { println!("  {name}: {size} records"); }
+            for (name, size) in &group_sizes {
+                println!("  {name}: {size} records");
+            }
             println!();
             for (name_a, name_b, report) in &pairwise_drift {
                 println!("--- {name_a} vs {name_b} ---");
-                println!("  Structural similarity: {:.4} (Jaccard)", report.structural_similarity);
+                println!(
+                    "  Structural similarity: {:.4} (Jaccard)",
+                    report.structural_similarity
+                );
                 println!("  Severity: {:?}", report.severity);
-                if !report.path_diff.added.is_empty() { println!("  Added paths ({}):", report.path_diff.added.len()); for p in &report.path_diff.added { println!("    + {p}"); } }
-                if !report.path_diff.removed.is_empty() { println!("  Removed paths ({}):", report.path_diff.removed.len()); for p in &report.path_diff.removed { println!("    - {p}"); } }
-                if !report.type_changes.is_empty() { println!("  Type changes ({}):", report.type_changes.len()); for tc in &report.type_changes { println!("    {} : {} -> {}", tc.path, tc.from, tc.to); } }
-                if !report.distributional_drifts.is_empty() { println!("  Distribution shifts ({}):", report.distributional_drifts.len()); for dd in &report.distributional_drifts { println!("    {} : {:?} = {:.4}", dd.path, dd.metric, dd.value); } }
+                if !report.path_diff.added.is_empty() {
+                    println!("  Added paths ({}):", report.path_diff.added.len());
+                    for p in &report.path_diff.added {
+                        println!("    + {p}");
+                    }
+                }
+                if !report.path_diff.removed.is_empty() {
+                    println!("  Removed paths ({}):", report.path_diff.removed.len());
+                    for p in &report.path_diff.removed {
+                        println!("    - {p}");
+                    }
+                }
+                if !report.type_changes.is_empty() {
+                    println!("  Type changes ({}):", report.type_changes.len());
+                    for tc in &report.type_changes {
+                        println!("    {} : {} -> {}", tc.path, tc.from, tc.to);
+                    }
+                }
+                if !report.distributional_drifts.is_empty() {
+                    println!(
+                        "  Distribution shifts ({}):",
+                        report.distributional_drifts.len()
+                    );
+                    for dd in &report.distributional_drifts {
+                        println!("    {} : {:?} = {:.4}", dd.path, dd.metric, dd.value);
+                    }
+                }
                 println!();
             }
         }
     }
     Ok(())
 }
-
 
 // ---------------------------------------------------------------------------
 // cluster
