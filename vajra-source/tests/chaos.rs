@@ -196,6 +196,7 @@ fn all_options_enabled() -> Result<(), Box<dyn std::error::Error>> {
         include_spans: true,
         include_text: true,
         max_file_size: 10 * 1024 * 1024,
+        semantic_paths: false,
     };
     let doc = parse_source(b"fn main() { let x = 42; }", &config)?;
     assert!(doc.metadata().total_nodes > 0);

@@ -16,6 +16,9 @@ pub struct SourceConfig {
     pub include_text: bool,
     /// Maximum file size in bytes before rejecting. Default: 10MB.
     pub max_file_size: u64,
+    /// Include semantic labels on nodes whose tree-sitter kind maps to a
+    /// known construct (function, class, import, etc.). Default: false.
+    pub semantic_paths: bool,
 }
 
 impl Default for SourceConfig {
@@ -26,6 +29,7 @@ impl Default for SourceConfig {
             include_spans: false,
             include_text: true,
             max_file_size: 10 * 1024 * 1024,
+            semantic_paths: false,
         }
     }
 }
