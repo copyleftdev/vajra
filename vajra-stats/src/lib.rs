@@ -38,5 +38,8 @@ pub use relationships::{conditional_entropy, discover_relationships, pmi, FieldR
 pub use space_saving::SpaceSaving;
 pub use streaming::{StreamingConfig, StreamingStatsAccumulator};
 pub use temporal::{
-    detect_dates, temporal_analysis, DateFormat, GapInfo, TemporalReport, TemporalValue,
+    auto_detect_time_field, bucket_by_window, detect_dates, extract_json_path, linear_regression,
+    parse_iso8601, temporal_analysis, truncate_to_window, value_to_epoch, windowed_analysis,
+    DateFormat, FieldWindowStats, GapInfo, TemporalReport, TemporalValue, TrendLine,
+    WindowGranularity, WindowSummary, WindowedAnalysisResult,
 };

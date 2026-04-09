@@ -3,6 +3,8 @@
 //! Provides date detection from string values, monotonicity checks,
 //! gap detection, and interval statistics for timestamp sequences.
 
+use std::collections::BTreeMap;
+
 use crate::numeric::{compute_numeric_stats, NumericStats};
 use serde::{Deserialize, Serialize};
 
@@ -347,6 +349,437 @@ fn is_leap_year(year: u32) -> bool {
     (year.is_multiple_of(4) && !year.is_multiple_of(100)) || year.is_multiple_of(400)
 }
 
+// ---------------------------------------------------------------------------
+// Time-series windowing primitives
+// ---------------------------------------------------------------------------
+
+/// Granularity at which timestamps are bucketed into windows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum WindowGranularity {
+    /// Monthly windows
+    Month,
+    /// ISO week windows
+    Week,
+    /// Daily windows
+    Day,
+}
+
+/// Result of a linear regression on (index, value) pairs.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrendLine {
+    pub slope: f64,
+    pub direction: String,
+    pub r_squared: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WindowSummary {
+    pub window: String,
+    pub record_count: usize,
+    pub field_stats: BTreeMap<String, FieldWindowStats>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FieldWindowStats {
+    pub entropy: f64,
+    pub cardinality: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WindowedAnalysisResult {
+    pub windows: Vec<WindowSummary>,
+    pub trends: BTreeMap<String, TrendLine>,
+}
+
+#[must_use]
+pub fn truncate_to_window(epoch_seconds: i64, granularity: WindowGranularity) -> Option<String> {
+    let (year, month, day) = epoch_to_civil(epoch_seconds)?;
+    match granularity {
+        WindowGranularity::Month => Some(format!("{year:04}-{month:02}")),
+        WindowGranularity::Day => Some(format!("{year:04}-{month:02}-{day:02}")),
+        WindowGranularity::Week => {
+            let (iso_year, iso_week) = iso_week_number(year, month, day);
+            Some(format!("{iso_year:04}-W{iso_week:02}"))
+        }
+    }
+}
+
+pub fn bucket_by_window<V>(
+    records: impl IntoIterator<Item = (i64, V)>,
+    granularity: WindowGranularity,
+) -> BTreeMap<String, Vec<V>> {
+    let mut buckets: BTreeMap<String, Vec<V>> = BTreeMap::new();
+    for (epoch, value) in records {
+        if let Some(label) = truncate_to_window(epoch, granularity) {
+            buckets.entry(label).or_default().push(value);
+        }
+    }
+    buckets
+}
+
+#[must_use]
+pub fn linear_regression(values: &[f64]) -> Option<TrendLine> {
+    let n = values.len();
+    if n < 2 {
+        return None;
+    }
+    #[allow(clippy::cast_precision_loss)]
+    let n_f = n as f64;
+    #[allow(clippy::cast_precision_loss)]
+    let x_mean = (n_f - 1.0) / 2.0;
+    let y_mean: f64 = values.iter().sum::<f64>() / n_f;
+    let mut ss_xy = 0.0_f64;
+    let mut ss_xx = 0.0_f64;
+    let mut ss_yy = 0.0_f64;
+    for (i, &y) in values.iter().enumerate() {
+        #[allow(clippy::cast_precision_loss)]
+        let x = i as f64;
+        let dx = x - x_mean;
+        let dy = y - y_mean;
+        ss_xy += dx * dy;
+        ss_xx += dx * dx;
+        ss_yy += dy * dy;
+    }
+    if ss_xx < f64::EPSILON {
+        return None;
+    }
+    let slope = ss_xy / ss_xx;
+    let r_squared = if ss_yy < f64::EPSILON {
+        1.0
+    } else {
+        (ss_xy * ss_xy) / (ss_xx * ss_yy)
+    };
+    let r_squared = r_squared.clamp(0.0, 1.0);
+    let direction = if r_squared > 0.3 {
+        if slope > 0.0 {
+            "increasing"
+        } else {
+            "decreasing"
+        }
+    } else {
+        "stable"
+    };
+    Some(TrendLine {
+        slope,
+        direction: direction.to_owned(),
+        r_squared,
+    })
+}
+
+#[must_use]
+pub fn parse_iso8601(s: &str) -> Option<i64> {
+    let trimmed = s.trim();
+    if let Some(tv) = try_parse_iso_datetime_tz(trimmed) {
+        return Some(tv);
+    }
+    if let Some(tv) = try_parse_iso_datetime(trimmed) {
+        return Some(tv.epoch_seconds);
+    }
+    if let Some(tv) = try_parse_iso_date(trimmed) {
+        return Some(tv.epoch_seconds);
+    }
+    None
+}
+
+fn try_parse_iso_datetime_tz(s: &str) -> Option<i64> {
+    if s.len() < 20 {
+        return None;
+    }
+    let bytes = s.as_bytes();
+    if bytes[4] != b'-' || bytes[7] != b'-' || (bytes[10] != b'T' && bytes[10] != b't') {
+        return None;
+    }
+    if bytes[13] != b':' || bytes[16] != b':' {
+        return None;
+    }
+    let year = parse_u32(&s[0..4])?;
+    let month = parse_u32(&s[5..7])?;
+    let day = parse_u32(&s[8..10])?;
+    let hour = parse_u32(&s[11..13])?;
+    let minute = parse_u32(&s[14..16])?;
+    let second = parse_u32(&s[17..19])?;
+    if hour > 23 || minute > 59 || second > 59 {
+        return None;
+    }
+    let date_epoch = date_to_epoch(year, month, day)?;
+    let time_offset = i64::from(hour * 3600 + minute * 60 + second);
+    let utc_epoch = date_epoch + time_offset;
+    let tz_part = &s[19..];
+    let tz_offset_seconds = parse_tz_offset(tz_part)?;
+    Some(utc_epoch - tz_offset_seconds)
+}
+
+fn parse_tz_offset(s: &str) -> Option<i64> {
+    if s.is_empty() {
+        return None;
+    }
+    let bytes = s.as_bytes();
+    if bytes[0] == b'Z' || bytes[0] == b'z' {
+        return Some(0);
+    }
+    if s.len() < 6 {
+        return None;
+    }
+    let sign: i64 = match bytes[0] {
+        b'+' => 1,
+        b'-' => -1,
+        _ => return None,
+    };
+    if bytes[3] != b':' {
+        return None;
+    }
+    let tz_hours = parse_u32(&s[1..3])?;
+    let tz_mins = parse_u32(&s[4..6])?;
+    if tz_hours > 23 || tz_mins > 59 {
+        return None;
+    }
+    Some(sign * i64::from(tz_hours * 3600 + tz_mins * 60))
+}
+
+fn epoch_to_civil(epoch_seconds: i64) -> Option<(u32, u32, u32)> {
+    if epoch_seconds < 0 {
+        return None;
+    }
+    let day_count = epoch_seconds / 86400;
+    let z = day_count + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let doe = (z - era * 146_097) as u32;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146_096) / 365;
+    #[allow(clippy::cast_possible_wrap)]
+    let y = yoe as i64 + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    #[allow(clippy::cast_possible_wrap)]
+    let y = if m <= 2 { y + 1 } else { y };
+    if !(1970..=2100).contains(&y) {
+        return None;
+    }
+    #[allow(clippy::cast_sign_loss)]
+    Some((y as u32, m, d))
+}
+
+fn iso_week_number(year: u32, month: u32, day: u32) -> (u32, u32) {
+    let mut doy: u32 = day;
+    for m in 1..month {
+        doy += days_in_month(year, m);
+    }
+    let epoch = date_to_epoch(year, month, day).unwrap_or(0);
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let dow = ((epoch / 86400) % 7 + 3) % 7;
+    #[allow(
+        clippy::cast_possible_wrap,
+        clippy::cast_sign_loss,
+        clippy::cast_possible_truncation
+    )]
+    {
+        let dow_i = dow as i32;
+        let doy_i = doy as i32;
+        let thursday = doy_i + (3 - dow_i);
+        if thursday < 1 {
+            let prev_dec31_epoch = date_to_epoch(year - 1, 12, 31).unwrap_or(0);
+            let prev_dow = ((prev_dec31_epoch / 86400) % 7 + 3) % 7;
+            let prev_doy: i32 = if is_leap_year(year - 1) { 366 } else { 365 };
+            let prev_thursday = prev_doy + (3 - prev_dow as i32);
+            return (year - 1, ((prev_thursday - 1) / 7 + 1) as u32);
+        }
+        let days_in_year: i32 = if is_leap_year(year) { 366 } else { 365 };
+        if thursday > days_in_year {
+            return (year + 1, 1);
+        }
+        (year, ((thursday - 1) / 7 + 1) as u32)
+    }
+}
+
+#[must_use]
+pub fn extract_json_path<'a>(
+    value: &'a serde_json::Value,
+    path: &str,
+) -> Option<&'a serde_json::Value> {
+    let path = path
+        .strip_prefix("$.")
+        .unwrap_or(path.strip_prefix('$').unwrap_or(path));
+    if path.is_empty() {
+        return Some(value);
+    }
+    let mut current = value;
+    for segment in path.split('.') {
+        if segment.is_empty() {
+            continue;
+        }
+        if let Some(bracket_pos) = segment.find('[') {
+            let field = &segment[..bracket_pos];
+            if !field.is_empty() {
+                current = current.get(field)?;
+            }
+            let end = segment.len().checked_sub(1)?;
+            let idx_str = segment.get(bracket_pos + 1..end)?;
+            let idx: usize = idx_str.parse().ok()?;
+            current = current.get(idx)?;
+        } else {
+            current = current.get(segment)?;
+        }
+    }
+    Some(current)
+}
+
+#[must_use]
+pub fn value_to_epoch(value: &serde_json::Value) -> Option<i64> {
+    match value {
+        serde_json::Value::String(s) => parse_iso8601(s),
+        serde_json::Value::Number(n) => {
+            #[allow(clippy::cast_possible_truncation)]
+            let epoch = n.as_i64().or_else(|| n.as_f64().map(|f| f as i64))?;
+            if (946_684_800..=4_102_444_800).contains(&epoch) {
+                Some(epoch)
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
+const TIME_FIELD_HINTS: &[&str] = &[
+    "date",
+    "time",
+    "timestamp",
+    "created",
+    "updated",
+    "created_at",
+    "updated_at",
+    "datetime",
+];
+
+#[must_use]
+pub fn auto_detect_time_field(records: &[serde_json::Value]) -> Option<String> {
+    let sample = records.first()?;
+    let obj = sample.as_object()?;
+    for (key, value) in obj {
+        let lower = key.to_lowercase();
+        let is_hint = TIME_FIELD_HINTS.iter().any(|h| lower.contains(h));
+        if is_hint && value_to_epoch(value).is_some() {
+            return Some(format!("$.{key}"));
+        }
+    }
+    None
+}
+
+pub fn windowed_analysis(
+    records: &[serde_json::Value],
+    time_field: &str,
+    granularity: WindowGranularity,
+) -> Result<WindowedAnalysisResult, String> {
+    use crate::entropy::shannon_entropy_from_counts;
+    use crate::frequency::FrequencyCounter;
+    if records.is_empty() {
+        return Err("no records provided".to_owned());
+    }
+    let mut timestamped: Vec<(i64, &serde_json::Value)> = Vec::new();
+    let mut skipped = 0_usize;
+    for record in records {
+        if let Some(tv) = extract_json_path(record, time_field).and_then(value_to_epoch) {
+            timestamped.push((tv, record));
+        } else {
+            skipped += 1;
+        }
+    }
+    if timestamped.is_empty() {
+        return Err(format!(
+            "no valid timestamps found at path '{time_field}' (skipped {skipped} records)"
+        ));
+    }
+    if skipped > 0 {
+        eprintln!("vajra: warning: skipped {skipped} records with invalid/missing timestamps");
+    }
+    let buckets = bucket_by_window(timestamped, granularity);
+    let field_paths: Vec<String> = {
+        let mut paths = Vec::new();
+        if let Some(first) = records.iter().find_map(|r| r.as_object()) {
+            for key in first.keys() {
+                let path = format!("$.{key}");
+                if path != time_field {
+                    paths.push(path);
+                }
+            }
+        }
+        paths.sort();
+        paths
+    };
+    let mut window_summaries: Vec<WindowSummary> = Vec::new();
+    for (label, window_records) in &buckets {
+        let mut field_stats_map: BTreeMap<String, FieldWindowStats> = BTreeMap::new();
+        for field_path in &field_paths {
+            let mut counter = FrequencyCounter::new();
+            let mut value_count = 0_u64;
+            for record in window_records {
+                if let Some(val) = extract_json_path(record, field_path) {
+                    let val_str = match val {
+                        serde_json::Value::String(s) => s.clone(),
+                        serde_json::Value::Null => "null".to_owned(),
+                        other => serde_json::to_string(other).unwrap_or_default(),
+                    };
+                    counter.observe_raw(field_path, &val_str);
+                    value_count += 1;
+                }
+            }
+            if value_count > 0 {
+                let counts = counter.count_values_raw(field_path);
+                let entropy = shannon_entropy_from_counts(&counts);
+                let cardinality = counter.cardinality_raw(field_path);
+                field_stats_map.insert(
+                    field_path.clone(),
+                    FieldWindowStats {
+                        entropy,
+                        cardinality,
+                    },
+                );
+            }
+        }
+        window_summaries.push(WindowSummary {
+            window: label.clone(),
+            record_count: window_records.len(),
+            field_stats: field_stats_map,
+        });
+    }
+    let mut trends: BTreeMap<String, TrendLine> = BTreeMap::new();
+    #[allow(clippy::cast_precision_loss)]
+    let counts: Vec<f64> = window_summaries
+        .iter()
+        .map(|w| w.record_count as f64)
+        .collect();
+    if let Some(trend) = linear_regression(&counts) {
+        trends.insert("record_count".to_owned(), trend);
+    }
+    for field_path in &field_paths {
+        let entropies: Vec<f64> = window_summaries
+            .iter()
+            .filter_map(|w| w.field_stats.get(field_path).map(|s| s.entropy))
+            .collect();
+        if entropies.len() >= 2 {
+            if let Some(t) = linear_regression(&entropies) {
+                trends.insert(format!("{field_path}.entropy"), t);
+            }
+        }
+        #[allow(clippy::cast_precision_loss)]
+        let cards: Vec<f64> = window_summaries
+            .iter()
+            .filter_map(|w| w.field_stats.get(field_path).map(|s| s.cardinality as f64))
+            .collect();
+        if cards.len() >= 2 {
+            if let Some(t) = linear_regression(&cards) {
+                trends.insert(format!("{field_path}.cardinality"), t);
+            }
+        }
+    }
+    Ok(WindowedAnalysisResult {
+        windows: window_summaries,
+        trends,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -627,5 +1060,173 @@ mod tests {
         assert_eq!(results[0].0, 0);
         assert_eq!(results[1].0, 2);
         assert_eq!(results[2].0, 3);
+    }
+
+    // ---- Windowing tests ----
+
+    #[test]
+    fn truncate_month() {
+        let e = date_to_epoch(2025, 6, 15).unwrap_or(0);
+        assert_eq!(
+            truncate_to_window(e, WindowGranularity::Month),
+            Some("2025-06".to_owned())
+        );
+    }
+
+    #[test]
+    fn truncate_day() {
+        let e = date_to_epoch(2025, 6, 15).unwrap_or(0);
+        assert_eq!(
+            truncate_to_window(e, WindowGranularity::Day),
+            Some("2025-06-15".to_owned())
+        );
+    }
+
+    #[test]
+    fn truncate_week() {
+        let e = date_to_epoch(2025, 6, 15).unwrap_or(0);
+        let label = truncate_to_window(e, WindowGranularity::Week).unwrap_or_default();
+        assert!(label.starts_with("2025-W"));
+    }
+
+    #[test]
+    fn bucket_groups() {
+        let recs = vec![
+            (date_to_epoch(2025, 1, 10).unwrap_or(0), "a"),
+            (date_to_epoch(2025, 1, 20).unwrap_or(0), "b"),
+            (date_to_epoch(2025, 2, 5).unwrap_or(0), "c"),
+        ];
+        let b = bucket_by_window(recs, WindowGranularity::Month);
+        assert_eq!(b.len(), 2);
+        assert_eq!(b.get("2025-01").map(|v| v.len()), Some(2));
+    }
+
+    #[test]
+    fn regression_increasing() {
+        let t = linear_regression(&[1.0, 2.0, 3.0, 4.0, 5.0]);
+        assert!(t.is_some());
+        let t = t.unwrap_or_else(|| TrendLine {
+            slope: 0.0,
+            direction: String::new(),
+            r_squared: 0.0,
+        });
+        assert!((t.slope - 1.0).abs() < 1e-10);
+        assert_eq!(t.direction, "increasing");
+    }
+
+    #[test]
+    fn regression_decreasing() {
+        let t = linear_regression(&[10.0, 8.0, 6.0, 4.0, 2.0]);
+        assert!(t.is_some());
+        let t = t.unwrap_or_else(|| TrendLine {
+            slope: 0.0,
+            direction: String::new(),
+            r_squared: 0.0,
+        });
+        assert!((t.slope + 2.0).abs() < 1e-10);
+        assert_eq!(t.direction, "decreasing");
+    }
+
+    #[test]
+    fn regression_stable() {
+        let t = linear_regression(&[3.0, 7.0, 2.0, 8.0, 1.0, 9.0]);
+        assert!(t.is_some());
+        assert_eq!(
+            t.unwrap_or_else(|| TrendLine {
+                slope: 0.0,
+                direction: String::new(),
+                r_squared: 0.0
+            })
+            .direction,
+            "stable"
+        );
+    }
+
+    #[test]
+    fn regression_too_few() {
+        assert!(linear_regression(&[]).is_none());
+        assert!(linear_regression(&[1.0]).is_none());
+    }
+
+    #[test]
+    fn parse_iso8601_z() {
+        let e = parse_iso8601("2025-06-15T12:00:00Z");
+        assert_eq!(e, Some(date_to_epoch(2025, 6, 15).unwrap_or(0) + 12 * 3600));
+    }
+
+    #[test]
+    fn parse_iso8601_plus_offset() {
+        let e = parse_iso8601("2025-06-15T12:00:00+02:00");
+        assert_eq!(e, Some(date_to_epoch(2025, 6, 15).unwrap_or(0) + 10 * 3600));
+    }
+
+    #[test]
+    fn parse_iso8601_minus_offset() {
+        let e = parse_iso8601("2025-06-15T12:00:00-05:00");
+        assert_eq!(e, Some(date_to_epoch(2025, 6, 15).unwrap_or(0) + 17 * 3600));
+    }
+
+    #[test]
+    fn extract_simple() {
+        let v: serde_json::Value =
+            serde_json::from_str(r#"{"date":"2025-01-01"}"#).unwrap_or_default();
+        assert_eq!(
+            extract_json_path(&v, "$.date").and_then(|v| v.as_str()),
+            Some("2025-01-01")
+        );
+    }
+
+    #[test]
+    fn auto_detect_date() {
+        let recs = vec![serde_json::json!({"date": "2025-06-15", "author": "Alice"})];
+        assert_eq!(auto_detect_time_field(&recs).as_deref(), Some("$.date"));
+    }
+
+    #[test]
+    fn windowed_three_months() {
+        let mut recs = Vec::new();
+        for d in [5, 10, 15, 20] {
+            recs.push(serde_json::json!({"date": format!("2025-01-{d:02}"), "author": "Alice"}));
+        }
+        for d in [5, 10, 15, 20] {
+            recs.push(serde_json::json!({"date": format!("2025-02-{d:02}"), "author": "Bob"}));
+        }
+        for d in [5, 10, 15, 20] {
+            recs.push(serde_json::json!({"date": format!("2025-03-{d:02}"), "author": "Carol"}));
+        }
+        let r = windowed_analysis(&recs, "$.date", WindowGranularity::Month);
+        assert!(r.is_ok());
+        let r = r.unwrap_or_else(|_| WindowedAnalysisResult {
+            windows: Vec::new(),
+            trends: BTreeMap::new(),
+        });
+        assert_eq!(r.windows.len(), 3);
+        assert_eq!(r.windows[0].window, "2025-01");
+        assert_eq!(r.windows[0].record_count, 4);
+        assert!(r.trends.contains_key("record_count"));
+    }
+
+    #[test]
+    fn windowed_missing_field() {
+        assert!(windowed_analysis(
+            &[serde_json::json!({"name": "Alice"})],
+            "$.date",
+            WindowGranularity::Month
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn windowed_empty() {
+        let recs: Vec<serde_json::Value> = Vec::new();
+        assert!(windowed_analysis(&recs, "$.date", WindowGranularity::Month).is_err());
+    }
+
+    #[test]
+    fn epoch_to_civil_roundtrip() {
+        for (y, m, d) in [(1970, 1, 1), (2000, 1, 1), (2024, 2, 29), (2025, 6, 15)] {
+            let e = date_to_epoch(y, m, d).unwrap_or(-1);
+            assert_eq!(epoch_to_civil(e), Some((y, m, d)));
+        }
     }
 }
