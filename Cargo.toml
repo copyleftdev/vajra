@@ -10,6 +10,7 @@ members = [
     "vajra-motif",
     "vajra-essence",
     "vajra-query",
+    "vajra-cascade",
     "vajra-cli",
     "vajra-domain-med",
     "vajra-domain-sec",
@@ -89,6 +90,7 @@ vajra-drift = { path = "vajra-drift" }
 vajra-motif = { path = "vajra-motif" }
 vajra-essence = { path = "vajra-essence" }
 vajra-query = { path = "vajra-query" }
+vajra-cascade = { path = "vajra-cascade" }
 vajra-domain-med = { path = "vajra-domain-med" }
 vajra-domain-sec = { path = "vajra-domain-sec" }
 vajra-domain-devops = { path = "vajra-domain-devops" }
