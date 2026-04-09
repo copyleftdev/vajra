@@ -98,6 +98,31 @@ impl WildcardPath {
     pub fn as_str(&self) -> String {
         format!("{self}")
     }
+
+    /// Parse a dot-path string into a `WildcardPath`.
+    #[must_use]
+    pub fn from_dotpath(path: &str) -> Self {
+        let stripped = path.strip_prefix('$').unwrap_or(path);
+        let stripped = stripped.strip_prefix('.').unwrap_or(stripped);
+        let mut segments = vec![PathSegment::Root];
+        if stripped.is_empty() {
+            return Self { segments };
+        }
+        for part in stripped.split('.') {
+            if part.is_empty() {
+                continue;
+            }
+            if let Some(key) = part.strip_suffix("[*]") {
+                if !key.is_empty() {
+                    segments.push(PathSegment::Key(key.to_owned()));
+                }
+                segments.push(PathSegment::ArrayWildcard);
+            } else {
+                segments.push(PathSegment::Key(part.to_owned()));
+            }
+        }
+        Self { segments }
+    }
 }
 
 impl fmt::Display for WildcardPath {

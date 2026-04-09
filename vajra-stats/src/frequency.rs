@@ -76,6 +76,34 @@ impl FrequencyCounter {
         self.counts.keys().cloned().collect()
     }
 
+    /// Observe a value under a raw string path.
+    pub fn observe_raw(&mut self, path: &str, value: &str) {
+        let wp = WildcardPath::from_dotpath(path);
+        *self
+            .counts
+            .entry(wp)
+            .or_default()
+            .entry(value.to_owned())
+            .or_insert(0) += 1;
+    }
+
+    /// Returns the raw count slice for a raw string path.
+    #[must_use]
+    pub fn count_values_raw(&self, path: &str) -> Vec<u64> {
+        let wp = WildcardPath::from_dotpath(path);
+        self.counts
+            .get(&wp)
+            .map_or_else(Vec::new, |m| m.values().copied().collect())
+    }
+
+    /// Returns the cardinality for a raw string path.
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn cardinality_raw(&self, path: &str) -> u64 {
+        let wp = WildcardPath::from_dotpath(path);
+        self.counts.get(&wp).map_or(0, |m| m.len() as u64)
+    }
+
     // ---- private ----
 
     fn walk(&mut self, value: &serde_json::Value, path: &WildcardPath) {
