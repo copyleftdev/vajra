@@ -1,0 +1,148 @@
+[
+  {
+    "number": "#1024",
+    "title": "Add rate limiting to GraphQL API",
+    "state": "MERGED",
+    "author": "octocat",
+    "created_at": "2026-03-15T09:30:00Z",
+    "merged_at": "2026-03-17T14:22:00Z",
+    "head_ref_oid": "a414b56de9f1c3e7b2a8d4f5e6c7b8a9d0e1f2a3",
+    "base_ref": "main",
+    "additions": 342,
+    "deletions": 87,
+    "labels": ["enhancement"],
+    "reviews": [
+      {
+        "reviewer": "tim-smart",
+        "review_state": "APPROVED",
+        "submitted_at": "2026-03-16T11:00:00Z"
+      },
+      {
+        "reviewer": "dependabot[bot]",
+        "review_state": "COMMENTED",
+        "submitted_at": "2026-03-16T11:05:00.000Z"
+      }
+    ],
+    "release_tag": "v2.5.0"
+  },
+  {
+    "number": "#1025",
+    "title": "Fix null pointer in webhook handler",
+    "state": "MERGED",
+    "author": "user-name-123",
+    "created_at": "2026-03-18T08:00:00Z",
+    "merged_at": "2026-03-18T16:45:00Z",
+    "head_ref_oid": "db36f1c",
+    "base_ref": "main",
+    "additions": 15,
+    "deletions": 3,
+    "labels": ["bug"],
+    "reviews": [
+      {
+        "reviewer": "octocat",
+        "review_state": "APPROVED",
+        "submitted_at": "2026-03-18T12:30:00+00:00"
+      }
+    ],
+    "release_tag": "v2.5.1"
+  },
+  {
+    "number": "#1026",
+    "title": "Update documentation for new API endpoints",
+    "state": "OPEN",
+    "author": "contributor42",
+    "created_at": "2026-03-20T10:15:00Z",
+    "head_ref_oid": "f0e1d2c3b4a5968778695a4b3c2d1e0f",
+    "base_ref": "main",
+    "additions": 200,
+    "deletions": 50,
+    "labels": ["documentation"],
+    "reviews": [
+      {
+        "reviewer": "app/github-actions",
+        "review_state": "PENDING",
+        "submitted_at": "2026-03-20T10:20:00Z"
+      }
+    ]
+  },
+  {
+    "number": "#1027",
+    "title": "Refactor authentication module",
+    "state": "CLOSED",
+    "author": "dev-lead",
+    "created_at": "2026-03-10T14:00:00Z",
+    "closed_at": "2026-03-12T09:00:00Z",
+    "head_ref_oid": "1234567890abcdef1234567890abcdef12345678",
+    "base_ref": "develop",
+    "additions": 500,
+    "deletions": 300,
+    "labels": ["feature"],
+    "reviews": [
+      {
+        "reviewer": "tim-smart",
+        "review_state": "CHANGES_REQUESTED",
+        "submitted_at": "2026-03-11T08:00:00Z"
+      },
+      {
+        "reviewer": "tim-smart",
+        "review_state": "DISMISSED",
+        "submitted_at": "2026-03-11T16:00:00Z"
+      }
+    ]
+  },
+  {
+    "number": "#1028",
+    "title": "Dependency updates for Q1 2026",
+    "state": "MERGED",
+    "author": "renovate[bot]",
+    "created_at": "2026-04-01T00:00:00Z",
+    "merged_at": "2026-04-01T06:00:00Z",
+    "head_ref_oid": "abcdef1",
+    "base_ref": "main",
+    "additions": 42,
+    "deletions": 42,
+    "labels": ["good first issue"],
+    "reviews": [
+      {
+        "reviewer": "octocat",
+        "review_state": "APPROVED",
+        "submitted_at": "2026-04-01T03:00:00Z"
+      }
+    ],
+    "release_tag": "v3.0.0-rc.1"
+  },
+  {
+    "number": "#1029",
+    "title": "Add question template for discussions",
+    "state": "OPEN",
+    "author": "newcontributor",
+    "created_at": "2026-04-05T17:30:00Z",
+    "head_ref_oid": "9876543",
+    "base_ref": "main",
+    "additions": 8,
+    "deletions": 0,
+    "labels": ["question", "help wanted"],
+    "reviews": []
+  },
+  {
+    "number": "#1030",
+    "title": "Mark stale issues as wontfix",
+    "state": "MERGED",
+    "author": "maintainer1",
+    "created_at": "2026-04-07T11:00:00Z",
+    "merged_at": "2026-04-08T09:00:00Z",
+    "head_ref_oid": "fedcba9876543210fedcba9876543210fedcba98",
+    "base_ref": "main",
+    "additions": 1,
+    "deletions": 0,
+    "labels": ["wontfix", "duplicate", "invalid"],
+    "reviews": [
+      {
+        "reviewer": "octocat",
+        "review_state": "APPROVED",
+        "submitted_at": "2026-04-07T15:00:00Z"
+      }
+    ],
+    "release_tag": "1.0.0-beta.1"
+  }
+]

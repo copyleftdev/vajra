@@ -1836,6 +1836,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "vajra-cascade"
+version = "0.4.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "vajra-cli"
 version = "0.4.0"
 dependencies = [
@@ -1847,9 +1857,11 @@ dependencies = [
  "tempfile",
  "toml",
  "vajra-anomaly",
+ "vajra-cascade",
  "vajra-core",
  "vajra-domain-devops",
  "vajra-domain-encoding",
+ "vajra-domain-github",
  "vajra-domain-med",
  "vajra-domain-sec",
  "vajra-domain-source",
@@ -1904,6 +1916,16 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-encoding"
+version = "0.4.0"
+dependencies = [
+ "proptest",
+ "regex",
+ "serde_json",
+ "vajra-types",
+]
+
+[[package]]
+name = "vajra-domain-github"
 version = "0.4.0"
 dependencies = [
  "proptest",
