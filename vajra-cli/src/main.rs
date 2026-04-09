@@ -72,6 +72,10 @@ struct Cli {
     #[arg(long, global = true)]
     lang: Option<String>,
 
+    /// Include semantic labels on tree-sitter nodes (function, class, import, etc.) — used with source code input
+    #[arg(long, global = true)]
+    semantic_paths: bool,
+
     /// Maximum number of git commits to extract (used with --input-format git)
     #[arg(long, global = true, default_value = "500")]
     git_limit: usize,
@@ -338,6 +342,7 @@ fn load_source_document(input: &str, cli: &Cli) -> Result<Document> {
     if let Some(ref lang_str) = cli.lang {
         config.language = Some(parse_lang_flag(lang_str)?);
     }
+    config.semantic_paths = cli.semantic_paths;
     let path = std::path::Path::new(input);
     vajra_source::parse_source_file(path, &config).map_err(|e| anyhow::anyhow!("{e}"))
 }

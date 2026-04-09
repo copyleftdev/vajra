@@ -20,6 +20,7 @@ pub mod config;
 pub mod convert;
 pub mod detect;
 mod grammar;
+pub mod semantic;
 
 use std::path::Path;
 
@@ -317,5 +318,41 @@ mod tests {
             !langs.is_empty(),
             "at least one language should be available"
         );
+    }
+
+    #[test]
+    #[cfg(feature = "rust")]
+    fn semantic_paths_parses_without_error() -> Result<(), Box<dyn std::error::Error>> {
+        let source = b"fn main() { let x = 42; }";
+        let config = SourceConfig {
+            language: Some(SourceLanguage::Rust),
+            semantic_paths: true,
+            ..SourceConfig::default()
+        };
+        let doc = parse_source(source, &config)?;
+        assert!(doc.metadata().total_nodes > 0);
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "rust")]
+    fn semantic_paths_off_backward_compat() -> Result<(), Box<dyn std::error::Error>> {
+        let source = b"fn main() {}";
+        let config_off = SourceConfig {
+            language: Some(SourceLanguage::Rust),
+            semantic_paths: false,
+            ..SourceConfig::default()
+        };
+        let config_default = SourceConfig {
+            language: Some(SourceLanguage::Rust),
+            ..SourceConfig::default()
+        };
+        let doc_off = parse_source(source, &config_off)?;
+        let doc_default = parse_source(source, &config_default)?;
+        // Both should produce identical metadata since semantic_paths defaults to false
+        let meta_off = serde_json::to_string(&doc_off.metadata())?;
+        let meta_default = serde_json::to_string(&doc_default.metadata())?;
+        assert_eq!(meta_off, meta_default);
+        Ok(())
     }
 }
