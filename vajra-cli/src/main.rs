@@ -162,6 +162,19 @@ enum Command {
         /// Directory containing JSON files to analyze
         directory: String,
     },
+    /// Detect temporal cause-effect chains
+    Cascade {
+        /// Path to JSON file
+        input: String,
+        #[arg(long, default_value = "file")]
+        entity_field: String,
+        #[arg(long, default_value = "date")]
+        time_field: String,
+        #[arg(long, default_value = "intent")]
+        event_field: String,
+        #[arg(long, default_value = "fix,revert")]
+        response_values: String,
+    },
     /// List all available profiles (built-in and custom)
     Profiles,
 }
@@ -187,6 +200,7 @@ fn main() {
         Command::Invariants { input, top_k } => cmd_invariants(input, *top_k, &cli),
         Command::Query { input, expression } => cmd_query(input, expression, &cli),
         Command::Batch { directory } => cmd_batch(directory, &cli),
+        Command::Cascade { input, entity_field, time_field, event_field, response_values } => cmd_cascade(input, entity_field, time_field, event_field, response_values, &cli),
         Command::Profiles => cmd_profiles(&cli),
     };
 
@@ -1558,4 +1572,42 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn cmd_cascade(input: &str, entity_field: &str, time_field: &str, event_field: &str, response_values_str: &str, cli: &Cli) -> Result<()> {
+    let raw = if input == "-" { let mut buf = String::new(); std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf).context("failed to read stdin")?; buf } else { std::fs::read_to_string(input).with_context(|| format!("failed to read file: {input}"))? };
+    let parsed: serde_json::Value = serde_json::from_str(&raw).with_context(|| format!("failed to parse JSON from {input}"))?;
+    let records = match parsed.as_array() { Some(arr) => arr.clone(), None => { anyhow::bail!("cascade command expects a JSON array of records"); } };
+    let response_values: Vec<String> = response_values_str.split(',').map(|s| s.trim().to_owned()).filter(|s| !s.is_empty()).collect();
+    let config = vajra_cascade::CascadeConfig { entity_field: entity_field.to_owned(), time_field: time_field.to_owned(), event_field: event_field.to_owned(), trigger_values: Vec::new(), response_values };
+    let result = vajra_cascade::detect_cascades(&records, &config).map_err(|e| anyhow::anyhow!("{e}"))?;
+    match cli.format {
+        Format::Json => { let j = cascade_json(&result); let s = serde_json::to_string_pretty(&j).context("JSON serialization failed")?; let s = maybe_redact(&s, cli); println!("{s}"); }
+        Format::Text => { let t = cascade_text(&result); let t = maybe_redact(&t, cli); print!("{t}"); }
+        Format::Markdown => { let m = cascade_md(&result); let m = maybe_redact(&m, cli); print!("{m}"); }
+        Format::CompactAi => { let j = cascade_json(&result); let s = serde_json::to_string(&j).context("JSON serialization failed")?; let s = maybe_redact(&s, cli); println!("{s}"); }
+    }
+    Ok(())
+}
+fn cascade_json(r: &vajra_cascade::CascadeResult) -> serde_json::Value {
+    let cj: Vec<serde_json::Value> = r.cascades.iter().map(|c| serde_json::json!({"entity":c.entity,"trigger":{"value":c.trigger.value,"author":c.trigger.author,"time":c.trigger.time},"response":{"value":c.response.value,"author":c.response.author,"time":c.response.time},"same_author":c.same_author})).collect();
+    let hj: Vec<serde_json::Value> = r.hot_entities.iter().map(|h| serde_json::json!({"entity":h.entity,"total":h.total,"cascades":h.cascades,"cascade_ratio":h.cascade_ratio})).collect();
+    serde_json::json!({"cascade_rate":r.cascade_rate,"self_fix_rate":r.self_fix_rate,"total_events":r.total_events,"total_cascades":r.cascades.len(),"hot_entities":hj,"cascades":cj})
+}
+fn cascade_text(r: &vajra_cascade::CascadeResult) -> String {
+    use std::fmt::Write; let mut o = String::new();
+    let _ = writeln!(o, "=== Cascade Analysis ==="); let _ = writeln!(o, "  Total events:   {}", r.total_events); let _ = writeln!(o, "  Total cascades: {}", r.cascades.len()); let _ = writeln!(o, "  Cascade rate:   {:.3}", r.cascade_rate); let _ = writeln!(o, "  Self-fix rate:  {:.3}", r.self_fix_rate); let _ = writeln!(o);
+    if !r.hot_entities.is_empty() { let _ = writeln!(o, "=== Hot Entities ==="); let ew = r.hot_entities.iter().map(|h| h.entity.len()).max().unwrap_or(6).max(6);
+        let _ = writeln!(o, "  {:<ew$}  {:>5}  {:>8}  {:>6}", "ENTITY", "TOTAL", "CASCADES", "RATIO", ew=ew);
+        for h in &r.hot_entities { let _ = writeln!(o, "  {:<ew$}  {:>5}  {:>8}  {:>6.3}", h.entity, h.total, h.cascades, h.cascade_ratio, ew=ew); } let _ = writeln!(o); }
+    if !r.cascades.is_empty() { let _ = writeln!(o, "=== Cascade Chains ==="); for (i,c) in r.cascades.iter().enumerate() { let sf = if c.same_author { " (self-fix)" } else { "" };
+        let _ = writeln!(o, "  [{}] {}{}", i+1, c.entity, sf); let _ = writeln!(o, "    trigger:  \"{}\" by {} at {}", c.trigger.value, c.trigger.author, c.trigger.time); let _ = writeln!(o, "    response: \"{}\" by {} at {}", c.response.value, c.response.author, c.response.time); } } o
+}
+fn cascade_md(r: &vajra_cascade::CascadeResult) -> String {
+    use std::fmt::Write; let mut o = String::new();
+    let _ = writeln!(o, "# Cascade Analysis\n"); let _ = writeln!(o, "| Metric | Value |"); let _ = writeln!(o, "|--------|-------|"); let _ = writeln!(o, "| Total events | {} |", r.total_events); let _ = writeln!(o, "| Total cascades | {} |", r.cascades.len()); let _ = writeln!(o, "| Cascade rate | {:.3} |", r.cascade_rate); let _ = writeln!(o, "| Self-fix rate | {:.3} |", r.self_fix_rate); let _ = writeln!(o);
+    if !r.hot_entities.is_empty() { let _ = writeln!(o, "## Hot Entities\n"); let _ = writeln!(o, "| Entity | Total | Cascades | Ratio |"); let _ = writeln!(o, "|--------|-------|----------|-------|");
+        for h in &r.hot_entities { let _ = writeln!(o, "| {} | {} | {} | {:.3} |", h.entity, h.total, h.cascades, h.cascade_ratio); } let _ = writeln!(o); }
+    if !r.cascades.is_empty() { let _ = writeln!(o, "## Cascade Chains\n"); for (i,c) in r.cascades.iter().enumerate() { let sf = if c.same_author { " **(self-fix)**" } else { "" };
+        let _ = writeln!(o, "### {}. {}{}\n", i+1, c.entity, sf); let _ = writeln!(o, "- **Trigger**: \"{}\" by {} at {}", c.trigger.value, c.trigger.author, c.trigger.time); let _ = writeln!(o, "- **Response**: \"{}\" by {} at {}", c.response.value, c.response.author, c.response.time); let _ = writeln!(o); } } o
 }

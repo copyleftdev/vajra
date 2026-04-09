@@ -26,6 +26,7 @@ vajra-domain-source = { workspace = true, optional = true }
 vajra-domain-encoding = { workspace = true, optional = true }
 vajra-source = { workspace = true, optional = true }
 vajra-query = { workspace = true }
+vajra-cascade = { workspace = true }
 clap = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
