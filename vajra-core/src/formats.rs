@@ -20,6 +20,7 @@ pub enum InputFormat {
     Tsv,
     Markdown,
     Pdf,
+    Git,
 }
 
 /// Auto-detect format from a file extension.
@@ -114,6 +115,13 @@ pub fn parse_auto(input: &str, format: Option<InputFormat>) -> Result<Vec<Docume
                 .to_string(),
             source_path: None,
         }),
+        InputFormat::Git => Err(VajraError::Parse {
+            byte_offset: 0,
+            message: "Git input cannot be parsed from a text string; \
+                      use git::load_git_log instead"
+                .to_string(),
+            source_path: None,
+        }),
     }
 }
 
@@ -135,6 +143,12 @@ pub fn parse_file_auto(
     // PDF files are binary; handle them separately.
     if fmt == InputFormat::Pdf {
         return Ok(vec![crate::pdf::parse_pdf_file(path)?]);
+    }
+
+    // Git format requires the git CLI adapter.
+    if fmt == InputFormat::Git {
+        let config = crate::git::GitLogConfig::default();
+        return Ok(vec![crate::git::load_git_log(path, &config)?]);
     }
 
     let content = std::fs::read_to_string(path).map_err(|e| VajraError::Io {
