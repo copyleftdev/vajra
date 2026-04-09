@@ -367,6 +367,55 @@ The source code plugin recognizes patterns in the JSON trees produced by `vajra-
 
 ---
 
+## The Encoding Plugin: vajra-domain-encoding
+
+The encoding plugin detects data encodings embedded in JSON string values. It identifies Base64, hex, URL encoding, HTML entities, PEM certificates, and more — including adversarial patterns like double encoding and mixed encoding used for evasion.
+
+### Type Recognizers (3 Tiers)
+
+**Tier 1 — Definite confidence (structural markers, near-zero false positives):**
+
+| Recognized Type | Pattern | Example Values |
+|---|---|---|
+| PEM block | `-----BEGIN ...-----` prefix/suffix | Certificates, private keys |
+| Data URI | `data:mime;base64,...` | Embedded images, payloads |
+| MIME encoded word | `=?charset?B/Q?...?=` | Email header encoding |
+| Punycode | `xn--` prefix | Internationalized domain names |
+
+**Tier 2 — Dominant confidence (strong patterns, low false positives):**
+
+| Recognized Type | Pattern | Example Values |
+|---|---|---|
+| URL encoded | 2+ `%XX` sequences + trial decode | `hello%20world%21` |
+| Quoted-printable | 3+ `=XX` sequences | MIME email encoding |
+| HTML entity | 2+ `&...;` entities | `&lt;script&gt;` |
+| Unicode escape | 2+ `\uXXXX` or `\xNN` | `\u0048\u0065` |
+| Base64URL | 16+ chars, URL-safe alphabet | API tokens, URL-safe data |
+
+**Tier 3 — Heuristic (aggressive false positive gating):**
+
+| Recognized Type | Detection | Security Signal |
+|---|---|---|
+| Base64 | 24+ chars, div-by-4, trial decode, entropy gate | Obfuscated payloads, exfiltration |
+| Hex encoded | 32+ chars, excludes known hash lengths | Shellcode, binary blobs |
+| Double encoded | Decode reveals another encoding | Evasion technique (`%253C` → `%3C` → `<`) |
+| Mixed encoding | 2+ encoding types in one value | Obfuscation, WAF bypass |
+
+### Layer Peeling API
+
+Beyond type recognition, the plugin provides `detect_encoding_layers()` for recursive analysis:
+
+```rust
+use vajra_domain_encoding::detect_encoding_layers;
+
+let layers = detect_encoding_layers("%2548ello%2520world", 5);
+// Returns: [url_encoded(depth=0), url_encoded(depth=1)]
+```
+
+Bounded at depth 5, decode capped at 4KB per layer. Catches `base64(url(hex(payload)))`.
+
+---
+
 ## Future Plugin Domains
 
 The architecture supports any domain:

@@ -226,6 +226,10 @@ impl TypeRecognizer for Base64UrlRecognizer {
         if value.starts_with("eyJ") && value.matches('.').count() == 2 {
             return false;
         }
+        // Exclude UUIDs (8-4-4-4-12 hex with hyphens)
+        if value.len() == 36 && value.chars().filter(|&c| c == '-').count() == 4 {
+            return false;
+        }
         let Some(re) = compile_once(&B64URL_RE, r"^[A-Za-z0-9_-]{16,}={0,2}$") else {
             return false;
         };
