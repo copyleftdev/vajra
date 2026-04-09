@@ -159,6 +159,45 @@ impl ConcernProfile for AuditorProfile {
     }
 }
 
+/// Health-oriented concern profile.
+///
+/// Uses project health terminology (bus factor, contributor concentration,
+/// review coverage). Rendering style falls between auditor (formal) and
+/// fraud (investigative). Sections: Key Risks, Governance Signals,
+/// Sustainability Assessment.
+pub struct HealthProfile;
+
+#[allow(clippy::unnecessary_literal_bound)]
+impl ConcernProfile for HealthProfile {
+    fn name(&self) -> &str {
+        "health"
+    }
+
+    fn score(&self, candidate: &CandidateObservation) -> f64 {
+        ScoreWeights::health().score(candidate)
+    }
+
+    fn render(&self, essence: &EssenceData, format: OutputFormat) -> Result<String, VajraError> {
+        match format {
+            OutputFormat::Json => serde_json::to_string_pretty(&render::render_json(essence))
+                .map_err(|e| VajraError::Analysis {
+                    path: String::new(),
+                    message: format!("JSON serialization failed: {e}"),
+                }),
+            OutputFormat::CompactAi => {
+                serde_json::to_string_pretty(&render_compact_ai(essence, false)).map_err(|e| {
+                    VajraError::Analysis {
+                        path: String::new(),
+                        message: format!("JSON serialization failed: {e}"),
+                    }
+                })
+            }
+            OutputFormat::Markdown => Ok(render_markdown(essence, "health")),
+            _ => Ok(render::render_text(essence, "health")),
+        }
+    }
+}
+
 /// AI/machine-handoff concern profile.
 ///
 /// Uses compact, terse rendering style optimized for machine consumption.

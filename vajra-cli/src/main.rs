@@ -13,7 +13,7 @@ use vajra_core::{parse_file, InputFormat};
 use vajra_drift::full_drift;
 use vajra_essence::{
     AiProfile, AuditorProfile, CustomProfile, EngineerProfile, EssenceBuilder, FraudProfile,
-    StaffProfile,
+    HealthProfile, StaffProfile,
 };
 use vajra_fingerprint::{
     cluster_documents, FingerprintAnalyzer, FingerprintResult, StreamingFingerprintAccumulator,
@@ -358,6 +358,10 @@ fn cmd_profiles(cli: &Cli) -> Result<()> {
         (
             "fraud",
             "Investigative framing; emphasizes outliers, rarity, and suspicious patterns",
+        ),
+        (
+            "health",
+            "Project health assessment; emphasizes contributor diversity, governance, and sustainability",
         ),
     ];
 
@@ -1064,6 +1068,7 @@ fn cmd_essence(input: &str, cli: &Cli) -> Result<()> {
     let auditor_profile = AuditorProfile;
     let ai_profile = AiProfile;
     let fraud_profile = FraudProfile;
+    let health_profile = HealthProfile;
 
     // Load custom profiles from config if provided
     let custom_profiles = load_custom_profiles(cli)?;
@@ -1075,6 +1080,7 @@ fn cmd_essence(input: &str, cli: &Cli) -> Result<()> {
         "auditor" => &auditor_profile,
         "ai" => &ai_profile,
         "fraud" => &fraud_profile,
+        "health" => &health_profile,
         name => {
             // Search custom profiles
             if let Some(custom) = custom_profiles.iter().find(|p| p.name() == name) {
