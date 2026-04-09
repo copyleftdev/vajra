@@ -17,7 +17,7 @@
       "description": "rare value 'PI' (count=3, rarity=2.81 bits)",
       "entropy_signal": 0.0,
       "instability": 0.0,
-      "path": "",
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].group_code",
       "rarity": 0.14036774610288022,
       "score": 0.10211032383086406,
       "structural_coverage": 0.0
@@ -295,7 +295,7 @@
       "description": "rare value 'PI' (count=3, rarity=2.81 bits)",
       "entropy_signal": 0.0,
       "instability": 0.0,
-      "path": "",
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].group_code",
       "rarity": 0.14036774610288022,
       "score": 0.10211032383086406,
       "structural_coverage": 0.0

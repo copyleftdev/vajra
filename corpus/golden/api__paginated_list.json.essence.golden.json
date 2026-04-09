@@ -6,7 +6,7 @@
       "description": "rare value 'tag-18' (count=1, rarity=5.64 bits)",
       "entropy_signal": 0.0,
       "instability": 0.0,
-      "path": "",
+      "path": "$.data[*].metadata.tags[*]",
       "rarity": 0.2821928094887362,
       "score": 0.1446578428466209,
       "structural_coverage": 0.0
@@ -141,7 +141,7 @@
       "description": "rare value 'tag-18' (count=1, rarity=5.64 bits)",
       "entropy_signal": 0.0,
       "instability": 0.0,
-      "path": "",
+      "path": "$.data[*].metadata.tags[*]",
       "rarity": 0.2821928094887362,
       "score": 0.1446578428466209,
       "structural_coverage": 0.0

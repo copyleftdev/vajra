@@ -89,7 +89,7 @@ impl Analyzer for AnomalyAnalyzer {
         let mut rare_values = Vec::new();
         for (path, counts) in &string_counts_by_path {
             let total = string_totals_by_path.get(path).copied().unwrap_or(0);
-            let rare = detect_rare_values(counts, total, self.rarity_threshold_sigma);
+            let rare = detect_rare_values(path, counts, total, self.rarity_threshold_sigma);
             rare_values.extend(rare);
         }
 

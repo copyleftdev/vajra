@@ -317,6 +317,7 @@ fn analyze_anomalies(doc: &Document) -> serde_json::Value {
         .iter()
         .map(|rv| {
             serde_json::json!({
+                "path": rv.path,
                 "value": rv.value,
                 "count": rv.count,
                 "rarity_bits": rv.rarity_bits,

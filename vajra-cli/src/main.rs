@@ -71,6 +71,14 @@ struct Cli {
     /// Source code language (rust, python, javascript, go, etc.) — used with source code input
     #[arg(long, global = true)]
     lang: Option<String>,
+
+    /// Maximum number of git commits to extract (used with --input-format git)
+    #[arg(long, global = true, default_value = "500")]
+    git_limit: usize,
+
+    /// Git branch or revision to read (used with --input-format git, default: HEAD)
+    #[arg(long, global = true)]
+    git_branch: Option<String>,
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -83,6 +91,7 @@ enum InputFormatArg {
     Markdown,
     Pdf,
     Source,
+    Git,
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -201,7 +210,32 @@ fn to_input_format(arg: Option<InputFormatArg>) -> Option<InputFormat> {
         InputFormatArg::Markdown => Some(InputFormat::Markdown),
         InputFormatArg::Pdf => Some(InputFormat::Pdf),
         InputFormatArg::Source => None, // handled separately in load_document
+        InputFormatArg::Git => None,    // handled separately in load_document
     })
+}
+
+/// Check if the input should be parsed as git log.
+fn is_git_input(input: &str, cli: &Cli) -> bool {
+    if matches!(cli.input_format, Some(InputFormatArg::Git)) {
+        return true;
+    }
+    // Auto-detect: if no format specified, check if input is a directory
+    // containing a .git subdirectory.
+    if cli.input_format.is_none() {
+        let path = std::path::Path::new(input);
+        return vajra_core::is_git_repo(path);
+    }
+    false
+}
+
+/// Load a git log from a repository directory via vajra-core.
+fn load_git_document(input: &str, cli: &Cli) -> Result<Document> {
+    let config = vajra_core::GitLogConfig {
+        limit: cli.git_limit,
+        branch: cli.git_branch.clone(),
+    };
+    let path = std::path::Path::new(input);
+    vajra_core::load_git_log(path, &config).map_err(|e| anyhow::anyhow!("{e}"))
 }
 
 /// Check if the input should be parsed as source code.
@@ -246,7 +280,12 @@ fn load_source_document(input: &str, cli: &Cli) -> Result<Document> {
 
 /// Load a single document (first document if multi-doc format like NDJSON/YAML).
 fn load_document(input: &str, cli: &Cli) -> Result<Document> {
-    // Check for source code input first
+    // Check for git input first
+    if is_git_input(input, cli) {
+        return load_git_document(input, cli);
+    }
+
+    // Check for source code input
     #[cfg(feature = "source")]
     if is_source_input(input, cli) {
         return load_source_document(input, cli);
@@ -776,6 +815,7 @@ struct NumericOutlierView {
 
 #[derive(Serialize)]
 struct RareValueView {
+    path: String,
     value: String,
     count: u64,
     rarity_bits: f64,
@@ -808,6 +848,7 @@ fn build_anomaly_output(report: &AnomalyReport) -> AnomalyOutput {
             .rare_values
             .iter()
             .map(|rv| RareValueView {
+                path: rv.path.clone(),
                 value: rv.value.clone(),
                 count: rv.count,
                 rarity_bits: rv.rarity_bits,
@@ -874,8 +915,8 @@ fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
                 for rv in &output.rare_values {
                     let _ = writeln!(
                         text,
-                        "  \"{}\": count={}, rarity={:.4} bits",
-                        rv.value, rv.count, rv.rarity_bits
+                        "  {} \"{}\": count={}, rarity={:.4} bits",
+                        rv.path, rv.value, rv.count, rv.rarity_bits
                     );
                 }
             }

@@ -228,7 +228,7 @@ fn observations_from_anomalies(
     for rare in &anomalies.rare_values {
         let strength = (rare.rarity_bits / 20.0).min(1.0);
         candidates.push(CandidateObservation {
-            path: String::new(),
+            path: rare.path.clone(),
             description: format!(
                 "rare value '{}' (count={}, rarity={:.2} bits)",
                 rare.value, rare.count, rare.rarity_bits
