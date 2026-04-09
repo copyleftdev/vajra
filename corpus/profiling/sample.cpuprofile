@@ -1,0 +1,13 @@
+{
+  "nodes": [
+    {"id": 1, "callFrame": {"functionName": "(root)", "url": ""}, "children": [2, 3, 4]},
+    {"id": 2, "callFrame": {"functionName": "runLoop", "url": "fiberRuntime.js"}, "children": [5]},
+    {"id": 3, "callFrame": {"functionName": "processRequest", "url": "node_modules/express/lib/router.js"}, "children": []},
+    {"id": 4, "callFrame": {"functionName": "internalBinding", "url": "node:internal/modules/cjs/loader"}, "children": []},
+    {"id": 5, "callFrame": {"functionName": "handleConnection", "url": "src/server.js"}, "children": []}
+  ],
+  "startTime": 1000000,
+  "endTime": 2000000,
+  "samples": [1, 2, 2, 3, 2, 4, 1, 2, 3, 2, 5, 5, 2, 3, 1, 4, 2, 5, 2, 2],
+  "timeDeltas": [100, 200, 150, 300, 250, 100, 50, 200, 300, 100, 175, 225, 300, 150, 100, 200, 250, 175, 300, 100]
+}

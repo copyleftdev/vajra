@@ -172,7 +172,7 @@ fn detect_format_for_path(path: &Path, content: &str) -> InputFormat {
     let has_known_ext = path.extension().and_then(|e| e.to_str()).is_some_and(|e| {
         matches!(
             e,
-            "json" | "ndjson" | "jsonl" | "yaml" | "yml" | "csv" | "tsv"
+            "json" | "ndjson" | "jsonl" | "yaml" | "yml" | "csv" | "tsv" | "cpuprofile"
         )
     });
 

@@ -64,7 +64,7 @@ struct Cli {
     #[arg(long, global = true)]
     streaming: bool,
 
-    /// Force input format instead of auto-detecting (json, ndjson, yaml, csv, tsv, markdown, pdf, source)
+    /// Force input format instead of auto-detecting (json, ndjson, yaml, csv, tsv, markdown, pdf, cpuprofile, strace, source)
     #[arg(long, global = true)]
     input_format: Option<InputFormatArg>,
 
@@ -90,6 +90,8 @@ enum InputFormatArg {
     Tsv,
     Markdown,
     Pdf,
+    Cpuprofile,
+    Strace,
     Source,
     Git,
 }
@@ -209,6 +211,8 @@ fn to_input_format(arg: Option<InputFormatArg>) -> Option<InputFormat> {
         InputFormatArg::Tsv => Some(InputFormat::Tsv),
         InputFormatArg::Markdown => Some(InputFormat::Markdown),
         InputFormatArg::Pdf => Some(InputFormat::Pdf),
+        InputFormatArg::Cpuprofile => Some(InputFormat::CpuProfile),
+        InputFormatArg::Strace => Some(InputFormat::Strace),
         InputFormatArg::Source => None, // handled separately in load_document
         InputFormatArg::Git => None,    // handled separately in load_document
     })
