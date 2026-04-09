@@ -67,4 +67,13 @@ impl Document {
     pub fn metadata(&self) -> &DocumentMetadata {
         &self.metadata
     }
+
+    /// Consume the document and return the inner JSON value.
+    ///
+    /// This is useful when aggregating multiple documents (e.g., NDJSON lines)
+    /// into a single array value without cloning.
+    #[must_use]
+    pub fn into_value(self) -> serde_json::Value {
+        self.value
+    }
 }

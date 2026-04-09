@@ -90,6 +90,75 @@ pub fn load_documents(
     formats::parse_auto(&loaded.content, Some(loaded.format))
 }
 
+/// Load input and aggregate multi-document formats into a single document.
+///
+/// For NDJSON input, all lines are collected into a JSON array and re-parsed
+/// as a single [`Document`]. This ensures that cross-record statistics
+/// (entropy, cardinality, etc.) are computed over the full dataset rather
+/// than per-line (which yields useless entropy=0, cardinality=1).
+///
+/// For single-document formats (JSON, CSV, YAML with one doc), this behaves
+/// identically to calling [`load_documents`] and taking the first result.
+///
+/// Multi-document YAML is also aggregated into an array when it contains
+/// more than one document.
+///
+/// # Errors
+///
+/// Returns errors from loading or parsing stages, or if no documents are
+/// found in the input.
+pub fn load_documents_aggregated(
+    input: &str,
+    format_override: Option<InputFormat>,
+) -> Result<Document, VajraError> {
+    let source = resolve_input(input);
+    let mut loaded = load_input(&source)?;
+
+    if let Some(fmt) = format_override {
+        loaded.format = fmt;
+    }
+
+    let docs = formats::parse_auto(&loaded.content, Some(loaded.format))?;
+
+    if docs.is_empty() {
+        return Err(VajraError::Parse {
+            byte_offset: 0,
+            message: format!("no documents found in input: {input}"),
+            source_path: None,
+        });
+    }
+
+    // Single document — return as-is (no wrapping needed).
+    if docs.len() == 1 {
+        // Safe: we just checked len() == 1
+        return Ok(docs.into_iter().next().unwrap_or_else(|| {
+            // Unreachable given the length check, but avoid panic.
+            Document::new(
+                serde_json::Value::Null,
+                vajra_types::PathTrie::new(),
+                vajra_types::DocumentMetadata {
+                    total_nodes: 0,
+                    max_depth: 0,
+                    distinct_paths: 0,
+                    raw_size_bytes: 0,
+                },
+            )
+        }));
+    }
+
+    // Multiple documents (NDJSON lines or multi-doc YAML): wrap values into
+    // a JSON array and re-parse so the trie and metadata cover all records.
+    let values: Vec<serde_json::Value> = docs.into_iter().map(|d| d.into_value()).collect();
+    let array_value = serde_json::Value::Array(values);
+    let json_text = serde_json::to_string(&array_value).map_err(|e| VajraError::Parse {
+        byte_offset: 0,
+        message: format!("failed to serialize aggregated NDJSON array: {e}"),
+        source_path: None,
+    })?;
+
+    crate::parse::parse_str(&json_text)
+}
+
 // ---------------------------------------------------------------------------
 // Private loading helpers
 // ---------------------------------------------------------------------------
@@ -479,5 +548,73 @@ mod tests {
             detect_format_for_url("https://api.example.com/v1/data", r#"{"sniffed":"json"}"#),
             InputFormat::Json
         );
+    }
+
+    // -----------------------------------------------------------------------
+    // load_documents_aggregated tests
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn aggregated_ndjson_wraps_into_array() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("test.ndjson");
+        std::fs::write(
+            &path,
+            "{\"a\":1,\"b\":\"x\"}\n{\"a\":2,\"b\":\"y\"}\n{\"a\":3,\"b\":\"x\"}\n",
+        )?;
+
+        let doc = load_documents_aggregated(path.to_str().unwrap_or(""), None)?;
+        // Should be an array of 3 objects
+        let arr = doc.value().as_array().ok_or("expected array")?;
+        assert_eq!(arr.len(), 3);
+        assert_eq!(arr[0]["a"], serde_json::json!(1));
+        assert_eq!(arr[2]["b"], serde_json::Value::String("x".to_string()));
+        // Trie should have wildcard paths like $[*].a and $[*].b
+        assert!(doc.metadata().distinct_paths > 2);
+        Ok(())
+    }
+
+    #[test]
+    fn aggregated_single_json_returns_as_is() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("test.json");
+        std::fs::write(&path, r#"{"name":"Alice","age":30}"#)?;
+
+        let doc = load_documents_aggregated(path.to_str().unwrap_or(""), None)?;
+        // Should remain an object (not wrapped in array)
+        assert!(doc.value().is_object());
+        assert_eq!(doc.metadata().total_nodes, 3);
+        Ok(())
+    }
+
+    #[test]
+    fn aggregated_single_ndjson_line_returns_as_is() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("single.ndjson");
+        std::fs::write(&path, "{\"key\":\"value\"}\n")?;
+
+        let doc = load_documents_aggregated(path.to_str().unwrap_or(""), None)?;
+        // Single NDJSON line should not be wrapped
+        assert!(doc.value().is_object());
+        Ok(())
+    }
+
+    #[test]
+    fn aggregated_ndjson_deterministic() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("det.ndjson");
+        std::fs::write(
+            &path,
+            "{\"x\":1}\n{\"x\":2}\n{\"x\":3}\n{\"x\":4}\n{\"x\":5}\n",
+        )?;
+
+        let path_str = path.to_str().unwrap_or("");
+        let reference = load_documents_aggregated(path_str, None)?;
+        for _ in 0..10 {
+            let doc = load_documents_aggregated(path_str, None)?;
+            assert_eq!(doc.value(), reference.value());
+            assert_eq!(doc.metadata().total_nodes, reference.metadata().total_nodes);
+        }
+        Ok(())
     }
 }

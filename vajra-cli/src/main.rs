@@ -8,7 +8,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 
 use vajra_anomaly::{AnomalyAnalyzer, AnomalyReport};
-use vajra_core::input::load_documents;
+use vajra_core::input::load_documents_aggregated;
 use vajra_core::{parse_file, InputFormat};
 use vajra_drift::full_drift;
 use vajra_essence::{
@@ -278,7 +278,12 @@ fn load_source_document(input: &str, cli: &Cli) -> Result<Document> {
     vajra_source::parse_source_file(path, &config).map_err(|e| anyhow::anyhow!("{e}"))
 }
 
-/// Load a single document (first document if multi-doc format like NDJSON/YAML).
+/// Load a single document, aggregating multi-document formats into one.
+///
+/// For NDJSON and multi-document YAML, all records are wrapped into a
+/// single JSON array so that downstream analyzers (stats, anomalies,
+/// invariants, essence) compute cross-record statistics. Without this,
+/// per-line analysis yields entropy=0 and cardinality=1 for every field.
 fn load_document(input: &str, cli: &Cli) -> Result<Document> {
     // Check for git input first
     if is_git_input(input, cli) {
@@ -292,11 +297,7 @@ fn load_document(input: &str, cli: &Cli) -> Result<Document> {
     }
 
     let fmt = to_input_format(cli.input_format);
-    let mut docs = load_documents(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))?;
-    if docs.is_empty() {
-        anyhow::bail!("no documents found in input: {input}");
-    }
-    Ok(docs.remove(0))
+    load_documents_aggregated(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))
 }
 
 fn hex(bytes: &[u8; 32]) -> String {
