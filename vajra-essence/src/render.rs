@@ -26,6 +26,7 @@ pub fn render_text(essence: &EssenceData, profile_name: &str) -> String {
         "fraud" => render_fraud_text(essence, &mut out),
         "auditor" => render_auditor_text(essence, &mut out),
         "ai" => render_ai_text(essence, &mut out),
+        "health" => render_health_text(essence, &mut out),
         _ => render_generic_text(essence, profile_name, &mut out),
     }
 
@@ -434,6 +435,110 @@ fn render_ai_text(essence: &EssenceData, out: &mut String) {
             );
         }
     }
+}
+
+fn render_health_text(essence: &EssenceData, out: &mut String) {
+    // --- Key Risks ---
+    out.push_str("Key Risks\n");
+    out.push_str("==========\n\n");
+
+    let anomalies: Vec<&ScoredObservation> = essence
+        .observations
+        .iter()
+        .filter(|o| o.observation.anomaly_strength > 0.0)
+        .collect();
+
+    if anomalies.is_empty() {
+        out.push_str("No key risks identified.\n\n");
+    } else {
+        for obs in &anomalies {
+            let label = if obs.observation.anomaly_strength > 0.7 {
+                "[CRITICAL]"
+            } else if obs.observation.anomaly_strength > 0.4 {
+                "[HIGH]"
+            } else if obs.observation.anomaly_strength > 0.2 {
+                "[MODERATE]"
+            } else {
+                "[LOW]"
+            };
+            let _ = writeln!(
+                out,
+                "  {label} {} -- {} (strength: {:.3})",
+                obs.observation.path, obs.observation.description, obs.observation.anomaly_strength
+            );
+        }
+        out.push('\n');
+    }
+
+    // --- Governance Signals ---
+    out.push_str("Governance Signals\n");
+    out.push_str("===================\n\n");
+
+    let governance: Vec<&ScoredObservation> = essence
+        .observations
+        .iter()
+        .filter(|o| o.observation.instability > 0.0 || o.observation.entropy_signal > 0.0)
+        .collect();
+
+    if governance.is_empty() {
+        out.push_str("No governance concerns detected.\n\n");
+    } else {
+        for obs in &governance {
+            let _ = writeln!(
+                out,
+                "  [{:.4}] {} -- {} (instability: {:.3}, entropy: {:.3})",
+                obs.score,
+                obs.observation.path,
+                obs.observation.description,
+                obs.observation.instability,
+                obs.observation.entropy_signal,
+            );
+        }
+        out.push('\n');
+    }
+
+    // --- Sustainability Assessment ---
+    out.push_str("Sustainability Assessment\n");
+    out.push_str("==========================\n\n");
+
+    let _ = writeln!(
+        out,
+        "Total nodes examined: {}\nDistinct paths: {}\nMaximum depth: {}\n",
+        essence.total_nodes, essence.distinct_paths, essence.max_depth
+    );
+
+    let rarity_obs: Vec<&ScoredObservation> = essence
+        .observations
+        .iter()
+        .filter(|o| o.observation.rarity > 0.0)
+        .collect();
+
+    if rarity_obs.is_empty() {
+        out.push_str("No single-contributor or one-time contributor areas identified.\n\n");
+    } else {
+        out.push_str("Contributor concentration signals:\n");
+        for obs in &rarity_obs {
+            let _ = writeln!(
+                out,
+                "  [{:.4}] {} -- {} (rarity: {:.3})",
+                obs.score,
+                obs.observation.path,
+                obs.observation.description,
+                obs.observation.rarity,
+            );
+        }
+        out.push('\n');
+    }
+
+    let total_obs = essence.observations.len();
+    let anomaly_count = anomalies.len();
+    let governance_count = governance.len();
+
+    let _ = writeln!(
+        out,
+        "Overall: {} observations, {} risk indicators, {} governance signals.",
+        total_obs, anomaly_count, governance_count
+    );
 }
 
 fn render_generic_text(essence: &EssenceData, profile_name: &str, out: &mut String) {

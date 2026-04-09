@@ -104,6 +104,22 @@ impl ScoreWeights {
             concern_relevance: 0.15,
         }
     }
+
+    /// Health profile: optimized for repository/project health assessment.
+    ///
+    /// Emphasizes contributor diversity (entropy) and domain-specific health
+    /// patterns (concern relevance), with strong anomaly detection.
+    #[must_use]
+    pub fn health() -> Self {
+        Self {
+            entropy_signal: 0.25,
+            concern_relevance: 0.25,
+            anomaly_strength: 0.20,
+            rarity: 0.15,
+            instability: 0.10,
+            structural_coverage: 0.05,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -118,6 +134,7 @@ mod tests {
             ScoreWeights::auditor(),
             ScoreWeights::ai(),
             ScoreWeights::fraud(),
+            ScoreWeights::health(),
         ];
         for profile in &profiles {
             let total = profile.total();

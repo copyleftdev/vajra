@@ -18,7 +18,9 @@ pub use chunking::{chunk_essence, ChunkContext, EssenceChunk};
 pub use compact_ai::render_compact_ai;
 pub use config::{load_profiles_from_file, load_profiles_from_toml, CustomProfile};
 pub use markdown::render_markdown;
-pub use profiles::{AiProfile, AuditorProfile, EngineerProfile, FraudProfile, StaffProfile};
+pub use profiles::{
+    AiProfile, AuditorProfile, EngineerProfile, FraudProfile, HealthProfile, StaffProfile,
+};
 pub use render::{render_json, render_text};
 pub use tokens::{estimate_json_tokens, estimate_tokens};
 
@@ -159,6 +161,20 @@ mod tests {
         assert_eq!(FraudProfile.name(), "fraud");
         assert_eq!(AuditorProfile.name(), "auditor");
         assert_eq!(AiProfile.name(), "ai");
+        assert_eq!(HealthProfile.name(), "health");
+    }
+
+    #[test]
+    fn health_profile_renders_health_sections() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"name": "test", "values": [1, 2, 3]}"#)?;
+        let profile = HealthProfile;
+        let essence = EssenceBuilder::new(&doc, &profile).build();
+        let text = profile.render(&essence, OutputFormat::Text)?;
+
+        assert!(text.contains("Key Risks"));
+        assert!(text.contains("Governance Signals"));
+        assert!(text.contains("Sustainability Assessment"));
+        Ok(())
     }
 
     #[test]
@@ -208,6 +224,7 @@ mod tests {
             &FraudProfile as &dyn ConcernProfile,
             &AuditorProfile as &dyn ConcernProfile,
             &AiProfile as &dyn ConcernProfile,
+            &HealthProfile as &dyn ConcernProfile,
         ] {
             let essence = EssenceBuilder::new(&doc, *profile).build();
             let json_str = profile.render(&essence, OutputFormat::Json)?;
