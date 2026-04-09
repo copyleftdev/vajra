@@ -150,6 +150,13 @@ fn build_anomalies(observations: &[ScoredObservation]) -> Vec<serde_json::Value>
                 }
             }
 
+            // Add value for rare value anomalies
+            if t == "rare_value" {
+                if let Some(v) = extract_rare_value(&obs.observation.description) {
+                    obj.insert("v".to_string(), serde_json::json!(v));
+                }
+            }
+
             serde_json::Value::Object(obj)
         })
         .collect()
@@ -255,6 +262,14 @@ fn classify_notable(description: &str) -> &'static str {
     } else {
         "observation"
     }
+}
+
+/// Extract the rare value string from a description like "rare value 'foo' (count=1, ...)".
+fn extract_rare_value(description: &str) -> Option<String> {
+    let start = description.find("rare value '")? + "rare value '".len();
+    let rest = &description[start..];
+    let end = rest.find('\'')?;
+    Some(rest[..end].to_string())
 }
 
 /// Extract a numeric value from a description like "value=350".
@@ -547,6 +562,56 @@ mod tests {
         assert!(meta["truncated"].as_bool().ok_or("expected bool")?);
         assert_eq!(meta["budget_used"].as_u64().ok_or("expected u64")?, 450);
         assert_eq!(meta["budget_limit"].as_u64().ok_or("expected u64")?, 500);
+        Ok(())
+    }
+
+    #[test]
+    fn compact_ai_rare_value_has_path_and_value() -> Result<(), Box<dyn std::error::Error>> {
+        let observations = vec![ScoredObservation {
+            observation: CandidateObservation {
+                path: "$.items[*].status".to_string(),
+                description: "rare value 'discontinued' (count=1, rarity=8.50 bits)".to_string(),
+                rarity: 0.425,
+                instability: 0.0,
+                entropy_signal: 0.0,
+                structural_coverage: 0.0,
+                anomaly_strength: 0.425,
+                concern_relevance: 0.4,
+            },
+            score: 0.443,
+        }];
+
+        let essence = EssenceData {
+            observations,
+            document_identity: "test".to_string(),
+            total_nodes: 10,
+            distinct_paths: 3,
+            max_depth: 2,
+            truncated: false,
+            budget_used: None,
+            budget_limit: None,
+        };
+
+        let result = render_compact_ai(&essence, false);
+        let anomalies = result["anomalies"].as_array().ok_or("expected array")?;
+        assert_eq!(anomalies.len(), 1, "should have one anomaly");
+
+        let anomaly = anomalies[0].as_object().ok_or("expected object")?;
+        assert_eq!(
+            anomaly.get("p").and_then(|v| v.as_str()),
+            Some("$.items[*].status"),
+            "rare_value anomaly path should not be empty"
+        );
+        assert_eq!(
+            anomaly.get("t").and_then(|v| v.as_str()),
+            Some("rare_value"),
+            "anomaly type should be rare_value"
+        );
+        assert_eq!(
+            anomaly.get("v").and_then(|v| v.as_str()),
+            Some("discontinued"),
+            "rare_value anomaly should include the value"
+        );
         Ok(())
     }
 

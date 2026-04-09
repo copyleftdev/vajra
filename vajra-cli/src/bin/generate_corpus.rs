@@ -2080,6 +2080,7 @@ fn capture_anomalies_golden(doc: &Document, stem: &str, golden_dir: &Path) {
         .iter()
         .map(|rv| {
             json!({
+                "path": rv.path,
                 "value": rv.value,
                 "count": rv.count,
                 "rarity_bits": rv.rarity_bits,

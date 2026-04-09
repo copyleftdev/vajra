@@ -776,6 +776,7 @@ struct NumericOutlierView {
 
 #[derive(Serialize)]
 struct RareValueView {
+    path: String,
     value: String,
     count: u64,
     rarity_bits: f64,
@@ -808,6 +809,7 @@ fn build_anomaly_output(report: &AnomalyReport) -> AnomalyOutput {
             .rare_values
             .iter()
             .map(|rv| RareValueView {
+                path: rv.path.clone(),
                 value: rv.value.clone(),
                 count: rv.count,
                 rarity_bits: rv.rarity_bits,
@@ -874,8 +876,8 @@ fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
                 for rv in &output.rare_values {
                     let _ = writeln!(
                         text,
-                        "  \"{}\": count={}, rarity={:.4} bits",
-                        rv.value, rv.count, rv.rarity_bits
+                        "  {} \"{}\": count={}, rarity={:.4} bits",
+                        rv.path, rv.value, rv.count, rv.rarity_bits
                     );
                 }
             }

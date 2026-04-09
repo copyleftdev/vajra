@@ -11,6 +11,7 @@
   "rare_values": [
     {
       "count": 3,
+      "path": "$.claims[*].service_lines[*].cas_adjustments[*].group_code",
       "rarity_bits": 2.807354922057604,
       "value": "PI"
     }

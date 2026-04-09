@@ -9,6 +9,8 @@ use std::collections::BTreeMap;
 /// A value flagged as rare based on its self-information score.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RarityOutlier {
+    /// The path where the rare value was found.
+    pub path: String,
     /// The rare value.
     pub value: String,
     /// How many times the value appeared.
@@ -50,6 +52,7 @@ pub fn rarity_score(value_count: u64, total_count: u64) -> f64 {
 /// - All values have the same count: returns empty vec (MAD = 0, all equally rare).
 #[must_use]
 pub fn detect_rare_values(
+    path: &str,
     counts: &BTreeMap<String, u64>,
     total: u64,
     threshold_sigma: f64,
@@ -89,6 +92,7 @@ pub fn detect_rare_values(
         .into_iter()
         .filter(|&(_, _, r)| r > cutoff)
         .map(|(val, cnt, r)| RarityOutlier {
+            path: path.to_string(),
             value: val.clone(),
             count: cnt,
             rarity_bits: r,
@@ -155,7 +159,7 @@ mod tests {
     #[test]
     fn detect_rare_empty() {
         let counts = BTreeMap::new();
-        let result = detect_rare_values(&counts, 0, 2.0);
+        let result = detect_rare_values("$", &counts, 0, 2.0);
         assert!(result.is_empty());
     }
 
@@ -163,7 +167,7 @@ mod tests {
     fn detect_rare_single_value() {
         let mut counts = BTreeMap::new();
         counts.insert("a".to_owned(), 100);
-        let result = detect_rare_values(&counts, 100, 2.0);
+        let result = detect_rare_values("$.field", &counts, 100, 2.0);
         assert!(result.is_empty());
     }
 
@@ -174,7 +178,7 @@ mod tests {
         for i in 0..10 {
             counts.insert(format!("val_{i}"), 100);
         }
-        let result = detect_rare_values(&counts, 1000, 2.0);
+        let result = detect_rare_values("$.field", &counts, 1000, 2.0);
         assert!(
             result.is_empty(),
             "uniform distribution should have no rare outliers"
@@ -191,10 +195,15 @@ mod tests {
         counts.insert("rare".to_owned(), 1);
         let total: u64 = counts.values().sum();
 
-        let result = detect_rare_values(&counts, total, 2.0);
+        let result = detect_rare_values("$.items[*].status", &counts, total, 2.0);
         assert!(!result.is_empty(), "should detect the rare value");
 
         let has_rare = result.iter().any(|o| o.value == "rare");
         assert!(has_rare, "the value 'rare' should be in the outliers");
+
+        // Verify the path is propagated
+        for outlier in &result {
+            assert_eq!(outlier.path, "$.items[*].status");
+        }
     }
 }
