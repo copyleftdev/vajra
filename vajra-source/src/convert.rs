@@ -443,13 +443,11 @@ mod tests {
             semantic_paths: true,
             ..SourceConfig::default()
         };
-        let baseline =
-            serde_json::to_string(&parse_to_json(source, SourceLanguage::Rust, &config))
-                .unwrap_or_default();
+        let baseline = serde_json::to_string(&parse_to_json(source, SourceLanguage::Rust, &config))
+            .unwrap_or_default();
         for _ in 0..10 {
-            let run =
-                serde_json::to_string(&parse_to_json(source, SourceLanguage::Rust, &config))
-                    .unwrap_or_default();
+            let run = serde_json::to_string(&parse_to_json(source, SourceLanguage::Rust, &config))
+                .unwrap_or_default();
             assert_eq!(baseline, run, "semantic output must be deterministic");
         }
     }
