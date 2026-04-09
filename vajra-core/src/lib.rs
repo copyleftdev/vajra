@@ -6,6 +6,7 @@
 //! - **Input loading**: Unified loading from files (plain/compressed), stdin, and URLs (`input` module)
 
 pub mod canonical;
+pub mod cpuprofile;
 pub mod decompress;
 pub mod event;
 pub mod fetch;
@@ -17,6 +18,7 @@ pub mod parse;
 pub mod pdf;
 pub mod pipeline;
 pub mod redact;
+pub mod strace;
 pub mod stream;
 
 pub use canonical::canonicalize;

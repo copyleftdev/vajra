@@ -1,6 +1,7 @@
 //! Input format detection and conversion.
 //!
-//! Supports JSON, NDJSON, YAML, CSV, TSV, Markdown, and PDF. All formats are
+//! Supports JSON, NDJSON, YAML, CSV, TSV, Markdown, PDF, V8 cpuprofile, and
+//! strace summary. All formats are
 //! normalized to `serde_json::Value` and then wrapped in a [`Document`] via
 //! the existing parse pipeline.
 
@@ -21,6 +22,8 @@ pub enum InputFormat {
     Markdown,
     Pdf,
     Git,
+    CpuProfile,
+    Strace,
 }
 
 /// Auto-detect format from a file extension.
@@ -35,6 +38,7 @@ pub fn detect_format(path: &Path) -> InputFormat {
         Some("tsv") => InputFormat::Tsv,
         Some("md" | "markdown") => InputFormat::Markdown,
         Some("pdf") => InputFormat::Pdf,
+        Some("cpuprofile") => InputFormat::CpuProfile,
         // Treat .json and any unknown extension as JSON (the default).
         _ => InputFormat::Json,
     }
@@ -46,6 +50,11 @@ pub fn detect_format(path: &Path) -> InputFormat {
 #[must_use]
 pub fn sniff_format(input: &str) -> InputFormat {
     let trimmed = input.trim_start();
+
+    // strace -c summary starts with "% time"
+    if trimmed.starts_with("% time") {
+        return InputFormat::Strace;
+    }
 
     // JSON starts with `{` or `[`
     if trimmed.starts_with('{') || trimmed.starts_with('[') {
@@ -122,6 +131,14 @@ pub fn parse_auto(input: &str, format: Option<InputFormat>) -> Result<Vec<Docume
                 .to_string(),
             source_path: None,
         }),
+        InputFormat::CpuProfile => {
+            let json_str = crate::cpuprofile::parse_cpuprofile(input)?;
+            Ok(vec![parse_str(&json_str)?])
+        }
+        InputFormat::Strace => {
+            let json_str = crate::strace::parse_strace(input)?;
+            Ok(vec![parse_str(&json_str)?])
+        }
     }
 }
 
