@@ -36,7 +36,8 @@ vajra/
 ├── vajra-domain-sec/    # optional security plugin (CVE, MITRE, IPs, hashes, JWT)
 ├── vajra-domain-devops/ # optional DevOps plugin (K8s, Docker, Terraform, ARN, semver)
 ├── vajra-source/        # source code parsing via tree-sitter (9 languages)
-└── vajra-domain-source/ # source code recognizers (naming conventions, paths)
+├── vajra-domain-source/ # source code recognizers (naming conventions, paths)
+└── vajra-domain-encoding/ # encoding detection (Base64, hex, URL, PEM, layers)
 ```
 
 Dependencies flow downward. `vajra-core` and `vajra-types` depend on nothing internal. `vajra-cli` depends on everything.

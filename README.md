@@ -12,7 +12,7 @@
   <a href="https://github.com/copyleftdev/vajra/actions/workflows/ci.yml"><img src="https://github.com/copyleftdev/vajra/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://copyleftdev.github.io/vajra"><img src="https://img.shields.io/badge/docs-live-gold" alt="Docs"></a>
   <a href="https://github.com/copyleftdev/vajra/actions"><img src="https://img.shields.io/badge/tests-990%20passed-brightgreen" alt="Tests"></a>
-  <a href="https://github.com/copyleftdev/vajra"><img src="https://img.shields.io/badge/crates-16-blue" alt="Crates"></a>
+  <a href="https://github.com/copyleftdev/vajra"><img src="https://img.shields.io/badge/crates-17-blue" alt="Crates"></a>
   <a href="LICENSE-MIT"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-orange" alt="License"></a>
 </p>
 
@@ -161,6 +161,7 @@ vajra/
 ├── vajra-domain-devops # DevOps plugin (K8s, Docker, Terraform, ARN, semver)
 ├── vajra-source       # Source code parsing via tree-sitter (9 languages)
 ├── vajra-domain-source # Source code recognizers (naming conventions, paths)
+├── vajra-domain-encoding # Encoding detection (Base64, hex, URL, PEM, layers)
 ├── vajra-motif        # (reserved)
 ├── vajra-cli          # CLI commands, batch processing
 └── docs/              # mdbook documentation site

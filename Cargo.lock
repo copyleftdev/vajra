@@ -1849,6 +1849,7 @@ dependencies = [
  "vajra-anomaly",
  "vajra-core",
  "vajra-domain-devops",
+ "vajra-domain-encoding",
  "vajra-domain-med",
  "vajra-domain-sec",
  "vajra-domain-source",
@@ -1893,6 +1894,16 @@ dependencies = [
 
 [[package]]
 name = "vajra-domain-devops"
+version = "0.3.0"
+dependencies = [
+ "proptest",
+ "regex",
+ "serde_json",
+ "vajra-types",
+]
+
+[[package]]
+name = "vajra-domain-encoding"
 version = "0.3.0"
 dependencies = [
  "proptest",

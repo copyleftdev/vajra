@@ -267,7 +267,7 @@ A plugin **may not:**
 
 ## Shipped Plugins
 
-Four domain plugins ship with Vajra, all enabled by default via feature flags:
+Five domain plugins ship with Vajra, all enabled by default via feature flags:
 
 | Domain | Plugin | Type Recognizers | Hints |
 |---|---|---|---|
@@ -275,18 +275,20 @@ Four domain plugins ship with Vajra, all enabled by default via feature flags:
 | Security | `vajra-domain-sec` | CVE, IPv4, IPv6, CIDR, MAC, SHA-256, SHA-1, MD5, JWT, MITRE ATT&CK Technique, MITRE Tactic, CVSS | 6 (network flow, alert classification, vulnerability, auth, process execution, DNS) |
 | DevOps | `vajra-domain-devops` | Container ID, Semver, Git SHA, Docker Image, AWS ARN, GCP Resource, CIDR, Cron, K8s Namespace, Terraform Resource | 6 (K8s pod spec, deployment metadata, service endpoint, Terraform, CI pipeline, container spec) |
 | Source Code | `vajra-domain-source` | snake_case, camelCase, PascalCase, SCREAMING_SNAKE, import paths, source file paths | 6 (function definition, class definition, import statement, parameter list, conditional, loop) |
+| Encoding | `vajra-domain-encoding` | Base64, Base64URL, hex, URL-encoded, HTML entities, Unicode escapes, PEM, data URI, quoted-printable, MIME encoded word, Punycode, double-encoded, mixed-encoding | 3 (content+encoding, transfer encoding, encoded/decoded pairs) |
 
 ### Feature Flags
 
 ```toml
 # vajra-cli/Cargo.toml
 [features]
-default = ["medical", "security", "devops", "source"]
+default = ["medical", "security", "devops", "source", "encoding"]
 medical = ["vajra-domain-med"]
 security = ["vajra-domain-sec"]
 devops = ["vajra-domain-devops"]
 source = ["vajra-source", "vajra-domain-source"]
-all-plugins = ["medical", "security", "devops", "source"]
+encoding = ["vajra-domain-encoding"]
+all-plugins = ["medical", "security", "devops", "source", "encoding"]
 ```
 
 Build without a plugin: `cargo build --no-default-features --features security,devops`

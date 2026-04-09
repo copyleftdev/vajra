@@ -1,10 +1,10 @@
 # Architecture
 
-Vajra is a Rust workspace of 16 crates. Each crate has a single responsibility. Dependencies flow downward. Nothing cycles.
+Vajra is a Rust workspace of 17 crates. Each crate has a single responsibility. Dependencies flow downward. Nothing cycles.
 
 ---
 
-## The 16-Crate Workspace
+## The 17-Crate Workspace
 
 ```text
 vajra/
@@ -23,6 +23,7 @@ vajra/
 ├── vajra-domain-sec/     Security type recognizers (CVE, MITRE ATT&CK, IPs, hashes, JWT)
 ├── vajra-domain-devops/  DevOps type recognizers (K8s, Docker, Terraform, ARN, semver)
 ├── vajra-domain-source/  Source code recognizers (naming conventions, import paths)
+├── vajra-domain-encoding/ Encoding detection (Base64, hex, URL, PEM, layers)
 └── Cargo.toml            Workspace root
 ```
 

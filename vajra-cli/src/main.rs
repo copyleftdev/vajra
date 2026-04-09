@@ -440,6 +440,14 @@ fn collect_recognizers() -> Vec<Box<dyn vajra_types::traits::TypeRecognizer>> {
         recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
     }
 
+    // Encoding plugin registered LAST — other plugins claim specific types
+    // (JWT, SHA hashes) first; encoding detects the general encoding pattern.
+    #[cfg(feature = "encoding")]
+    {
+        let plugin = vajra_domain_encoding::EncodingPlugin;
+        recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
+    }
+
     recognizers
 }
 
