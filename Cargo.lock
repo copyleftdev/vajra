@@ -1869,6 +1869,7 @@ dependencies = [
  "vajra-essence",
  "vajra-fingerprint",
  "vajra-query",
+ "vajra-report",
  "vajra-source",
  "vajra-stats",
  "vajra-types",
@@ -2029,6 +2030,16 @@ dependencies = [
  "vajra-anomaly",
  "vajra-core",
  "vajra-stats",
+ "vajra-types",
+]
+
+[[package]]
+name = "vajra-report"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tempfile",
  "vajra-types",
 ]
 
