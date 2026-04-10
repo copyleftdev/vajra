@@ -32,9 +32,11 @@ vajra/
 ├── vajra-essence/       # concern profiles, scoring, ranking, rendering, templates
 ├── vajra-query/         # path expressions, analysis functions
 ├── vajra-cli/           # CLI commands, argument parsing, output formatting
+├── vajra-cascade/       # temporal cause-effect chain detection
 ├── vajra-domain-med/    # optional medical/EDI plugin
 ├── vajra-domain-sec/    # optional security plugin (CVE, MITRE, IPs, hashes, JWT)
 ├── vajra-domain-devops/ # optional DevOps plugin (K8s, Docker, Terraform, ARN, semver)
+├── vajra-domain-github/ # optional GitHub plugin (PRs, issues, reviews, releases, actions)
 ├── vajra-source/        # source code parsing via tree-sitter (9 languages)
 ├── vajra-domain-source/ # source code recognizers (naming conventions, paths)
 └── vajra-domain-encoding/ # encoding detection (Base64, hex, URL, PEM, layers)
@@ -79,6 +81,23 @@ Skills activate automatically when the work matches. No need to invoke them — 
 | **vajra-domain-sec** | "security plugin", "CVE detection", "MITRE ATT&CK types", "detect JWT" — security type recognizers, hints, profiles |
 | **vajra-domain-devops** | "devops plugin", "K8s recognizers", "detect container IDs", "Terraform" — infrastructure type recognizers, hints, profiles |
 | **vajra-cli-command** | "add CLI command", "implement inspect", "add subcommand" — clap patterns, output modes, error style |
+
+## CLI Commands
+
+| Command | Purpose |
+|---------|---------|
+| `inspect` | Full structural analysis — paths, types, fingerprints, domain recognition |
+| `stats` | Statistical summary — entropy, frequency, numeric distributions, temporal windowing |
+| `anomalies` | MAD-based outliers, rarity scoring, type instability |
+| `fingerprint` | BLAKE3 structural hashes, Merkle motifs |
+| `essence` | Concern-oriented reduction — 7 profiles, token budgets, compact-AI |
+| `drift` | Schema drift — JSD, Wasserstein, severity classification, `--group-by` |
+| `cascade` | Temporal cause-effect chain detection across events |
+| `cluster` | MinHash + LSH similarity clustering |
+| `invariants` | Cross-field relationships — conditional entropy, PMI |
+| `query` | Path expressions with analysis functions |
+| `batch` | Parallel batch analysis across directories |
+| `profiles` | List available profiles |
 
 ## Hooks
 
@@ -161,6 +180,7 @@ Agent(isolation: worktree) → vajra-anomaly
 | Conditional entropy | stats | functional dependency detection |
 | Benford's Law | stats | leading digit forensics (Nigrini 1996) |
 | RFC 8785 (JCS) | core | IETF canonical JSON |
+| Linear regression | stats | temporal trend detection in windowed series |
 | DFA bank | core | O(m) type inference, no backtracking |
 
 ## Dependency Stack
@@ -181,6 +201,7 @@ Agent(isolation: worktree) → vajra-anomaly
 | Float formatting | `ryu` |
 | Unicode | `unicode-normalization` |
 | Mutation tests | `cargo-mutants` |
+| ISO 8601 parsing | manual (no `chrono` — hand-rolled in `vajra-stats/src/temporal.rs`) |
 
 ---
 

@@ -18,7 +18,7 @@
 
 ---
 
-A high-performance Rust CLI and library that analyzes arbitrary structured data — JSON, YAML, CSV, NDJSON, Markdown, PDF — extracts structural and semantic signal, detects anomalies and drift, and emits compact deterministic essences optimized for humans, auditors, and AI pipelines.
+A high-performance Rust CLI and library that analyzes arbitrary structured data — JSON, YAML, CSV, NDJSON, Markdown, PDF, git repos, CPU profiles, strace logs — extracts structural and semantic signal, detects anomalies and drift, discovers temporal cause-effect chains, and emits compact deterministic essences optimized for humans, auditors, and AI pipelines.
 
 ## Install
 
@@ -60,6 +60,21 @@ vajra batch data_directory/
 
 # Cluster similar documents
 vajra cluster batch/*.json
+
+# Analyze a git repo directly
+vajra stats /path/to/repo --input-format git
+
+# Temporal cause-effect chains
+vajra cascade commits.json --entity-field '$.file' --time-field '$.date' --event-field '$.intent'
+
+# Time-series windowed stats with trend detection
+vajra stats data.json --window month --time-field '$.date'
+
+# Population-level drift comparison
+vajra drift data.json --group-by '$.team'
+
+# Semantic path labels for source code
+vajra inspect src/main.rs --input-format source --lang rust --semantic-paths
 ```
 
 ## What It Does
@@ -77,6 +92,7 @@ Feed Vajra any structured data. It returns **shape, signal, anomalies, and truth
 | `cluster` | MinHash + LSH similarity clustering |
 | `invariants` | Cross-field relationships — conditional entropy, PMI |
 | `query` | Path expressions with analysis functions |
+| `cascade` | Temporal cause-effect chain detection across events |
 | `batch` | Parallel batch analysis across directories |
 | `profiles` | List available profiles |
 
@@ -93,6 +109,9 @@ Feed Vajra any structured data. It returns **shape, signal, anomalies, and truth
 | PDF | `.pdf` | Yes |
 | Gzip | `.gz`, `.json.gz` | Yes (magic bytes) |
 | Zstd | `.zst`, `.zstd` | Yes (magic bytes) |
+| Git | `--input-format git` | No (explicit) |
+| V8 CPU Profile | `.cpuprofile` | Yes |
+| strace | `--input-format strace` | No (explicit) |
 | HTTP | `http://`, `https://` | Yes |
 | Stdin | `-` | Yes |
 
@@ -105,7 +124,30 @@ Feed Vajra any structured data. It returns **shape, signal, anomalies, and truth
 | `auditor` | Completeness, traceability | Compliance |
 | `ai` | Entropy, coverage, compact output | LLM pipelines |
 | `fraud` | Outliers, rarity, suspicious patterns | Investigation |
+| `health` | Velocity, staleness, bus factor | Project health assessment |
 | Custom | Your weights, your rules | TOML configuration |
+
+## Domain Plugins
+
+| Plugin | Recognizers | Covers |
+|--------|-------------|--------|
+| `vajra-domain-med` | ICD-10, CPT, NPI, NDC | Medical/EDI |
+| `vajra-domain-sec` | CVE, MITRE ATT&CK, IPs, hashes, JWT | Security |
+| `vajra-domain-devops` | K8s, Docker, Terraform, ARN, semver | DevOps/Infra |
+| `vajra-domain-github` | PRs, issues, reviews, releases, commits, labels, milestones, deployments, check runs, actions | GitHub |
+| `vajra-domain-source` | Naming conventions, file paths | Source code |
+| `vajra-domain-encoding` | Base64, hex, URL, PEM, layers | Encoding |
+
+## Global Options
+
+| Flag | Applies To | Purpose |
+|------|-----------|---------|
+| `--window month/week/day` | `stats` | Temporal windowing with trend detection |
+| `--time-field '$.path'` | `stats`, `cascade` | JSONPath to the timestamp field |
+| `--group-by '$.path'` | `drift` | Partition records by field for population-level comparison |
+| `--git-limit N` | `--input-format git` | Cap number of git commits ingested |
+| `--git-branch name` | `--input-format git` | Read from a specific branch |
+| `--semantic-paths` | `inspect` | Map tree-sitter AST paths to human-readable labels (9 languages) |
 
 ## The Engine
 
@@ -156,9 +198,11 @@ vajra/
 ├── vajra-drift        # JSD, Wasserstein, path diff, severity
 ├── vajra-essence      # Profiles, scoring, rendering, TOML config, chunking
 ├── vajra-query        # Expression parser, analysis functions
+├── vajra-cascade      # Temporal cause-effect chain detection
 ├── vajra-domain-med   # Medical/EDI plugin (ICD-10, CPT, NPI, NDC)
 ├── vajra-domain-sec   # Security plugin (CVE, MITRE ATT&CK, IPs, hashes, JWT)
 ├── vajra-domain-devops # DevOps plugin (K8s, Docker, Terraform, ARN, semver)
+├── vajra-domain-github # GitHub plugin (PRs, issues, reviews, releases, actions)
 ├── vajra-source       # Source code parsing via tree-sitter (9 languages)
 ├── vajra-domain-source # Source code recognizers (naming conventions, paths)
 ├── vajra-domain-encoding # Encoding detection (Base64, hex, URL, PEM, layers)
