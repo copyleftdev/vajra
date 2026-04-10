@@ -1743,16 +1743,9 @@ fn drift_pair_to_json(
 
 #[allow(clippy::too_many_lines)]
 fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
-    let raw_content = if input == "-" {
-        let mut buf = String::new();
-        std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf)
-            .context("failed to read from stdin")?;
-        buf
-    } else {
-        std::fs::read_to_string(input).with_context(|| format!("failed to read file: {input}"))?
-    };
-    let raw_value: serde_json::Value = serde_json::from_str(&raw_content)
-        .with_context(|| format!("failed to parse JSON from: {input}"))?;
+    // Use unified load_document so git repos are handled.
+    let doc = load_document(input, cli)?;
+    let raw_value = doc.value().clone();
     let records = match raw_value.as_array() {
         Some(arr) => arr,
         None => anyhow::bail!(
