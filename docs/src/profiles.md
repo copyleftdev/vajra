@@ -211,6 +211,46 @@ Flagged Patterns:
 
 ---
 
+### health
+
+**For:** Project and repository health assessment. Identifies risks, governance patterns, and sustainability signals.
+
+| Dimension | Weight |
+|---|---|
+| entropy_signal | 0.25 |
+| concern_relevance | 0.25 |
+| anomaly_strength | 0.20 |
+| rarity | 0.15 |
+| instability | 0.10 |
+| structural_coverage | 0.05 |
+
+**Rendering:** Assessment-oriented. Sections organized around risk, governance, and sustainability. Designed for repository and project analysis.
+
+**Section headers:** "Key Risks," "Governance Signals," "Sustainability Assessment."
+
+```bash
+vajra essence ./my-repo --profile health
+```
+
+```text
+Key Risks:
+  - Bus factor: 2 contributors account for 78% of commits.
+  - Fix rate declining: 31% of bugs fixed in March vs 18% in January.
+  - Mean time to fix increasing: 2.3 days -> 4.1 days over 3 months.
+
+Governance Signals:
+  - Review coverage: 64% of PRs received at least one review.
+  - Bot contribution: 33% of PRs from automated tools.
+  - Consistent commit cadence: 4.2 commits/day (low variance).
+
+Sustainability Assessment:
+  - Moderate risk. High contributor concentration and declining fix rates
+    suggest capacity constraints. Review coverage is below recommended
+    thresholds for projects of this activity level.
+```
+
+---
+
 ## Custom Profiles
 
 Define custom profiles in TOML. Load with `--config path/to/profiles.toml`.
@@ -281,6 +321,7 @@ vajra profiles
   auditor      Formal vocabulary, completeness-focused; emphasizes instability and concern relevance
   ai           Compact terse rendering optimized for machine consumption
   fraud        Investigative framing; emphasizes outliers, rarity, and suspicious patterns
+  health       Assessment-oriented; emphasizes risks, governance, and sustainability
 
 === Custom Profiles ===
   claims-review   Internal claims processing review

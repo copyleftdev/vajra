@@ -267,7 +267,7 @@ A plugin **may not:**
 
 ## Shipped Plugins
 
-Five domain plugins ship with Vajra, all enabled by default via feature flags:
+Six domain plugins ship with Vajra, all enabled by default via feature flags:
 
 | Domain | Plugin | Type Recognizers | Hints |
 |---|---|---|---|
@@ -276,19 +276,21 @@ Five domain plugins ship with Vajra, all enabled by default via feature flags:
 | DevOps | `vajra-domain-devops` | Container ID, Semver, Git SHA, Docker Image, AWS ARN, GCP Resource, CIDR, Cron, K8s Namespace, Terraform Resource | 6 (K8s pod spec, deployment metadata, service endpoint, Terraform, CI pipeline, container spec) |
 | Source Code | `vajra-domain-source` | snake_case, camelCase, PascalCase, SCREAMING_SNAKE, import paths, source file paths | 6 (function definition, class definition, import statement, parameter list, conditional, loop) |
 | Encoding | `vajra-domain-encoding` | Base64, Base64URL, hex, URL-encoded, HTML entities, Unicode escapes, PEM, data URI, quoted-printable, MIME encoded word, Punycode, double-encoded, mixed-encoding | 3 (content+encoding, transfer encoding, encoded/decoded pairs) |
+| GitHub | `vajra-domain-github` | PR number, issue number, GitHub username, repo slug, commit SHA, branch name, label, milestone, review state, merge method | 7 (pull request, issue, review, commit, release, workflow run, discussion) |
 
 ### Feature Flags
 
 ```toml
 # vajra-cli/Cargo.toml
 [features]
-default = ["medical", "security", "devops", "source", "encoding"]
+default = ["medical", "security", "devops", "source", "encoding", "github"]
 medical = ["vajra-domain-med"]
 security = ["vajra-domain-sec"]
 devops = ["vajra-domain-devops"]
 source = ["vajra-source", "vajra-domain-source"]
 encoding = ["vajra-domain-encoding"]
-all-plugins = ["medical", "security", "devops", "source", "encoding"]
+github = ["vajra-domain-github"]
+all-plugins = ["medical", "security", "devops", "source", "encoding", "github"]
 ```
 
 Build without a plugin: `cargo build --no-default-features --features security,devops`
@@ -413,6 +415,39 @@ let layers = detect_encoding_layers("%2548ello%2520world", 5);
 ```
 
 Bounded at depth 5, decode capped at 4KB per layer. Catches `base64(url(hex(payload)))`.
+
+---
+
+## The GitHub Plugin: vajra-domain-github
+
+The GitHub plugin recognizes types commonly found in GitHub API responses, webhook payloads, and exported repository data (PRs, issues, commits, reviews, releases, workflow runs).
+
+### Type Recognizers
+
+| Recognized Type | Pattern | Priority | Confidence | Example Values |
+|---|---|---|---|---|
+| PR Number | `#\d+` or bare integer in PR context | 10 | 0.90 | `#142`, `1587` |
+| Issue Number | `#\d+` or bare integer in issue context | 10 | 0.90 | `#23`, `456` |
+| GitHub Username | `[a-zA-Z0-9](-?[a-zA-Z0-9]){0,38}` | 20 | 0.75 | `copyleftdev`, `octocat` |
+| Repo Slug | `owner/repo` pattern | 15 | 0.85 | `copyleftdev/vajra`, `rust-lang/rust` |
+| Commit SHA | 7-40 hex chars in commit context | 10 | 0.95 | `a1b2c3d`, full 40-char SHA |
+| Branch Name | Ref-like strings with `/` separators | 25 | 0.70 | `main`, `feature/cascade-cmd` |
+| Label | Known label patterns (bug, enhancement, etc.) | 30 | 0.65 | `bug`, `good first issue` |
+| Milestone | Version-like or sprint-like strings | 30 | 0.60 | `v1.0`, `Sprint 12` |
+| Review State | One of: approved, changes_requested, commented, dismissed | 5 | 1.00 | `approved`, `changes_requested` |
+| Merge Method | One of: merge, squash, rebase | 5 | 1.00 | `squash`, `rebase` |
+
+### Relationship Hints
+
+| Hint | Field Patterns | Meaning |
+|---|---|---|
+| Pull Request | `number`, `title`, `state`, `author`, `base`, `head` | A pull request record |
+| Issue | `number`, `title`, `state`, `labels`, `assignees` | An issue record |
+| Review | `author`, `state`, `body`, `submitted_at` | A PR review |
+| Commit | `sha`, `message`, `author`, `date` | A commit record |
+| Release | `tag_name`, `name`, `published_at`, `assets` | A release record |
+| Workflow Run | `name`, `status`, `conclusion`, `run_number` | A CI workflow run |
+| Discussion | `title`, `author`, `category`, `answer` | A GitHub discussion |
 
 ---
 

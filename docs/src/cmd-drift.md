@@ -28,6 +28,38 @@ vajra drift <baseline> <candidate> [flags]
 | `--input-format <fmt>` | Override auto-detected input format | auto |
 | `--redact` | Apply built-in redaction before output | off |
 | `--quiet` | Suppress progress output | off |
+| `--group-by <path>` | JSONPath for population-level comparison (e.g., `'$.author_type'`) | off |
+
+---
+
+## Population-Level Comparison
+
+When `--group-by` is specified, `drift` partitions records by the field value and computes pairwise drift between all groups. Instead of comparing two documents, you compare two (or more) subpopulations within the same dataset.
+
+```bash
+vajra drift prs.ndjson --group-by '$.author_type'
+```
+
+```text
+Drift Report (grouped by $.author_type)
+Groups: bot (412 records), human (835 records)
+
+Pairwise drift: bot vs human
+  Structural similarity: 0.91 (Jaccard)
+
+  Distribution shifts:
+    $.files_changed              JSD: 0.42 (high)
+      bot:   median 1.0, p95 3.0
+      human: median 4.0, p95 18.0
+
+    $.review_comments            JSD: 0.38 (moderate)
+      bot:   median 0.0, p95 1.0
+      human: median 2.0, p95 8.0
+
+  Overall severity: HIGH (significant distributional divergence)
+```
+
+This is useful for comparing behavioral subgroups — bot vs. human PRs, different teams, production vs. staging, before vs. after a policy change — without needing separate files.
 
 ---
 

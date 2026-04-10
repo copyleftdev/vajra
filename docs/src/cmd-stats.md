@@ -27,6 +27,43 @@ vajra stats <input> [flags]
 | `--streaming` | Force streaming mode (sketch-based approximations) | off |
 | `--redact` | Apply built-in redaction before output | off |
 | `--quiet` | Suppress progress output | off |
+| `--window <period>` | Temporal windowing: `month`, `week`, or `day` | off |
+| `--time-field <path>` | JSONPath to timestamp field (e.g., `'$.date'`). Auto-detected if omitted. | auto |
+
+---
+
+## Temporal Windowing
+
+When `--window` is specified, `stats` partitions records by time period and computes per-window statistics. Cross-window trend lines are included in the output, showing how distributions shift over time.
+
+The `--time-field` flag tells Vajra which field contains the timestamp. If omitted, Vajra auto-detects by scanning for fields with date/time patterns (ISO 8601, Unix timestamps, common date formats).
+
+```bash
+vajra stats commits.ndjson --window month --time-field '$.date'
+```
+
+```text
+=== Statistical Summary (windowed: month) ===
+Document: commits.ndjson (1,247 records, 8 paths)
+
+--- Window: 2026-01 (312 records) ---
+  $.files_changed
+    Mean: 4.2   Median: 3.0   p95: 12.0
+
+--- Window: 2026-02 (298 records) ---
+  $.files_changed
+    Mean: 5.1   Median: 4.0   p95: 15.0
+
+--- Window: 2026-03 (337 records) ---
+  $.files_changed
+    Mean: 6.8   Median: 5.0   p95: 19.0
+
+--- Cross-Window Trends ---
+  $.files_changed  mean: 4.2 -> 5.1 -> 6.8 (upward, +62% over 3 months)
+  $.type           "fix" share: 0.18 -> 0.24 -> 0.31 (increasing)
+```
+
+Windowing works with any multi-record input: NDJSON, CSV, multi-document YAML, or directories.
 
 ---
 
