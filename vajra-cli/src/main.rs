@@ -197,6 +197,23 @@ enum Command {
         #[arg(long, default_value = "fix,revert")]
         response_values: String,
     },
+    /// Ingest GitHub repository data (commits, PRs, issues, releases)
+    IngestGithub {
+        /// Owner/repo identifier (e.g. 'facebook/react')
+        repo: String,
+        /// Output directory for JSON files
+        #[arg(long, default_value = ".")]
+        output: String,
+        /// Maximum number of pull requests to fetch
+        #[arg(long, default_value = "500")]
+        pr_limit: usize,
+        /// Maximum number of issues to fetch
+        #[arg(long, default_value = "500")]
+        issue_limit: usize,
+        /// Maximum number of commits to fetch
+        #[arg(long, default_value = "800")]
+        commit_limit: usize,
+    },
     /// List all available profiles (built-in and custom)
     Profiles,
 }
@@ -253,6 +270,13 @@ fn main() {
             response_values,
             &cli,
         ),
+        Command::IngestGithub {
+            repo,
+            output,
+            pr_limit,
+            issue_limit,
+            commit_limit,
+        } => cmd_ingest_github(repo, output, *pr_limit, *issue_limit, *commit_limit, &cli),
         Command::Profiles => cmd_profiles(&cli),
     };
 
@@ -401,6 +425,59 @@ fn maybe_redact(output: &str, cli: &Cli) -> String {
     } else {
         output.to_string()
     }
+}
+
+// ---------------------------------------------------------------------------
+// ingest-github command
+// ---------------------------------------------------------------------------
+
+fn cmd_ingest_github(
+    repo: &str,
+    output: &str,
+    pr_limit: usize,
+    issue_limit: usize,
+    commit_limit: usize,
+    cli: &Cli,
+) -> Result<()> {
+    let config = vajra_core::GitHubIngestConfig {
+        owner_repo: repo.to_owned(),
+        output_dir: PathBuf::from(output),
+        pr_limit,
+        issue_limit,
+        commit_limit,
+    };
+
+    if !cli.quiet {
+        eprintln!("vajra: ingesting {repo} into {output}/");
+    }
+
+    let result = vajra_core::ingest_github(&config).map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    match cli.format {
+        Format::Json => {
+            let json = serde_json::json!({
+                "repository": repo,
+                "output_dir": result.output_dir.display().to_string(),
+                "commits": result.commits,
+                "pull_requests": result.pull_requests,
+                "issues": result.issues,
+                "releases": result.releases,
+            });
+            let s = serde_json::to_string_pretty(&json).context("JSON serialization failed")?;
+            println!("{s}");
+        }
+        Format::Text | Format::Markdown | Format::CompactAi => {
+            println!("=== GitHub Ingestion Complete ===");
+            println!("  Repository:    {repo}");
+            println!("  Output:        {}", result.output_dir.display());
+            println!("  Commits:       {}", result.commits);
+            println!("  Pull requests: {}", result.pull_requests);
+            println!("  Issues:        {}", result.issues);
+            println!("  Releases:      {}", result.releases);
+        }
+    }
+
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------

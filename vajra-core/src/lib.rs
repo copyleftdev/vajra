@@ -12,6 +12,7 @@ pub mod event;
 pub mod fetch;
 pub mod formats;
 pub mod git;
+pub mod github_ingest;
 pub mod input;
 pub mod markdown;
 pub mod parse;
@@ -37,3 +38,8 @@ pub use parse::{parse_file, parse_str};
 pub use pdf::{parse_pdf_bytes, parse_pdf_file};
 pub use pipeline::{emit_and_index, metadata_from_events, trie_from_events};
 pub use stream::{emit_events, load_adaptive, AnalysisMode};
+
+pub use github_ingest::{
+    flatten_author, flatten_comments, flatten_labels, ingest_github, GitHubIngestConfig,
+    IngestResult,
+};
