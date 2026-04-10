@@ -19,8 +19,9 @@ use vajra_fingerprint::{
     cluster_documents, FingerprintAnalyzer, FingerprintResult, StreamingFingerprintAccumulator,
 };
 use vajra_stats::{
-    extract_json_path, linear_regression, shannon_entropy_from_counts, StatsAnalyzer, StatsResult,
-    StreamingStatsAccumulator,
+    commit_records_from_json, detect_core_team, extract_json_path, governance_analysis,
+    linear_regression, render_core_team_text, render_governance_markdown, render_governance_text,
+    shannon_entropy_from_counts, StatsAnalyzer, StatsResult, StreamingStatsAccumulator,
 };
 use vajra_types::scoring::{compute_health_score, HealthMetrics, HealthScore, HealthWeights};
 use vajra_types::traits::{ConcernProfile, OutputFormat};
@@ -220,6 +221,39 @@ enum Command {
     },
     /// List all available profiles (built-in and custom)
     Profiles,
+    /// Governance metrics: bus factor, merge equity, contributor churn
+    Governance {
+        /// Path to JSON file, or `-` for stdin
+        input: String,
+        /// JSONPath to the author field (e.g. '$.author')
+        #[arg(long, default_value = "$.author")]
+        author_field: String,
+        /// JSONPath to the timestamp field (e.g. '$.date')
+        #[arg(long, default_value = "$.date")]
+        time_field: String,
+    },
+    /// Ingest GitHub repository data (PRs, issues, commits, releases) via gh CLI
+    IngestGithub {
+        /// Owner/repo identifier (e.g. 'facebook/react')
+        repo: String,
+        /// Output directory for ingested JSON files
+        #[arg(long, default_value = ".")]
+        output: PathBuf,
+        /// Maximum number of pull requests to fetch
+        #[arg(long, default_value = "500")]
+        pr_limit: usize,
+        /// Maximum number of issues to fetch
+        #[arg(long, default_value = "500")]
+        issue_limit: usize,
+        /// Maximum number of commits to fetch
+        #[arg(long, default_value = "800")]
+        commit_limit: usize,
+    },
+    /// Detect core team members from commit patterns
+    CoreTeam {
+        /// Path to JSON file containing commit data, or `-` for stdin
+        input: String,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -289,6 +323,19 @@ fn main() {
             &cli,
         ),
         Command::Profiles => cmd_profiles(&cli),
+        Command::Governance {
+            input,
+            author_field,
+            time_field,
+        } => cmd_governance(input, author_field, time_field, &cli),
+        Command::IngestGithub {
+            repo,
+            output,
+            pr_limit,
+            issue_limit,
+            commit_limit,
+        } => cmd_ingest_github(repo, output, *pr_limit, *issue_limit, *commit_limit, &cli),
+        Command::CoreTeam { input } => cmd_core_team(input, &cli),
     };
 
     if let Err(e) = result {
@@ -2389,4 +2436,140 @@ fn cascade_md(r: &vajra_cascade::CascadeResult) -> String {
         }
     }
     o
+}
+
+// ---------------------------------------------------------------------------
+// governance command
+// ---------------------------------------------------------------------------
+
+fn cmd_governance(input: &str, author_field: &str, time_field: &str, cli: &Cli) -> Result<()> {
+    let doc = load_document(input, cli)?;
+    let records = match doc.value().as_array() {
+        Some(arr) => arr.clone(),
+        None => {
+            anyhow::bail!(
+                "governance command expects a JSON array of records (e.g. commit or PR data)"
+            );
+        }
+    };
+
+    if records.is_empty() {
+        anyhow::bail!("governance command received an empty array — no records to analyze");
+    }
+
+    let report = governance_analysis(&records, author_field, time_field)
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    match cli.format {
+        Format::Json => {
+            let out = serde_json::to_string_pretty(&report).context("JSON serialization failed")?;
+            let out = maybe_redact(&out, cli);
+            println!("{out}");
+        }
+        Format::Markdown => {
+            let md = render_governance_markdown(&report);
+            let md = maybe_redact(&md, cli);
+            print!("{md}");
+        }
+        Format::Text | Format::CompactAi => {
+            let txt = render_governance_text(&report);
+            let txt = maybe_redact(&txt, cli);
+            print!("{txt}");
+        }
+    }
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// ingest-github command
+// ---------------------------------------------------------------------------
+
+fn cmd_ingest_github(
+    repo: &str,
+    output: &Path,
+    pr_limit: usize,
+    issue_limit: usize,
+    commit_limit: usize,
+    cli: &Cli,
+) -> Result<()> {
+    let config = vajra_core::GitHubIngestConfig {
+        owner_repo: repo.to_string(),
+        output_dir: output.to_path_buf(),
+        pr_limit,
+        issue_limit,
+        commit_limit,
+    };
+
+    if !cli.quiet {
+        eprintln!("vajra: ingesting {} into {}", repo, output.display());
+    }
+
+    let result = vajra_core::ingest_github(&config).map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    match cli.format {
+        Format::Json | Format::CompactAi => {
+            let summary = serde_json::json!({
+                "repo": repo,
+                "output_dir": result.output_dir.display().to_string(),
+                "commits": result.commits,
+                "pull_requests": result.pull_requests,
+                "issues": result.issues,
+                "releases": result.releases,
+            });
+            let out = if matches!(cli.format, Format::Json) {
+                serde_json::to_string_pretty(&summary).context("JSON serialization failed")?
+            } else {
+                serde_json::to_string(&summary).context("JSON serialization failed")?
+            };
+            println!("{out}");
+        }
+        Format::Text | Format::Markdown => {
+            println!("=== GitHub Ingestion Summary ===");
+            println!("  Repository:     {repo}");
+            println!("  Output dir:     {}", result.output_dir.display());
+            println!("  Commits:        {}", result.commits);
+            println!("  Pull requests:  {}", result.pull_requests);
+            println!("  Issues:         {}", result.issues);
+            println!("  Releases:       {}", result.releases);
+        }
+    }
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// core-team command
+// ---------------------------------------------------------------------------
+
+fn cmd_core_team(input: &str, cli: &Cli) -> Result<()> {
+    let doc = load_document(input, cli)?;
+    let records = commit_records_from_json(doc.value());
+
+    if records.is_empty() {
+        anyhow::bail!(
+            "core-team command received no valid commit records — expected JSON array with author_name, author_email, date fields"
+        );
+    }
+
+    let result = detect_core_team(&records).map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    match cli.format {
+        Format::Json | Format::CompactAi => {
+            let out = if matches!(cli.format, Format::Json) {
+                serde_json::to_string_pretty(&result).context("JSON serialization failed")?
+            } else {
+                serde_json::to_string(&result).context("JSON serialization failed")?
+            };
+            let out = maybe_redact(&out, cli);
+            println!("{out}");
+        }
+        Format::Text | Format::Markdown => {
+            let txt = render_core_team_text(&result);
+            let txt = maybe_redact(&txt, cli);
+            print!("{txt}");
+        }
+    }
+
+    Ok(())
 }

@@ -12,6 +12,7 @@ pub mod event;
 pub mod fetch;
 pub mod formats;
 pub mod git;
+pub mod github_ingest;
 pub mod input;
 pub mod markdown;
 pub mod parse;
@@ -29,6 +30,7 @@ pub use formats::{
     detect_format, parse_auto, parse_csv, parse_file_auto, parse_ndjson, parse_yaml, InputFormat,
 };
 pub use git::{is_git_repo, load_git_log, GitLogConfig};
+pub use github_ingest::{ingest_github, GitHubIngestConfig, IngestResult};
 pub use input::{
     load_documents, load_documents_aggregated, load_input, resolve_input, InputSource, LoadedInput,
 };
