@@ -2009,6 +2009,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "vajra-mcp"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "vajra-motif"
 version = "0.4.0"
 dependencies = [
