@@ -254,6 +254,38 @@ enum Command {
         /// Path to JSON file containing commit data, or `-` for stdin
         input: String,
     },
+    /// Generate an HTML analysis report from pre-computed JSON files
+    Report {
+        /// Directory containing analysis JSON files (stats.json, anomalies.json, etc.)
+        input: String,
+        /// Report title
+        #[arg(long, default_value = "Analysis Report")]
+        title: String,
+        /// Output HTML file path
+        #[arg(long, default_value = "report.html")]
+        output: String,
+        /// Repository name (e.g. 'facebook/react')
+        #[arg(long)]
+        repo_name: Option<String>,
+    },
+    /// Cross-repo comparison: multi-project benchmarking
+    Compare {
+        /// Two or more JSON file paths to compare
+        #[arg(required = true, num_args = 2..)]
+        inputs: Vec<String>,
+        /// Comma-separated labels for each dataset (default: filenames)
+        #[arg(long)]
+        labels: Option<String>,
+        /// JSONPath to the author field (e.g. '$.author')
+        #[arg(long, default_value = "$.author")]
+        author_field: String,
+        /// JSONPath to the timestamp field (e.g. '$.date')
+        #[arg(long, default_value = "$.date")]
+        time_field: String,
+        /// JSONPath to the commit message field (e.g. '$.subject')
+        #[arg(long, default_value = "$.subject")]
+        message_field: String,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -336,6 +368,26 @@ fn main() {
             commit_limit,
         } => cmd_ingest_github(repo, output, *pr_limit, *issue_limit, *commit_limit, &cli),
         Command::CoreTeam { input } => cmd_core_team(input, &cli),
+        Command::Report {
+            input,
+            title,
+            output,
+            repo_name,
+        } => cmd_report(input, title, output, repo_name.as_deref(), &cli),
+        Command::Compare {
+            inputs,
+            labels,
+            author_field,
+            time_field,
+            message_field,
+        } => cmd_compare(
+            inputs,
+            labels.as_deref(),
+            author_field,
+            time_field,
+            message_field,
+            &cli,
+        ),
     };
 
     if let Err(e) = result {
@@ -2572,4 +2624,428 @@ fn cmd_core_team(input: &str, cli: &Cli) -> Result<()> {
     }
 
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// compare command
+// ---------------------------------------------------------------------------
+
+/// Per-dataset metrics for cross-repo comparison.
+#[derive(Debug, Clone, Serialize)]
+struct DatasetMetrics {
+    label: String,
+    total_records: usize,
+    author_entropy: f64,
+    author_cardinality: usize,
+    fix_ratio: f64,
+    one_commit_rate: f64,
+}
+
+/// A single pairwise drift observation between two datasets.
+#[derive(Debug, Clone, Serialize)]
+struct PairwiseDrift {
+    a: String,
+    b: String,
+    severity: String,
+    similarity: f64,
+}
+
+/// Full comparison result for JSON output.
+#[derive(Debug, Clone, Serialize)]
+struct CompareResult {
+    datasets: Vec<DatasetMetrics>,
+    pairwise_drift: Vec<PairwiseDrift>,
+}
+
+/// Parse comma-separated labels, or derive labels from file paths.
+fn parse_labels_or_filenames(labels: Option<&str>, inputs: &[String]) -> Vec<String> {
+    if let Some(label_str) = labels {
+        let parsed: Vec<String> = label_str.split(',').map(|s| s.trim().to_owned()).collect();
+        if parsed.len() == inputs.len() {
+            return parsed;
+        }
+        // Fall through to filenames if count doesn't match
+    }
+    inputs
+        .iter()
+        .map(|input| {
+            Path::new(input)
+                .file_stem()
+                .map_or_else(|| input.clone(), |s| s.to_string_lossy().into_owned())
+        })
+        .collect()
+}
+
+/// Compute per-dataset metrics from a JSON array of records.
+fn compute_dataset_metrics(
+    records: &[serde_json::Value],
+    label: &str,
+    author_field: &str,
+    message_field: &str,
+) -> DatasetMetrics {
+    let total_records = records.len();
+
+    // Author distribution
+    let mut author_counts: BTreeMap<String, u64> = BTreeMap::new();
+    for record in records {
+        if let Some(author_val) = extract_json_path(record, author_field) {
+            if let Some(name) = author_val.as_str() {
+                *author_counts.entry(name.to_owned()).or_insert(0) += 1;
+            }
+        }
+    }
+    let author_cardinality = author_counts.len();
+    let counts_vec: Vec<u64> = author_counts.values().copied().collect();
+    let author_entropy = shannon_entropy_from_counts(&counts_vec);
+
+    // Fix ratio: count messages containing fix-related patterns
+    let fix_patterns = ["fix", "bug", "hotfix", "patch", "revert"];
+    let mut total_msgs = 0_u64;
+    let mut fix_msgs = 0_u64;
+    for record in records {
+        if let Some(msg_val) = extract_json_path(record, message_field) {
+            if let Some(msg) = msg_val.as_str() {
+                total_msgs += 1;
+                let lower = msg.to_lowercase();
+                if fix_patterns.iter().any(|p| lower.contains(p)) {
+                    fix_msgs += 1;
+                }
+            }
+        }
+    }
+    #[allow(clippy::cast_precision_loss)] // counts well within f64 range
+    let fix_ratio = if total_msgs > 0 {
+        fix_msgs as f64 / total_msgs as f64
+    } else {
+        0.0
+    };
+
+    // One-commit rate: authors with exactly 1 commit / total authors
+    #[allow(clippy::cast_precision_loss)] // counts well within f64 range
+    let one_commit_rate = if author_cardinality > 0 {
+        let one_commit_authors = author_counts.values().filter(|&&c| c == 1).count();
+        one_commit_authors as f64 / author_cardinality as f64
+    } else {
+        0.0
+    };
+
+    DatasetMetrics {
+        label: label.to_owned(),
+        total_records,
+        author_entropy,
+        author_cardinality,
+        fix_ratio,
+        one_commit_rate,
+    }
+}
+
+fn cmd_report(
+    input: &str,
+    title: &str,
+    output: &str,
+    repo_name: Option<&str>,
+    cli: &Cli,
+) -> Result<()> {
+    let input_path = Path::new(input);
+    let repo = repo_name.unwrap_or("unknown");
+
+    if !cli.quiet {
+        eprintln!("vajra: generating report from {}", input_path.display());
+    }
+
+    let data = vajra_report::load_report_data(input_path, title, repo)
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    let html = vajra_report::generate_html(&data);
+
+    std::fs::write(output, &html).with_context(|| format!("Failed to write report to {output}"))?;
+
+    if !cli.quiet {
+        let sources_count = data.config.data_sources.len();
+        eprintln!(
+            "vajra: report written to {} ({} data sources, {} bytes)",
+            output,
+            sources_count,
+            html.len()
+        );
+    }
+
+    Ok(())
+}
+
+#[allow(clippy::too_many_lines)]
+fn cmd_compare(
+    inputs: &[String],
+    labels: Option<&str>,
+    author_field: &str,
+    _time_field: &str,
+    message_field: &str,
+    cli: &Cli,
+) -> Result<()> {
+    if inputs.len() < 2 {
+        anyhow::bail!(
+            "compare requires at least 2 input files, got {}",
+            inputs.len()
+        );
+    }
+
+    let labels = parse_labels_or_filenames(labels, inputs);
+
+    // Load all datasets
+    let mut datasets: Vec<Document> = Vec::with_capacity(inputs.len());
+    let mut record_sets: Vec<Vec<serde_json::Value>> = Vec::with_capacity(inputs.len());
+    for (i, input) in inputs.iter().enumerate() {
+        let doc = load_document(input, cli)
+            .with_context(|| format!("failed to load dataset '{}' ({})", labels[i], input))?;
+        let records = match doc.value().as_array() {
+            Some(arr) => arr.clone(),
+            None => {
+                anyhow::bail!(
+                    "compare expects each input to be a JSON array of records, but '{}' ({}) is not an array",
+                    labels[i],
+                    input
+                );
+            }
+        };
+        if records.is_empty() {
+            anyhow::bail!(
+                "compare received an empty array for '{}' ({})",
+                labels[i],
+                input
+            );
+        }
+        record_sets.push(records);
+        datasets.push(doc);
+    }
+
+    // Per-dataset metrics
+    let metrics: Vec<DatasetMetrics> = record_sets
+        .iter()
+        .zip(labels.iter())
+        .map(|(records, label)| {
+            compute_dataset_metrics(records, label, author_field, message_field)
+        })
+        .collect();
+
+    // Pairwise drift
+    let mut drift_pairs: Vec<PairwiseDrift> = Vec::new();
+    for i in 0..datasets.len() {
+        for j in (i + 1)..datasets.len() {
+            let report = full_drift(&datasets[i], &datasets[j]);
+            drift_pairs.push(PairwiseDrift {
+                a: labels[i].clone(),
+                b: labels[j].clone(),
+                severity: format!("{:?}", report.severity),
+                similarity: report.structural_similarity,
+            });
+        }
+    }
+
+    let result = CompareResult {
+        datasets: metrics,
+        pairwise_drift: drift_pairs,
+    };
+
+    match cli.format {
+        Format::Json => {
+            let out = serde_json::to_string_pretty(&result).context("JSON serialization failed")?;
+            let out = maybe_redact(&out, cli);
+            println!("{out}");
+        }
+        Format::CompactAi => {
+            let out = serde_json::to_string(&result).context("JSON serialization failed")?;
+            let out = maybe_redact(&out, cli);
+            println!("{out}");
+        }
+        Format::Markdown => {
+            let md = compare_markdown(&result);
+            let md = maybe_redact(&md, cli);
+            print!("{md}");
+        }
+        Format::Text => {
+            let txt = compare_text(&result);
+            let txt = maybe_redact(&txt, cli);
+            print!("{txt}");
+        }
+    }
+
+    Ok(())
+}
+
+fn compare_markdown(result: &CompareResult) -> String {
+    use std::fmt::Write;
+    let mut out = String::new();
+
+    let _ = writeln!(out, "## Project Comparison\n");
+
+    // Header row
+    let _ = write!(out, "| Metric |");
+    for ds in &result.datasets {
+        let _ = write!(out, " {} |", ds.label);
+    }
+    let _ = writeln!(out);
+
+    // Separator row
+    let _ = write!(out, "|---|");
+    for _ in &result.datasets {
+        let _ = write!(out, "---|");
+    }
+    let _ = writeln!(out);
+
+    // Records row
+    let _ = write!(out, "| Records |");
+    for ds in &result.datasets {
+        let _ = write!(out, " {} |", ds.total_records);
+    }
+    let _ = writeln!(out);
+
+    // Author entropy row
+    let _ = write!(out, "| Author entropy |");
+    for ds in &result.datasets {
+        let _ = write!(out, " {:.2} |", ds.author_entropy);
+    }
+    let _ = writeln!(out);
+
+    // Author cardinality row
+    let _ = write!(out, "| Author cardinality |");
+    for ds in &result.datasets {
+        let _ = write!(out, " {} |", ds.author_cardinality);
+    }
+    let _ = writeln!(out);
+
+    // Fix ratio row
+    let _ = write!(out, "| Fix ratio |");
+    for ds in &result.datasets {
+        let _ = write!(out, " {:.1}% |", ds.fix_ratio * 100.0);
+    }
+    let _ = writeln!(out);
+
+    // One-commit rate row
+    let _ = write!(out, "| One-commit rate |");
+    for ds in &result.datasets {
+        let _ = write!(out, " {:.1}% |", ds.one_commit_rate * 100.0);
+    }
+    let _ = writeln!(out);
+
+    // Pairwise drift section
+    let _ = writeln!(out);
+    let _ = writeln!(out, "## Pairwise Drift\n");
+    let _ = writeln!(out, "| Pair | Severity | Similarity |");
+    let _ = writeln!(out, "|---|---|---|");
+    for dp in &result.pairwise_drift {
+        let _ = writeln!(
+            out,
+            "| {} vs {} | {} | {:.1} |",
+            dp.a, dp.b, dp.severity, dp.similarity
+        );
+    }
+
+    out
+}
+
+fn compare_text(result: &CompareResult) -> String {
+    use std::fmt::Write;
+    let mut out = String::new();
+
+    let _ = writeln!(out, "=== Project Comparison ===\n");
+
+    // Find column widths
+    let label_width = result
+        .datasets
+        .iter()
+        .map(|ds| ds.label.len())
+        .max()
+        .unwrap_or(5)
+        .max(10);
+
+    // Header
+    let _ = write!(out, "  {:<20}", "Metric");
+    for ds in &result.datasets {
+        let _ = write!(out, "  {:>w$}", ds.label, w = label_width);
+    }
+    let _ = writeln!(out);
+
+    // Separator
+    let _ = write!(out, "  {:<20}", "------");
+    for _ in &result.datasets {
+        let _ = write!(out, "  {:>w$}", "------", w = label_width);
+    }
+    let _ = writeln!(out);
+
+    // Records
+    let _ = write!(out, "  {:<20}", "Records");
+    for ds in &result.datasets {
+        let _ = write!(out, "  {:>w$}", ds.total_records, w = label_width);
+    }
+    let _ = writeln!(out);
+
+    // Author entropy
+    let _ = write!(out, "  {:<20}", "Author entropy");
+    for ds in &result.datasets {
+        let _ = write!(out, "  {:>w$.2}", ds.author_entropy, w = label_width);
+    }
+    let _ = writeln!(out);
+
+    // Author cardinality
+    let _ = write!(out, "  {:<20}", "Author cardinality");
+    for ds in &result.datasets {
+        let _ = write!(out, "  {:>w$}", ds.author_cardinality, w = label_width);
+    }
+    let _ = writeln!(out);
+
+    // Fix ratio
+    let _ = write!(out, "  {:<20}", "Fix ratio");
+    for ds in &result.datasets {
+        let _ = write!(
+            out,
+            "  {:>w$.1}%",
+            ds.fix_ratio * 100.0,
+            w = label_width - 1
+        );
+    }
+    let _ = writeln!(out);
+
+    // One-commit rate
+    let _ = write!(out, "  {:<20}", "One-commit rate");
+    for ds in &result.datasets {
+        let _ = write!(
+            out,
+            "  {:>w$.1}%",
+            ds.one_commit_rate * 100.0,
+            w = label_width - 1
+        );
+    }
+    let _ = writeln!(out);
+
+    // Pairwise drift
+    let _ = writeln!(out);
+    let _ = writeln!(out, "=== Pairwise Drift ===\n");
+    let pair_width = result
+        .pairwise_drift
+        .iter()
+        .map(|dp| dp.a.len() + dp.b.len() + 4)
+        .max()
+        .unwrap_or(15)
+        .max(15);
+    let _ = writeln!(
+        out,
+        "  {:<pw$}  {:>10}  {:>10}",
+        "PAIR",
+        "SEVERITY",
+        "SIMILARITY",
+        pw = pair_width
+    );
+    for dp in &result.pairwise_drift {
+        let pair_label = format!("{} vs {}", dp.a, dp.b);
+        let _ = writeln!(
+            out,
+            "  {:<pw$}  {:>10}  {:>10.4}",
+            pair_label,
+            dp.severity,
+            dp.similarity,
+            pw = pair_width
+        );
+    }
+
+    out
 }

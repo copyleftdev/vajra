@@ -19,6 +19,7 @@ members = [
     "vajra-domain-source",
     "vajra-domain-encoding",
     "vajra-domain-github",
+    "vajra-report",
 ]
 
 [workspace.package]
@@ -99,6 +100,7 @@ vajra-source = { path = "vajra-source" }
 vajra-domain-source = { path = "vajra-domain-source" }
 vajra-domain-encoding = { path = "vajra-domain-encoding" }
 vajra-domain-github = { path = "vajra-domain-github" }
+vajra-report = { path = "vajra-report" }
 
 # Tree-sitter
 tree-sitter = "0.26"
