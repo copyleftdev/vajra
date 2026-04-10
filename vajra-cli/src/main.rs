@@ -18,7 +18,11 @@ use vajra_essence::{
 use vajra_fingerprint::{
     cluster_documents, FingerprintAnalyzer, FingerprintResult, StreamingFingerprintAccumulator,
 };
-use vajra_stats::{StatsAnalyzer, StatsResult, StreamingStatsAccumulator};
+use vajra_stats::{
+    extract_json_path, linear_regression, shannon_entropy_from_counts, StatsAnalyzer, StatsResult,
+    StreamingStatsAccumulator,
+};
+use vajra_types::scoring::{compute_health_score, HealthMetrics, HealthScore, HealthWeights};
 use vajra_types::traits::{ConcernProfile, OutputFormat};
 use vajra_types::{Analyzer, Document};
 
@@ -197,6 +201,23 @@ enum Command {
         #[arg(long, default_value = "fix,revert")]
         response_values: String,
     },
+    /// Automated health scoring with letter grades
+    Score {
+        /// Path to JSON file, or `-` for stdin
+        input: String,
+        /// JSONPath to the author/contributor field (e.g. '$.author')
+        #[arg(long, default_value = "$.author")]
+        author_field: String,
+        /// JSONPath to the timestamp field (e.g. '$.date')
+        #[arg(long, default_value = "$.date")]
+        time_field: String,
+        /// JSONPath to the commit message field (e.g. '$.message')
+        #[arg(long, default_value = "$.message")]
+        message_field: String,
+        /// JSONPath to the issue comments count field (e.g. '$.comments')
+        #[arg(long)]
+        comments_field: Option<String>,
+    },
     /// List all available profiles (built-in and custom)
     Profiles,
 }
@@ -251,6 +272,20 @@ fn main() {
             time_field,
             event_field,
             response_values,
+            &cli,
+        ),
+        Command::Score {
+            input,
+            author_field,
+            time_field,
+            message_field,
+            comments_field,
+        } => cmd_score(
+            input,
+            author_field,
+            time_field,
+            message_field,
+            comments_field.as_deref(),
             &cli,
         ),
         Command::Profiles => cmd_profiles(&cli),
@@ -401,6 +436,246 @@ fn maybe_redact(output: &str, cli: &Cli) -> String {
     } else {
         output.to_string()
     }
+}
+
+// ---------------------------------------------------------------------------
+// score command
+// ---------------------------------------------------------------------------
+
+fn cmd_score(
+    input: &str,
+    author_field: &str,
+    time_field: &str,
+    message_field: &str,
+    comments_field: Option<&str>,
+    cli: &Cli,
+) -> Result<()> {
+    let doc = load_document(input, cli)?;
+    let records = match doc.value().as_array() {
+        Some(arr) => arr.clone(),
+        None => {
+            anyhow::bail!(
+                "score command expects a JSON array of records (e.g. commit or issue data)"
+            );
+        }
+    };
+
+    if records.is_empty() {
+        anyhow::bail!("score command received an empty array — no records to score");
+    }
+
+    let metrics = extract_health_metrics(
+        &records,
+        author_field,
+        time_field,
+        message_field,
+        comments_field,
+    );
+    let weights = HealthWeights::default();
+    let score = compute_health_score(&metrics, &weights);
+
+    match score {
+        Some(ref s) => match cli.format {
+            Format::Json => {
+                let j = score_to_json(s);
+                let out = serde_json::to_string_pretty(&j).context("JSON serialization failed")?;
+                let out = maybe_redact(&out, cli);
+                println!("{out}");
+            }
+            Format::Text | Format::Markdown => {
+                let t = score_to_text(s);
+                let t = maybe_redact(&t, cli);
+                print!("{t}");
+            }
+            Format::CompactAi => {
+                let j = score_to_json(s);
+                let out = serde_json::to_string(&j).context("JSON serialization failed")?;
+                let out = maybe_redact(&out, cli);
+                println!("{out}");
+            }
+        },
+        None => {
+            anyhow::bail!(
+                "could not compute health score: no scorable dimensions found in the data"
+            );
+        }
+    }
+
+    Ok(())
+}
+
+/// Extract health metrics from a JSON array of records.
+fn extract_health_metrics(
+    records: &[serde_json::Value],
+    author_field: &str,
+    time_field: &str,
+    message_field: &str,
+    comments_field: Option<&str>,
+) -> HealthMetrics {
+    let mut metrics = HealthMetrics::default();
+
+    // --- Bus factor: commit entropy from author distribution ---
+    let mut author_map: BTreeMap<String, u64> = BTreeMap::new();
+    let mut total_authors = 0_u64;
+    for record in records {
+        if let Some(author_val) = extract_json_path(record, author_field) {
+            if let Some(name) = author_val.as_str() {
+                *author_map.entry(name.to_owned()).or_insert(0) += 1;
+                total_authors += 1;
+            }
+        }
+    }
+    if total_authors > 0 {
+        let counts: Vec<u64> = author_map.values().copied().collect();
+        let entropy = shannon_entropy_from_counts(&counts);
+        metrics.commit_entropy = Some(entropy);
+    }
+
+    // --- Code stability: fix ratio ---
+    let fix_patterns = ["fix", "bug", "hotfix", "patch", "revert"];
+    let mut total_commits = 0_u64;
+    let mut fix_commits = 0_u64;
+    for record in records {
+        if let Some(msg_val) = extract_json_path(record, message_field) {
+            if let Some(msg) = msg_val.as_str() {
+                total_commits += 1;
+                let lower = msg.to_lowercase();
+                if fix_patterns.iter().any(|p| lower.contains(p)) {
+                    fix_commits += 1;
+                }
+            }
+        }
+    }
+    if total_commits > 0 {
+        #[allow(clippy::cast_precision_loss)] // u64 counts are well within f64 range
+        let ratio = fix_commits as f64 / total_commits as f64;
+        metrics.fix_ratio = Some(ratio);
+    }
+
+    // --- Contributor retention: one-commit rate ---
+    if total_authors > 0 {
+        let one_commit_authors = author_map.values().filter(|&&c| c == 1).count();
+        #[allow(clippy::cast_precision_loss)] // counts are small
+        let rate = one_commit_authors as f64 / author_map.len() as f64;
+        metrics.one_commit_rate = Some(rate);
+    }
+
+    // --- Velocity trend: linear regression on monthly commit counts ---
+    let mut monthly_counts: BTreeMap<String, u64> = BTreeMap::new();
+    for record in records {
+        if let Some(date_val) = extract_json_path(record, time_field) {
+            if let Some(date_str) = date_val.as_str() {
+                // Extract YYYY-MM prefix for monthly bucketing
+                if date_str.len() >= 7 {
+                    let month_key = &date_str[..7];
+                    *monthly_counts.entry(month_key.to_owned()).or_insert(0) += 1;
+                }
+            }
+        }
+    }
+    if monthly_counts.len() >= 2 {
+        #[allow(clippy::cast_precision_loss)] // monthly counts are small
+        let values: Vec<f64> = monthly_counts.values().map(|&c| c as f64).collect();
+        if let Some(trend) = linear_regression(&values) {
+            metrics.velocity_slope = Some(trend.slope);
+        }
+    }
+
+    // --- Issue response: zero-comment rate ---
+    if let Some(cf) = comments_field {
+        let mut total_issues = 0_u64;
+        let mut zero_comment_issues = 0_u64;
+        for record in records {
+            if let Some(comments_val) = extract_json_path(record, cf) {
+                total_issues += 1;
+                let count = comments_val.as_u64().or_else(|| {
+                    comments_val.as_f64().map(|f| {
+                        #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+                        let u = f as u64;
+                        u
+                    })
+                });
+                if count == Some(0) {
+                    zero_comment_issues += 1;
+                }
+            }
+        }
+        if total_issues > 0 {
+            #[allow(clippy::cast_precision_loss)] // counts are small
+            let rate = zero_comment_issues as f64 / total_issues as f64;
+            metrics.zero_comment_rate = Some(rate);
+        }
+    }
+
+    metrics
+}
+
+fn score_to_json(score: &HealthScore) -> serde_json::Value {
+    let mut dims = serde_json::Map::new();
+    for (name, ds) in &score.dimensions {
+        dims.insert(
+            name.clone(),
+            serde_json::json!({
+                "grade": ds.grade.as_str(),
+                "value": ds.value,
+                "metric": ds.metric_name,
+                "description": ds.description,
+            }),
+        );
+    }
+    serde_json::json!({
+        "overall": score.overall.as_str(),
+        "overall_numeric": score.overall_numeric,
+        "dimensions": dims,
+    })
+}
+
+fn score_to_text(score: &HealthScore) -> String {
+    use std::fmt::Write;
+    let mut out = String::new();
+    let _ = writeln!(out, "=== Health Score ===");
+    let _ = writeln!(
+        out,
+        "  Overall: {} ({:.2})",
+        score.overall, score.overall_numeric
+    );
+    let _ = writeln!(out);
+    let _ = writeln!(out, "=== Dimensions ===");
+
+    // Find max dimension name width for alignment
+    let name_width = score
+        .dimensions
+        .keys()
+        .map(|k| k.len())
+        .max()
+        .unwrap_or(10)
+        .max(10);
+
+    let _ = writeln!(
+        out,
+        "  {:<nw$}  {:>5}  {:>10}  METRIC",
+        "DIMENSION",
+        "GRADE",
+        "VALUE",
+        nw = name_width
+    );
+    for (name, ds) in &score.dimensions {
+        let _ = writeln!(
+            out,
+            "  {:<nw$}  {:>5}  {:>10.4}  {}",
+            name,
+            ds.grade,
+            ds.value,
+            ds.metric_name,
+            nw = name_width
+        );
+    }
+    let _ = writeln!(out);
+    let _ = writeln!(out, "=== Descriptions ===");
+    for (name, ds) in &score.dimensions {
+        let _ = writeln!(out, "  {}: {}", name, ds.description);
+    }
+    out
 }
 
 // ---------------------------------------------------------------------------
@@ -892,31 +1167,36 @@ fn cmd_stats_windowed(
         WindowArg::Day => WindowGranularity::Day,
     };
 
-    let fmt = to_input_format(cli.input_format);
-    let docs = vajra_core::input::load_documents(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))?;
+    // Use the unified load_document path so git repos are handled.
+    let doc = load_document(input, cli)?;
 
     let mut records: Vec<serde_json::Value> = Vec::new();
-    for doc in &docs {
-        match doc.value() {
-            serde_json::Value::Array(arr) => {
-                records.extend(arr.iter().cloned());
-            }
-            obj @ serde_json::Value::Object(_) => {
-                records.push(obj.clone());
-            }
-            _ => {}
+    match doc.value() {
+        serde_json::Value::Array(arr) => {
+            records.extend(arr.iter().cloned());
         }
+        obj @ serde_json::Value::Object(_) => {
+            records.push(obj.clone());
+        }
+        _ => {}
     }
 
     if records.is_empty() {
         anyhow::bail!("no records found in input");
     }
 
+    // When input is git, default time_field to $.date
     let resolved_time_field = match time_field {
         Some(tf) => tf.to_owned(),
-        None => auto_detect_time_field(&records).ok_or_else(|| {
-            anyhow::anyhow!("could not auto-detect time field; use --time-field to specify")
-        })?,
+        None => {
+            if is_git_input(input, cli) {
+                "$.date".to_owned()
+            } else {
+                auto_detect_time_field(&records).ok_or_else(|| {
+                    anyhow::anyhow!("could not auto-detect time field; use --time-field to specify")
+                })?
+            }
+        }
     };
 
     let result = windowed_analysis(&records, &resolved_time_field, granularity)
@@ -1942,31 +2222,42 @@ fn cmd_cascade(
     response_values_str: &str,
     cli: &Cli,
 ) -> Result<()> {
-    let raw = if input == "-" {
-        let mut buf = String::new();
-        std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf)
-            .context("failed to read stdin")?;
-        buf
-    } else {
-        std::fs::read_to_string(input).with_context(|| format!("failed to read file: {input}"))?
-    };
-    let parsed: serde_json::Value =
-        serde_json::from_str(&raw).with_context(|| format!("failed to parse JSON from {input}"))?;
-    let records = match parsed.as_array() {
-        Some(arr) => arr.clone(),
-        None => {
+    // Use unified load_document so git repos are handled.
+    let doc = load_document(input, cli)?;
+    let records = match doc.value() {
+        serde_json::Value::Array(arr) => arr.clone(),
+        _ => {
             anyhow::bail!("cascade command expects a JSON array of records");
         }
     };
+
+    // When input is git, apply smart defaults for unmapped fields.
+    let git_mode = is_git_input(input, cli);
+    let effective_entity = if git_mode && entity_field == "file" {
+        "author_name"
+    } else {
+        entity_field
+    };
+    let effective_time = if git_mode && time_field == "date" {
+        "date"
+    } else {
+        time_field
+    };
+    let effective_event = if git_mode && event_field == "intent" {
+        "subject"
+    } else {
+        event_field
+    };
+
     let response_values: Vec<String> = response_values_str
         .split(',')
         .map(|s| s.trim().to_owned())
         .filter(|s| !s.is_empty())
         .collect();
     let config = vajra_cascade::CascadeConfig {
-        entity_field: entity_field.to_owned(),
-        time_field: time_field.to_owned(),
-        event_field: event_field.to_owned(),
+        entity_field: effective_entity.to_owned(),
+        time_field: effective_time.to_owned(),
+        event_field: effective_event.to_owned(),
         trigger_values: Vec::new(),
         response_values,
     };
