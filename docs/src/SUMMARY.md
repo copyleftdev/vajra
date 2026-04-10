@@ -17,6 +17,7 @@
   - [invariants](./cmd-invariants.md)
   - [query](./cmd-query.md)
   - [batch](./cmd-batch.md)
+  - [cascade](./cmd-cascade.md)
 - [Profiles](./profiles.md)
 - [Input Formats](./formats.md)
 - [The Engine](./engine.md)

@@ -19,6 +19,9 @@ Vajra reads more than JSON. It reads anything that can be interpreted as structu
 | Zstd | `.zst`, `.json.zst` | Zstd magic bytes | Decompressed transparently. Inner format auto-detected. |
 | HTTP URL | `http://`, `https://` | URL scheme prefix | Fetched via blocking HTTP GET. Response body auto-detected. |
 | Source Code | `.rs`, `.py`, `.js`, `.ts`, `.go`, `.java`, `.c`, `.cpp`, `.rb` | File extension matches known language | Parsed via tree-sitter into AST. Requires `vajra-source` feature. |
+| Git Repository | (directory) | Directory contains `.git/` | Reads commit history directly. See flags below. |
+| V8 CPU Profile | `.cpuprofile` | File extension | Parses V8 `.cpuprofile` JSON into analyzable structure. |
+| strace Summary | — | Content contains `% time` header | Parses `strace -c` summary output into structured records. |
 | Stdin | `-` | Explicit `-` argument | Content auto-detected from first bytes. |
 
 ---
@@ -27,9 +30,9 @@ Vajra reads more than JSON. It reads anything that can be interpreted as structu
 
 When no `--input-format` is specified, Vajra detects the format in this order:
 
-1. **Check the argument.** If it is `-`, read from stdin. If it starts with `http://` or `https://`, fetch via HTTP.
+1. **Check the argument.** If it is `-`, read from stdin. If it starts with `http://` or `https://`, fetch via HTTP. If it is a directory containing `.git/`, treat as a git repository.
 
-2. **Check the extension.** `.json` -> JSON. `.ndjson`/`.jsonl` -> NDJSON. `.yaml`/`.yml` -> YAML. `.csv` -> CSV. `.tsv` -> TSV. `.md` -> Markdown. `.pdf` -> PDF. `.rs`/`.py`/`.js`/`.go`/etc. -> Source Code (via tree-sitter).
+2. **Check the extension.** `.json` -> JSON. `.ndjson`/`.jsonl` -> NDJSON. `.yaml`/`.yml` -> YAML. `.csv` -> CSV. `.tsv` -> TSV. `.md` -> Markdown. `.pdf` -> PDF. `.cpuprofile` -> V8 CPU Profile. `.rs`/`.py`/`.js`/`.go`/etc. -> Source Code (via tree-sitter).
 
 3. **Check for compression.** If the extension is `.gz` or `.zst`, decompress and re-detect the inner format from the next extension (e.g., `.json.gz` -> decompress -> JSON).
 
@@ -39,6 +42,7 @@ When no `--input-format` is specified, Vajra detects the format in this order:
    - Starts with `---` or matches `key: value` pattern -> YAML
    - Consistent comma-separated columns -> CSV
    - PDF magic bytes (`%PDF`) -> PDF
+   - Contains `% time` column header -> strace summary
 
 5. **Fall back to JSON.** If nothing else matches, attempt JSON parsing.
 
@@ -80,7 +84,7 @@ Each line is an independent JSON document. Natural format for logs, event stream
 vajra anomalies claims.ndjson
 ```
 
-Every line becomes a separate document in the analysis. Commands like `anomalies` and `invariants` treat the lines as a population.
+NDJSON records are aggregated into a single array for analysis. Commands like `stats`, `anomalies`, `invariants`, and `essence` compute across all records as a unified population.
 
 Example input:
 
@@ -214,6 +218,78 @@ vajra inspect code.txt --input-format source --lang python  # override format + 
 
 Source code analysis requires the `vajra-source` crate (included by default). The companion `vajra-domain-source` plugin adds recognizers for naming conventions (snake_case, camelCase, PascalCase) and code structure relationships.
 
+#### Semantic Paths
+
+The `--semantic-paths` flag maps tree-sitter node kinds to human-readable labels in the output. Instead of raw AST node names like `function_item` or `impl_item`, you see `function` and `implementation`.
+
+```bash
+vajra inspect main.rs --semantic-paths
+```
+
+Without `--semantic-paths`:
+
+```text
+$.program.function_item[0].identifier         "process_record"
+$.program.function_item[0].parameters.parameter[0]   "record: &Record"
+$.program.impl_item[0].identifier             "Pipeline"
+```
+
+With `--semantic-paths`:
+
+```text
+$.program.function[0].name                    "process_record"
+$.program.function[0].parameters.param[0]     "record: &Record"
+$.program.implementation[0].name              "Pipeline"
+```
+
+Covers 9 languages: Rust, Python, JavaScript, TypeScript, Go, Java, C, C++, and Ruby.
+
+### Git Repository
+
+When the input is a directory containing a `.git/` subdirectory, Vajra reads the commit history directly — no export step required.
+
+```bash
+vajra stats ./my-repo
+vajra cascade ./my-repo --entity-field '$.author' --time-field '$.date' --event-field '$.type' --response-values 'fix,revert'
+```
+
+Each commit becomes a JSON record with fields like `author`, `date`, `message`, `files_changed`, and `insertions`/`deletions`.
+
+**Flags:**
+
+| Flag | Description | Default |
+|---|---|---|
+| `--git-limit <N>` | Maximum number of commits to read | 500 |
+| `--git-branch <branch>` | Branch to read from | current HEAD |
+
+```bash
+vajra stats ./my-repo --git-limit 1000 --git-branch main
+```
+
+Auto-detection is based on the presence of `.git/` in the input directory. To override, use `--input-format git`.
+
+### V8 CPU Profile
+
+Vajra parses `.cpuprofile` files produced by V8-based tools (Chrome DevTools, Node.js `--prof`). The profile's call tree is converted to a flat array of records with function name, source location, hit count, and self/total time.
+
+```bash
+vajra stats profile.cpuprofile
+vajra anomalies profile.cpuprofile
+```
+
+Auto-detected by the `.cpuprofile` extension.
+
+### strace Summary
+
+Vajra parses the summary table produced by `strace -c`. Each syscall row becomes a record with fields for time percentage, seconds, calls, errors, and syscall name.
+
+```bash
+strace -c ls 2>&1 | vajra stats -
+vajra stats strace_output.txt --input-format strace
+```
+
+Auto-detected when content contains the `% time` column header characteristic of `strace -c` output.
+
 ---
 
 ### Compressed Files (Gzip, Zstd)
@@ -257,13 +333,11 @@ zcat claims.json.gz | vajra inspect -
 
 ## Multi-Document Formats
 
-NDJSON and multi-document YAML naturally contain multiple documents. When fed to single-document commands (`inspect`, `stats`, `fingerprint`), Vajra analyzes the first document. When fed to multi-document commands (`anomalies`, `invariants`, `batch`), all documents are analyzed as a population.
-
-To explicitly analyze all documents from a multi-document format:
+NDJSON and multi-document YAML naturally contain multiple documents. NDJSON records are now aggregated into a single array, so all commands — including `stats`, `anomalies`, `invariants`, and `essence` — compute across all records as a unified population.
 
 ```bash
 vajra anomalies claims.ndjson          # analyzes all lines as a batch
-vajra stats claims.ndjson              # analyzes the first line only
+vajra stats claims.ndjson              # computes stats across all records
 ```
 
 ---
