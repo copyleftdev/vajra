@@ -13,9 +13,11 @@
 pub mod analyzer;
 pub mod benford;
 pub mod cms;
+pub mod core_team;
 pub mod ddsketch;
 pub mod entropy;
 pub mod frequency;
+pub mod governance;
 pub mod mad;
 pub mod numeric;
 pub mod relationships;
@@ -29,9 +31,18 @@ pub use benford::{
     leading_digit_distribution, BenfordResult,
 };
 pub use cms::CountMinSketch;
+pub use core_team::{
+    commit_records_from_json, detect_core_team, render_core_team_text, AuthorClassification,
+    AuthorRole, CommitRecord, CoreTeamResult,
+};
 pub use ddsketch::DDSketch;
 pub use entropy::{normalized_entropy, shannon_entropy_from_counts};
 pub use frequency::FrequencyCounter;
+pub use governance::{
+    governance_analysis, render_markdown as render_governance_markdown,
+    render_text as render_governance_text, ChurnMetrics, GovernanceError, GovernanceMetrics,
+    GovernanceReport, MonthChurn,
+};
 pub use mad::{mad, median, modified_z_score};
 pub use numeric::{compute_numeric_stats, percentile, NumericStats};
 pub use relationships::{conditional_entropy, discover_relationships, pmi, FieldRelationship};
