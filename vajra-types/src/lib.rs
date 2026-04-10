@@ -18,7 +18,11 @@ pub use error::VajraError;
 pub use features::FeatureStore;
 pub use json_type::JsonType;
 pub use path::{PathSegment, WildcardPath};
-pub use scoring::ScoreWeights;
+pub use scoring::{
+    compute_health_score, grade_commit_entropy, grade_fix_ratio, grade_one_commit_rate,
+    grade_velocity_trend, grade_zero_comment_rate, DimensionScore, HealthMetrics, HealthScore,
+    HealthWeights, LetterGrade, ScoreWeights,
+};
 pub use traits::{
     Analyzer, ConcernProfile, DriftDetector, FeatureExtractor, Fingerprinter, InferenceConfidence,
     RelationshipHint, RelationshipType, TypeRecognizer, VajraPlugin,
