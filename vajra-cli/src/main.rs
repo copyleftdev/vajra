@@ -446,8 +446,7 @@ fn cmd_governance(input: &str, author_field: &str, time_field: &str, cli: &Cli) 
 
     match cli.format {
         Format::Json => {
-            let j =
-                serde_json::to_string_pretty(&report).context("JSON serialization failed")?;
+            let j = serde_json::to_string_pretty(&report).context("JSON serialization failed")?;
             let j = maybe_redact(&j, cli);
             println!("{j}");
         }
