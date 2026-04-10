@@ -286,6 +286,23 @@ enum Command {
         #[arg(long, default_value = "$.subject")]
         message_field: String,
     },
+    /// One-command audit: ingest, analyze, and generate an HTML report for a GitHub repo
+    Audit {
+        /// Repository URL or owner/repo (e.g. 'github.com/owner/repo' or 'owner/repo')
+        repo: String,
+        /// Output HTML report path (default: '{owner}-{repo}-report.html')
+        #[arg(long)]
+        output: Option<String>,
+        /// Maximum number of commits to fetch
+        #[arg(long, default_value = "800")]
+        commit_limit: usize,
+        /// Maximum number of pull requests to fetch
+        #[arg(long, default_value = "500")]
+        pr_limit: usize,
+        /// Maximum number of issues to fetch
+        #[arg(long, default_value = "500")]
+        issue_limit: usize,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -386,6 +403,20 @@ fn main() {
             author_field,
             time_field,
             message_field,
+            &cli,
+        ),
+        Command::Audit {
+            repo,
+            output,
+            commit_limit,
+            pr_limit,
+            issue_limit,
+        } => cmd_audit(
+            repo,
+            output.as_deref(),
+            *commit_limit,
+            *pr_limit,
+            *issue_limit,
             &cli,
         ),
     };
@@ -3048,4 +3079,301 @@ fn compare_text(result: &CompareResult) -> String {
     }
 
     out
+}
+
+// ---------------------------------------------------------------------------
+// audit command
+// ---------------------------------------------------------------------------
+
+/// Parse a GitHub repository URL or shorthand into "owner/repo" form.
+///
+/// Accepted formats:
+///   - `github.com/owner/repo`
+///   - `https://github.com/owner/repo`
+///   - `http://github.com/owner/repo`
+///   - `owner/repo`
+///
+/// Trailing slashes and `.git` suffixes are stripped.
+fn parse_repo_url(input: &str) -> Result<String> {
+    let s = input
+        .trim()
+        .trim_start_matches("https://")
+        .trim_start_matches("http://")
+        .trim_start_matches("github.com/")
+        .trim_end_matches('/')
+        .trim_end_matches(".git");
+    let parts: Vec<&str> = s.split('/').collect();
+    if parts.len() == 2 && !parts[0].is_empty() && !parts[1].is_empty() {
+        Ok(s.to_string())
+    } else {
+        anyhow::bail!(
+            "Invalid repository: '{}'. Expected format: owner/repo or github.com/owner/repo",
+            input
+        )
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+fn cmd_audit(
+    repo: &str,
+    output: Option<&str>,
+    commit_limit: usize,
+    pr_limit: usize,
+    issue_limit: usize,
+    cli: &Cli,
+) -> Result<()> {
+    // 1. Parse repo URL
+    let owner_repo = parse_repo_url(repo)?;
+
+    // 2. Create temp directory for ingested data
+    let tmp_dir = tempfile::tempdir().context("failed to create temp directory")?;
+    let data_dir = tmp_dir.path().join(owner_repo.replace('/', "_"));
+    std::fs::create_dir_all(&data_dir)
+        .with_context(|| format!("failed to create data directory: {}", data_dir.display()))?;
+
+    // 3. Ingest
+    if !cli.quiet {
+        eprintln!("vajra: [1/3] Ingesting {}...", owner_repo);
+    }
+    let ingest_config = vajra_core::GitHubIngestConfig {
+        owner_repo: owner_repo.clone(),
+        output_dir: data_dir.clone(),
+        pr_limit,
+        issue_limit,
+        commit_limit,
+    };
+    let ingest_result =
+        vajra_core::ingest_github(&ingest_config).map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    if !cli.quiet {
+        eprintln!(
+            "vajra:   ingested {} commits, {} PRs, {} issues, {} releases",
+            ingest_result.commits,
+            ingest_result.pull_requests,
+            ingest_result.issues,
+            ingest_result.releases,
+        );
+    }
+
+    // 4. Run analyses on commits.json
+    let commits_path = data_dir.join("commits.json");
+    if !commits_path.exists() {
+        anyhow::bail!(
+            "ingestion did not produce commits.json in {}",
+            data_dir.display()
+        );
+    }
+
+    if !cli.quiet {
+        eprintln!("vajra: [2/3] Analyzing...");
+    }
+
+    // -- Stats --
+    match load_documents_aggregated(
+        commits_path.to_string_lossy().as_ref(),
+        Some(vajra_core::InputFormat::Json),
+    ) {
+        Ok(doc) => {
+            // stats.json
+            match StatsAnalyzer.analyze(&doc) {
+                Ok(stats_result) => {
+                    let stats_output = build_stats_output(&stats_result);
+                    if let Ok(json) = serde_json::to_string_pretty(&stats_output) {
+                        let _ = std::fs::write(data_dir.join("stats.json"), json);
+                    }
+                }
+                Err(e) => {
+                    if !cli.quiet {
+                        eprintln!("vajra:   stats analysis failed: {e} (skipping)");
+                    }
+                }
+            }
+
+            // anomalies.json
+            let anomaly_analyzer = AnomalyAnalyzer::default();
+            match anomaly_analyzer.analyze(&doc) {
+                Ok(anomaly_report) => {
+                    let anomaly_output = build_anomaly_output(&anomaly_report);
+                    if let Ok(json) = serde_json::to_string_pretty(&anomaly_output) {
+                        let _ = std::fs::write(data_dir.join("anomalies.json"), json);
+                    }
+                }
+                Err(e) => {
+                    if !cli.quiet {
+                        eprintln!("vajra:   anomaly analysis failed: {e} (skipping)");
+                    }
+                }
+            }
+
+            // invariants.json
+            let relationships = vajra_stats::relationships::discover_relationships(&doc, 50);
+            if !relationships.is_empty() {
+                let rels_json: Vec<serde_json::Value> = relationships
+                    .iter()
+                    .map(|r| {
+                        serde_json::json!({
+                            "field_x": r.field_x.to_string(),
+                            "field_y": r.field_y.to_string(),
+                            "conditional_entropy": r.conditional_entropy,
+                            "mean_pmi": r.mean_pmi,
+                            "relationship_strength": r.relationship_strength,
+                        })
+                    })
+                    .collect();
+                if let Ok(json) = serde_json::to_string_pretty(&rels_json) {
+                    let _ = std::fs::write(data_dir.join("invariants.json"), json);
+                }
+            }
+
+            // Extract records for governance, score, and temporal
+            if let Some(records) = doc.value().as_array() {
+                let records = records.clone();
+
+                // governance.json
+                match governance_analysis(&records, "$.author_name", "$.date") {
+                    Ok(gov_report) => {
+                        if let Ok(json) = serde_json::to_string_pretty(&gov_report) {
+                            let _ = std::fs::write(data_dir.join("governance.json"), json);
+                        }
+                    }
+                    Err(e) => {
+                        if !cli.quiet {
+                            eprintln!("vajra:   governance analysis failed: {e} (skipping)");
+                        }
+                    }
+                }
+
+                // score.json
+                let metrics =
+                    extract_health_metrics(&records, "$.author_name", "$.date", "$.subject", None);
+                let weights = HealthWeights::default();
+                if let Some(score) = compute_health_score(&metrics, &weights) {
+                    let score_json = score_to_json(&score);
+                    if let Ok(json) = serde_json::to_string_pretty(&score_json) {
+                        let _ = std::fs::write(data_dir.join("score.json"), json);
+                    }
+                }
+
+                // temporal.json (windowed analysis with month granularity)
+                if !records.is_empty() {
+                    use vajra_stats::temporal::{windowed_analysis, WindowGranularity};
+                    match windowed_analysis(&records, "$.date", WindowGranularity::Month) {
+                        Ok(temporal_result) => {
+                            if let Ok(json) = serde_json::to_string_pretty(&temporal_result) {
+                                let _ = std::fs::write(data_dir.join("temporal.json"), json);
+                            }
+                        }
+                        Err(e) => {
+                            if !cli.quiet {
+                                eprintln!("vajra:   temporal analysis failed: {e} (skipping)");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            if !cli.quiet {
+                eprintln!("vajra:   failed to load commits.json: {e}");
+                eprintln!("vajra:   report will have limited data");
+            }
+        }
+    }
+
+    // 5. Generate report
+    if !cli.quiet {
+        eprintln!("vajra: [3/3] Generating report...");
+    }
+
+    let title = format!("{} Audit Report", owner_repo);
+    let data = vajra_report::load_report_data(&data_dir, &title, &owner_repo)
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
+    let html = vajra_report::generate_html(&data);
+
+    let default_output = format!("{}-report.html", owner_repo.replace('/', "-"));
+    let output_path = output.unwrap_or(&default_output);
+    std::fs::write(output_path, &html)
+        .with_context(|| format!("failed to write report to {output_path}"))?;
+
+    if !cli.quiet {
+        eprintln!(
+            "vajra: report written to {} ({} bytes)",
+            output_path,
+            html.len()
+        );
+    }
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// audit tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod audit_tests {
+    use super::parse_repo_url;
+
+    #[test]
+    fn parse_owner_repo() {
+        assert_eq!(
+            parse_repo_url("facebook/react").unwrap_or_default(),
+            "facebook/react"
+        );
+    }
+
+    #[test]
+    fn parse_github_url() {
+        assert_eq!(
+            parse_repo_url("github.com/facebook/react").unwrap_or_default(),
+            "facebook/react"
+        );
+    }
+
+    #[test]
+    fn parse_https_url() {
+        assert_eq!(
+            parse_repo_url("https://github.com/facebook/react").unwrap_or_default(),
+            "facebook/react"
+        );
+    }
+
+    #[test]
+    fn parse_http_url() {
+        assert_eq!(
+            parse_repo_url("http://github.com/facebook/react").unwrap_or_default(),
+            "facebook/react"
+        );
+    }
+
+    #[test]
+    fn parse_trailing_slash() {
+        assert_eq!(
+            parse_repo_url("github.com/facebook/react/").unwrap_or_default(),
+            "facebook/react"
+        );
+    }
+
+    #[test]
+    fn parse_git_suffix() {
+        assert_eq!(
+            parse_repo_url("https://github.com/facebook/react.git").unwrap_or_default(),
+            "facebook/react"
+        );
+    }
+
+    #[test]
+    fn parse_invalid_bare_name() {
+        assert!(parse_repo_url("just-a-name").is_err());
+    }
+
+    #[test]
+    fn parse_invalid_too_many_segments() {
+        assert!(parse_repo_url("a/b/c").is_err());
+    }
+
+    #[test]
+    fn parse_invalid_empty_parts() {
+        assert!(parse_repo_url("/repo").is_err());
+    }
 }
