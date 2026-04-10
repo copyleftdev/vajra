@@ -892,31 +892,36 @@ fn cmd_stats_windowed(
         WindowArg::Day => WindowGranularity::Day,
     };
 
-    let fmt = to_input_format(cli.input_format);
-    let docs = vajra_core::input::load_documents(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))?;
+    // Use the unified load_document path so git repos are handled.
+    let doc = load_document(input, cli)?;
 
     let mut records: Vec<serde_json::Value> = Vec::new();
-    for doc in &docs {
-        match doc.value() {
-            serde_json::Value::Array(arr) => {
-                records.extend(arr.iter().cloned());
-            }
-            obj @ serde_json::Value::Object(_) => {
-                records.push(obj.clone());
-            }
-            _ => {}
+    match doc.value() {
+        serde_json::Value::Array(arr) => {
+            records.extend(arr.iter().cloned());
         }
+        obj @ serde_json::Value::Object(_) => {
+            records.push(obj.clone());
+        }
+        _ => {}
     }
 
     if records.is_empty() {
         anyhow::bail!("no records found in input");
     }
 
+    // When input is git, default time_field to $.date
     let resolved_time_field = match time_field {
         Some(tf) => tf.to_owned(),
-        None => auto_detect_time_field(&records).ok_or_else(|| {
-            anyhow::anyhow!("could not auto-detect time field; use --time-field to specify")
-        })?,
+        None => {
+            if is_git_input(input, cli) {
+                "$.date".to_owned()
+            } else {
+                auto_detect_time_field(&records).ok_or_else(|| {
+                    anyhow::anyhow!("could not auto-detect time field; use --time-field to specify")
+                })?
+            }
+        }
     };
 
     let result = windowed_analysis(&records, &resolved_time_field, granularity)
@@ -1463,16 +1468,9 @@ fn drift_pair_to_json(
 
 #[allow(clippy::too_many_lines)]
 fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
-    let raw_content = if input == "-" {
-        let mut buf = String::new();
-        std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf)
-            .context("failed to read from stdin")?;
-        buf
-    } else {
-        std::fs::read_to_string(input).with_context(|| format!("failed to read file: {input}"))?
-    };
-    let raw_value: serde_json::Value = serde_json::from_str(&raw_content)
-        .with_context(|| format!("failed to parse JSON from: {input}"))?;
+    // Use unified load_document so git repos are handled.
+    let doc = load_document(input, cli)?;
+    let raw_value = doc.value().clone();
     let records = match raw_value.as_array() {
         Some(arr) => arr,
         None => anyhow::bail!(
@@ -1942,31 +1940,42 @@ fn cmd_cascade(
     response_values_str: &str,
     cli: &Cli,
 ) -> Result<()> {
-    let raw = if input == "-" {
-        let mut buf = String::new();
-        std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf)
-            .context("failed to read stdin")?;
-        buf
-    } else {
-        std::fs::read_to_string(input).with_context(|| format!("failed to read file: {input}"))?
-    };
-    let parsed: serde_json::Value =
-        serde_json::from_str(&raw).with_context(|| format!("failed to parse JSON from {input}"))?;
-    let records = match parsed.as_array() {
-        Some(arr) => arr.clone(),
-        None => {
+    // Use unified load_document so git repos are handled.
+    let doc = load_document(input, cli)?;
+    let records = match doc.value() {
+        serde_json::Value::Array(arr) => arr.clone(),
+        _ => {
             anyhow::bail!("cascade command expects a JSON array of records");
         }
     };
+
+    // When input is git, apply smart defaults for unmapped fields.
+    let git_mode = is_git_input(input, cli);
+    let effective_entity = if git_mode && entity_field == "file" {
+        "author_name"
+    } else {
+        entity_field
+    };
+    let effective_time = if git_mode && time_field == "date" {
+        "date"
+    } else {
+        time_field
+    };
+    let effective_event = if git_mode && event_field == "intent" {
+        "subject"
+    } else {
+        event_field
+    };
+
     let response_values: Vec<String> = response_values_str
         .split(',')
         .map(|s| s.trim().to_owned())
         .filter(|s| !s.is_empty())
         .collect();
     let config = vajra_cascade::CascadeConfig {
-        entity_field: entity_field.to_owned(),
-        time_field: time_field.to_owned(),
-        event_field: event_field.to_owned(),
+        entity_field: effective_entity.to_owned(),
+        time_field: effective_time.to_owned(),
+        event_field: effective_event.to_owned(),
         trigger_values: Vec::new(),
         response_values,
     };
