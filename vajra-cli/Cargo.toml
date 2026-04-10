@@ -28,6 +28,7 @@ vajra-domain-github = { workspace = true, optional = true }
 vajra-source = { workspace = true, optional = true }
 vajra-query = { workspace = true }
 vajra-cascade = { workspace = true }
+vajra-report = { workspace = true }
 clap = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
