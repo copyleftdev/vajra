@@ -20,6 +20,7 @@ members = [
     "vajra-domain-encoding",
     "vajra-domain-github",
     "vajra-report",
+    "vajra-mcp",
 ]
 
 [workspace.package]
