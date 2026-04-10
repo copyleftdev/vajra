@@ -13,6 +13,7 @@
 pub mod analyzer;
 pub mod benford;
 pub mod cms;
+pub mod core_team;
 pub mod ddsketch;
 pub mod entropy;
 pub mod frequency;
@@ -37,6 +38,11 @@ pub use numeric::{compute_numeric_stats, percentile, NumericStats};
 pub use relationships::{conditional_entropy, discover_relationships, pmi, FieldRelationship};
 pub use space_saving::SpaceSaving;
 pub use streaming::{StreamingConfig, StreamingStatsAccumulator};
+
+pub use core_team::{
+    commit_records_from_json, detect_core_team, render_core_team_text, AuthorClassification,
+    AuthorRole, CommitRecord, CoreTeamResult,
+};
 pub use temporal::{
     auto_detect_time_field, bucket_by_window, detect_dates, extract_json_path, linear_regression,
     parse_iso8601, temporal_analysis, truncate_to_window, value_to_epoch, windowed_analysis,

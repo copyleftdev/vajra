@@ -197,6 +197,11 @@ enum Command {
         #[arg(long, default_value = "fix,revert")]
         response_values: String,
     },
+    /// Detect core team, bots, and community contributors
+    CoreTeam {
+        /// Path to JSON file (commit array) or git repo directory
+        input: String,
+    },
     /// List all available profiles (built-in and custom)
     Profiles,
 }
@@ -253,6 +258,7 @@ fn main() {
             response_values,
             &cli,
         ),
+        Command::CoreTeam { input } => cmd_core_team(input, &cli),
         Command::Profiles => cmd_profiles(&cli),
     };
 
@@ -401,6 +407,39 @@ fn maybe_redact(output: &str, cli: &Cli) -> String {
     } else {
         output.to_string()
     }
+}
+
+// ---------------------------------------------------------------------------
+// core-team command
+// ---------------------------------------------------------------------------
+
+fn cmd_core_team(input: &str, cli: &Cli) -> Result<()> {
+    let doc = load_document(input, cli)?;
+    let records = vajra_stats::commit_records_from_json(doc.value());
+
+    if records.is_empty() {
+        anyhow::bail!(
+            "core-team: no valid commit records found (expected objects with \
+             author_name, author_email, date fields)"
+        );
+    }
+
+    let result = vajra_stats::detect_core_team(&records).map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    match cli.format {
+        Format::Json => {
+            let s = serde_json::to_string_pretty(&result).context("JSON serialization failed")?;
+            let s = maybe_redact(&s, cli);
+            println!("{s}");
+        }
+        Format::Text | Format::Markdown | Format::CompactAi => {
+            let text = vajra_stats::render_core_team_text(&result);
+            let text = maybe_redact(&text, cli);
+            print!("{text}");
+        }
+    }
+
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
