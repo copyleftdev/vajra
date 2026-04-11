@@ -21,6 +21,16 @@ pub struct PathFeatures {
     pub count: Option<u64>,
     /// Rarity score (self-information of the rarest value).
     pub max_rarity: Option<f64>,
+    /// Rényi entropy spectrum (H₀, H₁, H₂, H∞).
+    pub renyi_hartley: Option<f64>,
+    /// Rényi collision entropy (H₂).
+    pub renyi_collision: Option<f64>,
+    /// Rényi min-entropy (H∞).
+    pub renyi_min_entropy: Option<f64>,
+    /// Rényi spectrum divergence (H₀ - H∞).
+    pub renyi_divergence: Option<f64>,
+    /// Lempel-Ziv normalized complexity (0 = constant, 1 = random).
+    pub lz_complexity: Option<f64>,
     /// Numeric statistics (if path contains numeric values).
     pub numeric: Option<NumericFeatures>,
 }

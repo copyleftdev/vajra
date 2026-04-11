@@ -11,8 +11,8 @@
 <p align="center">
   <a href="https://github.com/copyleftdev/vajra/actions/workflows/ci.yml"><img src="https://github.com/copyleftdev/vajra/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://copyleftdev.github.io/vajra"><img src="https://img.shields.io/badge/docs-live-gold" alt="Docs"></a>
-  <a href="https://github.com/copyleftdev/vajra/actions"><img src="https://img.shields.io/badge/tests-1075%20passed-brightgreen" alt="Tests"></a>
-  <a href="https://github.com/copyleftdev/vajra"><img src="https://img.shields.io/badge/crates-17-blue" alt="Crates"></a>
+  <a href="https://github.com/copyleftdev/vajra/actions"><img src="https://img.shields.io/badge/tests-1536%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/copyleftdev/vajra"><img src="https://img.shields.io/badge/crates-20-blue" alt="Crates"></a>
   <a href="LICENSE-MIT"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-orange" alt="License"></a>
 </p>
 
@@ -158,6 +158,11 @@ Every algorithm was chosen against three gates: **works at any scale** (O(n) or 
 | BLAKE3 | All hashing and fingerprinting | O'Connor et al. 2020 |
 | Merkle subtree hashing | Structural identity + motif detection | O(n), motifs for free |
 | Shannon entropy | Value diversity measurement | Universal signal primitive |
+| Renyi entropy spectrum | Diversity profiling (H0, H1, H2, H_inf) | Renyi 1961 |
+| Lempel-Ziv complexity | Structural complexity beyond entropy | Lempel & Ziv 1976 |
+| Transfer entropy | Directed information flow / causality | Schreiber 2000 |
+| Total correlation | Multivariate dependency measurement | Watanabe 1960 |
+| NCD | Universal similarity via compression | Li et al. 2004 |
 | MAD | Robust outlier detection | 50% breakdown point |
 | DDSketch | Streaming quantile estimation | Masson et al. 2019 (Datadog) |
 | Count-Min Sketch | Streaming frequency estimation | Cormode & Muthukrishnan 2005 |
@@ -167,12 +172,12 @@ Every algorithm was chosen against three gates: **works at any scale** (O(n) or 
 ## Testing
 
 ```
-1075 tests, 0 failures
+1536 tests, 0 failures
 
-43 property tests — every mathematical invariant encoded
-18 chaos tests — pathological inputs, no panics
+64 property tests — every mathematical invariant encoded
+68 chaos tests — pathological inputs, no panics
 11 differential tests — exact vs streaming equivalence
-10 determinism tests — 10-run byte-identical verification
+25 determinism tests — 10-run byte-identical verification
  6 golden tests — regression gate against 31-file corpus
  8 criterion benchmark suites
 ```
@@ -192,8 +197,8 @@ cargo bench --workspace                   # benchmarks
 vajra/
 ├── vajra-types        # Shared types, traits, scoring
 ├── vajra-core         # Parsing, paths, canonicalization, streaming, formats, redaction
-├── vajra-fingerprint  # BLAKE3, Merkle, MinHash, LSH, clustering
-├── vajra-stats        # Entropy, MAD, DDSketch, CMS, Benford, temporal, relationships
+├── vajra-fingerprint  # BLAKE3, Merkle, MinHash, LSH, NCD, clustering
+├── vajra-stats        # Entropy, Renyi, LZ complexity, transfer entropy, total correlation, MAD, DDSketch, CMS, Benford, temporal, relationships
 ├── vajra-anomaly      # Outlier detection, rarity, type instability
 ├── vajra-drift        # JSD, Wasserstein, path diff, severity
 ├── vajra-essence      # Profiles, scoring, rendering, TOML config, chunking

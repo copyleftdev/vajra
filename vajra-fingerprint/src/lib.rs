@@ -12,6 +12,7 @@
 
 pub mod analyzer;
 pub mod merkle;
+pub mod ncd;
 pub mod path_set;
 pub mod similarity;
 pub mod streaming;
@@ -19,6 +20,7 @@ pub mod typed_path;
 
 pub use analyzer::{FingerprintAnalyzer, FingerprintResult};
 pub use merkle::{merkle_fingerprint, merkle_with_motifs};
+pub use ncd::{ncd, ncd_cluster, ncd_detailed, ncd_matrix, NcdResult};
 pub use path_set::path_set_fingerprint;
 pub use similarity::{
     cluster_documents, jaccard_similarity, minhash_signature, minhash_similarity, ClusterResult,

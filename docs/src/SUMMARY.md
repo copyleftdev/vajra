@@ -22,6 +22,7 @@
 - [Input Formats](./formats.md)
 - [The Engine](./engine.md)
   - [Algorithms](./algorithms.md)
+  - [Information Theory](./information-theory.md)
   - [Streaming](./streaming.md)
   - [Determinism](./determinism.md)
 - [Domain Plugins](./plugins.md)

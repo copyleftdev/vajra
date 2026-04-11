@@ -14,7 +14,9 @@ use vajra_types::traits::{Analyzer, FeatureExtractor};
 
 use crate::entropy;
 use crate::frequency::FrequencyCounter;
+use crate::lz_complexity;
 use crate::numeric::{self, NumericStats};
+use crate::renyi::{self, RenyiSpectrum};
 
 /// Per-path statistics produced by the analyzer.
 #[derive(Debug, Clone)]
@@ -31,6 +33,10 @@ pub struct PathStats {
     pub max_rarity: f64,
     /// Numeric distribution statistics, if the path contains numeric values.
     pub numeric_stats: Option<NumericStats>,
+    /// Rényi entropy spectrum (H₀, H₁, H₂, H∞).
+    pub renyi_spectrum: RenyiSpectrum,
+    /// Lempel-Ziv normalized complexity for string values.
+    pub lz_complexity: Option<f64>,
     /// Top-k most frequent values and their counts.
     pub top_values: Vec<(String, u64)>,
 }
@@ -91,6 +97,18 @@ impl Analyzer for StatsAnalyzer {
 
             let top_values = fc.top_k(&path, DEFAULT_TOP_K);
 
+            // Rényi entropy spectrum from the same counts
+            let spectrum = renyi::renyi_spectrum(&count_vec);
+
+            // LZ complexity for string-valued paths (skip numeric-only paths)
+            let lz = if numeric_stats.is_none() && !top_values.is_empty() {
+                let string_vals: Vec<&str> = top_values.iter().map(|(s, _)| s.as_str()).collect();
+                let result = lz_complexity::lz_complexity_for_values(&string_vals);
+                Some(result.normalized)
+            } else {
+                None
+            };
+
             paths.insert(
                 path,
                 PathStats {
@@ -100,6 +118,8 @@ impl Analyzer for StatsAnalyzer {
                     total_count,
                     max_rarity,
                     numeric_stats,
+                    renyi_spectrum: spectrum,
+                    lz_complexity: lz,
                     top_values,
                 },
             );
@@ -120,6 +140,15 @@ impl FeatureExtractor for StatsAnalyzer {
             pf.cardinality = Some(stats.cardinality);
             pf.count = Some(stats.total_count);
             pf.max_rarity = Some(stats.max_rarity);
+
+            // Rényi spectrum
+            pf.renyi_hartley = Some(stats.renyi_spectrum.hartley);
+            pf.renyi_collision = Some(stats.renyi_spectrum.collision);
+            pf.renyi_min_entropy = Some(stats.renyi_spectrum.min_entropy);
+            pf.renyi_divergence = Some(stats.renyi_spectrum.divergence);
+
+            // LZ complexity
+            pf.lz_complexity = stats.lz_complexity;
 
             // Pull null_rate and type_instability from the trie if available.
             if let Some(node) = doc.trie().get(path) {

@@ -14,6 +14,8 @@ use crate::analyzer::{PathStats, StatsResult};
 use crate::cms::CountMinSketch;
 use crate::ddsketch::DDSketch;
 use crate::entropy;
+use crate::lz_complexity;
+use crate::renyi;
 use crate::space_saving::SpaceSaving;
 
 /// Configuration for the streaming stats pipeline.
@@ -299,6 +301,22 @@ impl StreamingStatsAccumulator {
                 .map(|(k, v)| (k.to_owned(), v))
                 .collect();
 
+            // Reconstruct counts for Rényi spectrum (same source as entropy)
+            let renyi_counts: Vec<u64> = match &acc.values {
+                ValueTracker::Exact(map) => map.values().copied().collect(),
+                ValueTracker::Approximate(_) => acc.top_k.top_k().iter().map(|(_, c)| *c).collect(),
+            };
+            let spectrum = renyi::renyi_spectrum(&renyi_counts);
+
+            // LZ complexity for string-valued paths
+            let lz = if numeric_stats.is_none() && !top_values.is_empty() {
+                let string_vals: Vec<&str> = top_values.iter().map(|(s, _)| s.as_str()).collect();
+                let result = lz_complexity::lz_complexity_for_values(&string_vals);
+                Some(result.normalized)
+            } else {
+                None
+            };
+
             paths.insert(
                 path,
                 PathStats {
@@ -308,6 +326,8 @@ impl StreamingStatsAccumulator {
                     total_count: acc.count,
                     max_rarity,
                     numeric_stats,
+                    renyi_spectrum: spectrum,
+                    lz_complexity: lz,
                     top_values,
                 },
             );

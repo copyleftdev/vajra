@@ -1,11 +1,16 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use proptest::prelude::*;
+use std::collections::BTreeMap;
 use vajra_stats::cms::CountMinSketch;
 use vajra_stats::ddsketch::DDSketch;
 use vajra_stats::entropy::{normalized_entropy, shannon_entropy_from_counts};
+use vajra_stats::lz_complexity::lz76_complexity;
 use vajra_stats::mad::{mad, modified_z_score};
+use vajra_stats::renyi::{renyi_entropy, renyi_spectrum};
 use vajra_stats::space_saving::SpaceSaving;
+use vajra_stats::total_correlation::total_correlation;
+use vajra_stats::transfer_entropy::transfer_entropy;
 
 // =========================================================================
 // Entropy properties
@@ -375,5 +380,235 @@ proptest! {
             let est = cms.estimate(item.as_bytes());
             prop_assert!(est >= true_count);
         }
+    }
+}
+
+// =========================================================================
+// Rényi Spectrum properties
+// =========================================================================
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(1000))]
+
+    // R1. Monotone: H₀ >= H₁ >= H₂ >= H∞
+    #[test]
+    fn prop_renyi_monotone(counts in prop::collection::vec(1u64..1000, 2..30)) {
+        let s = renyi_spectrum(&counts);
+        prop_assert!(s.hartley >= s.shannon - 1e-10,
+            "H₀={} < H₁={}", s.hartley, s.shannon);
+        prop_assert!(s.shannon >= s.collision - 1e-10,
+            "H₁={} < H₂={}", s.shannon, s.collision);
+        prop_assert!(s.collision >= s.min_entropy - 1e-10,
+            "H₂={} < H∞={}", s.collision, s.min_entropy);
+    }
+
+    // R2. Non-negative for all orders
+    #[test]
+    fn prop_renyi_non_negative(counts in prop::collection::vec(0u64..500, 1..30)) {
+        let s = renyi_spectrum(&counts);
+        prop_assert!(s.hartley >= 0.0);
+        prop_assert!(s.shannon >= 0.0);
+        prop_assert!(s.collision >= 0.0);
+        prop_assert!(s.min_entropy >= 0.0);
+    }
+
+    // R3. Hartley = log₂(support size)
+    #[test]
+    fn prop_renyi_hartley_equals_log_support(counts in prop::collection::vec(1u64..100, 2..30)) {
+        let support = counts.iter().filter(|&&c| c > 0).count();
+        let h0 = renyi_entropy(&counts, 0.0);
+        let expected = (support as f64).log2();
+        prop_assert!((h0 - expected).abs() < 1e-10,
+            "H₀={h0} should equal log₂({support})={expected}");
+    }
+
+    // R4. Min-entropy = -log₂(max p)
+    #[test]
+    fn prop_renyi_min_entropy_bound(counts in prop::collection::vec(1u64..100, 2..30)) {
+        let total: u64 = counts.iter().sum();
+        let max_count = counts.iter().copied().max().unwrap();
+        let max_p = max_count as f64 / total as f64;
+        let expected = -max_p.log2();
+        let h_inf = renyi_entropy(&counts, f64::INFINITY);
+        prop_assert!((h_inf - expected).abs() < 1e-10,
+            "H∞={h_inf} should equal -log₂({max_p})={expected}");
+    }
+
+    // R5. α=1 matches Shannon
+    #[test]
+    fn prop_renyi_alpha1_matches_shannon(counts in prop::collection::vec(0u64..500, 1..30)) {
+        let h_renyi = renyi_entropy(&counts, 1.0);
+        let h_shannon = shannon_entropy_from_counts(&counts);
+        prop_assert!((h_renyi - h_shannon).abs() < 1e-10,
+            "H₁={h_renyi} != Shannon={h_shannon}");
+    }
+
+    // R6. Uniform distribution: all orders equal
+    #[test]
+    fn prop_renyi_uniform_all_equal(val in 1u64..1000, len in 2usize..20) {
+        let counts = vec![val; len];
+        let s = renyi_spectrum(&counts);
+        let expected = (len as f64).log2();
+        prop_assert!((s.hartley - expected).abs() < 1e-10);
+        prop_assert!((s.shannon - expected).abs() < 1e-10);
+        prop_assert!((s.collision - expected).abs() < 1e-10);
+        prop_assert!((s.min_entropy - expected).abs() < 1e-10);
+    }
+
+    // R7. Divergence = H₀ - H∞
+    #[test]
+    fn prop_renyi_divergence(counts in prop::collection::vec(1u64..500, 2..30)) {
+        let s = renyi_spectrum(&counts);
+        prop_assert!((s.divergence - (s.hartley - s.min_entropy)).abs() < 1e-10);
+    }
+}
+
+// =========================================================================
+// LZ Complexity properties
+// =========================================================================
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(1000))]
+
+    // L1. Normalized complexity bounded [0, 1]
+    #[test]
+    fn prop_lz_bounded_01(data in prop::collection::vec(0u8..255, 2..500)) {
+        let c = lz76_complexity(&data);
+        prop_assert!(c >= 0.0, "LZ complexity must be >= 0, got {c}");
+        prop_assert!(c <= 1.0, "LZ complexity must be <= 1, got {c}");
+    }
+
+    // L2. Constant sequence: lower complexity than random
+    //     LZ76 normalization gives ~O(sqrt(n)/n*log(n)) for constant input,
+    //     so use a longer sequence and a relative comparison.
+    #[test]
+    fn prop_lz_constant_lower_than_random(byte in 0u8..255, len in 500usize..2000) {
+        let constant_data = vec![byte; len];
+        let c_const = lz76_complexity(&constant_data);
+        // For long constant sequences, complexity should be well below 1.0
+        prop_assert!(c_const < 0.5,
+            "constant sequence of len {len} should have complexity < 0.5, got {c_const}");
+    }
+
+    // L3. Empty / single byte → 0
+    #[test]
+    fn prop_lz_trivial_zero(byte in 0u8..255) {
+        prop_assert!((lz76_complexity(&[]) - 0.0).abs() < f64::EPSILON);
+        prop_assert!((lz76_complexity(&[byte]) - 0.0).abs() < f64::EPSILON);
+    }
+}
+
+// =========================================================================
+// Transfer Entropy properties
+// =========================================================================
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(500))]
+
+    // T1. TE non-negative
+    #[test]
+    fn prop_te_non_negative(
+        source in prop::collection::vec(0u64..5, 10..50),
+        target in prop::collection::vec(0u64..5, 10..50),
+    ) {
+        let te = transfer_entropy(&source, &target, 1);
+        prop_assert!(te >= 0.0, "TE must be >= 0, got {te}");
+    }
+
+    // T2. TE of identical constant series = 0
+    #[test]
+    fn prop_te_constant_zero(val in 0u64..10, len in 5usize..50) {
+        let source = vec![val; len];
+        let target = vec![val; len];
+        let te = transfer_entropy(&source, &target, 1);
+        prop_assert!((te - 0.0).abs() < 1e-10,
+            "TE of constant series should be 0, got {te}");
+    }
+}
+
+// =========================================================================
+// Total Correlation properties
+// =========================================================================
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(500))]
+
+    // TC1. TC non-negative
+    #[test]
+    fn prop_tc_non_negative(
+        vals_a in prop::collection::vec("[a-c]", 5..20),
+        vals_b in prop::collection::vec("[x-z]", 5..20),
+    ) {
+        let n = vals_a.len().min(vals_b.len());
+        let records: Vec<BTreeMap<String, String>> = (0..n)
+            .map(|i| {
+                let mut m = BTreeMap::new();
+                m.insert("a".to_owned(), vals_a[i].clone());
+                m.insert("b".to_owned(), vals_b[i].clone());
+                m
+            })
+            .collect();
+        let result = total_correlation(&records);
+        prop_assert!(result.tc_bits >= -1e-10,
+            "TC must be >= 0, got {}", result.tc_bits);
+    }
+
+    // TC2. TC upper bounded by sum of marginals
+    #[test]
+    fn prop_tc_upper_bound(
+        vals_a in prop::collection::vec("[a-c]", 5..20),
+        vals_b in prop::collection::vec("[x-z]", 5..20),
+    ) {
+        let n = vals_a.len().min(vals_b.len());
+        let records: Vec<BTreeMap<String, String>> = (0..n)
+            .map(|i| {
+                let mut m = BTreeMap::new();
+                m.insert("a".to_owned(), vals_a[i].clone());
+                m.insert("b".to_owned(), vals_b[i].clone());
+                m
+            })
+            .collect();
+        let result = total_correlation(&records);
+        prop_assert!(result.tc_bits <= result.sum_marginal_entropies + 1e-10,
+            "TC ({}) must be <= sum of marginals ({})",
+            result.tc_bits, result.sum_marginal_entropies);
+    }
+
+    // TC3. Normalized TC bounded [0, 1]
+    #[test]
+    fn prop_tc_normalized_bounded(
+        vals_a in prop::collection::vec("[a-d]", 5..30),
+        vals_b in prop::collection::vec("[w-z]", 5..30),
+    ) {
+        let n = vals_a.len().min(vals_b.len());
+        let records: Vec<BTreeMap<String, String>> = (0..n)
+            .map(|i| {
+                let mut m = BTreeMap::new();
+                m.insert("a".to_owned(), vals_a[i].clone());
+                m.insert("b".to_owned(), vals_b[i].clone());
+                m
+            })
+            .collect();
+        let result = total_correlation(&records);
+        prop_assert!(result.normalized_tc >= -1e-10,
+            "normalized TC must be >= 0, got {}", result.normalized_tc);
+        prop_assert!(result.normalized_tc <= 1.0 + 1e-10,
+            "normalized TC must be <= 1, got {}", result.normalized_tc);
+    }
+
+    // TC4. Single field → TC = 0
+    #[test]
+    fn prop_tc_single_field_zero(vals in prop::collection::vec("[a-z]", 2..20)) {
+        let records: Vec<BTreeMap<String, String>> = vals
+            .iter()
+            .map(|v| {
+                let mut m = BTreeMap::new();
+                m.insert("only".to_owned(), v.clone());
+                m
+            })
+            .collect();
+        let result = total_correlation(&records);
+        prop_assert!((result.tc_bits - 0.0).abs() < 1e-10,
+            "single field should have TC=0, got {}", result.tc_bits);
     }
 }

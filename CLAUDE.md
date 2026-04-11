@@ -170,6 +170,11 @@ Agent(isolation: worktree) → vajra-anomaly
 | LSH (banded) | fingerprint | O(n) indexing, sublinear queries |
 | SimHash | motif | Hamming ~ cosine (Charikar 2002) |
 | Shannon entropy | stats | universal signal, O(n) |
+| Renyi entropy (alpha-spectrum) | stats | diversity profile across 4 orders (Renyi 1961) |
+| Lempel-Ziv complexity | stats | structural complexity beyond entropy (Lempel & Ziv 1976) |
+| Transfer entropy | stats, cascade | directed information flow, nonlinear Granger (Schreiber 2000) |
+| Total correlation | stats | multivariate dependency, pairwise-invisible structure (Watanabe 1960) |
+| NCD | fingerprint | universal similarity via compression (Li et al. 2004) |
 | CMS (conservative) | stats | O(1) update, bounded memory (Estan & Varghese 2002) |
 | Space-Saving | stats | O(k) memory top-k (Metwally 2005) |
 | DDSketch | stats | relative error quantiles, mergeable (Masson 2019) |
@@ -201,6 +206,7 @@ Agent(isolation: worktree) → vajra-anomaly
 | Float formatting | `ryu` |
 | Unicode | `unicode-normalization` |
 | Mutation tests | `cargo-mutants` |
+| Compression | `zstd` (NCD similarity metric) |
 | ISO 8601 parsing | manual (no `chrono` — hand-rolled in `vajra-stats/src/temporal.rs`) |
 
 ---

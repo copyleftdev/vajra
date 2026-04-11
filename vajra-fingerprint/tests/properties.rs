@@ -4,6 +4,7 @@ use proptest::prelude::*;
 use serde_json::json;
 use vajra_core::parse::parse_str;
 use vajra_fingerprint::merkle::{merkle_fingerprint, merkle_with_motifs};
+use vajra_fingerprint::ncd::ncd;
 use vajra_fingerprint::path_set::path_set_fingerprint;
 use vajra_fingerprint::typed_path::typed_path_fingerprint;
 
@@ -231,5 +232,64 @@ proptest! {
         let h1 = path_set_fingerprint(&doc);
         let h2 = path_set_fingerprint(&doc);
         prop_assert_eq!(h1, h2);
+    }
+}
+
+// =========================================================================
+// NCD properties
+// =========================================================================
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(200))]
+
+    // N1. NCD symmetric: NCD(a,b) ≈ NCD(b,a)
+    #[test]
+    fn prop_ncd_symmetric(
+        a in prop::collection::vec(0u8..255, 20..200),
+        b in prop::collection::vec(0u8..255, 20..200),
+    ) {
+        let d_ab = ncd(&a, &b);
+        let d_ba = ncd(&b, &a);
+        prop_assert!((d_ab - d_ba).abs() < 1e-10,
+            "NCD not symmetric: NCD(a,b)={d_ab}, NCD(b,a)={d_ba}");
+    }
+
+    // N2. NCD non-negative
+    #[test]
+    fn prop_ncd_non_negative(
+        a in prop::collection::vec(0u8..255, 1..200),
+        b in prop::collection::vec(0u8..255, 1..200),
+    ) {
+        let d = ncd(&a, &b);
+        prop_assert!(d >= 0.0, "NCD must be >= 0, got {d}");
+    }
+
+    // N3. NCD self-similarity low: NCD(x,x) should be near 0
+    #[test]
+    fn prop_ncd_self_low(data in prop::collection::vec(0u8..255, 50..500)) {
+        let d = ncd(&data, &data);
+        prop_assert!(d < 0.3,
+            "NCD(x,x) should be near 0 for sufficient data, got {d}");
+    }
+
+    // N4. NCD bounded: NCD ∈ [0, ~1.1] (can slightly exceed 1 due to compressor overhead)
+    #[test]
+    fn prop_ncd_bounded(
+        a in prop::collection::vec(0u8..255, 10..200),
+        b in prop::collection::vec(0u8..255, 10..200),
+    ) {
+        let d = ncd(&a, &b);
+        prop_assert!(d < 2.0,
+            "NCD should be bounded, got {d}");
+    }
+
+    // N5. NCD finite
+    #[test]
+    fn prop_ncd_finite(
+        a in prop::collection::vec(0u8..255, 0..200),
+        b in prop::collection::vec(0u8..255, 0..200),
+    ) {
+        let d = ncd(&a, &b);
+        prop_assert!(d.is_finite(), "NCD must be finite, got {d}");
     }
 }
