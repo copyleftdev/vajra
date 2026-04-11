@@ -32,7 +32,11 @@ use vajra_types::{Analyzer, Document};
 // ---------------------------------------------------------------------------
 
 #[derive(Parser)]
-#[command(name = "vajra", about = "Structural analysis toolkit for JSON data")]
+#[command(
+    name = "vajra",
+    version,
+    about = "Structural analysis toolkit for JSON data"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
