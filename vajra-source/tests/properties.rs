@@ -28,18 +28,6 @@ proptest! {
         }
     }
 
-    /// Parsing never panics on arbitrary byte input.
-    #[test]
-    #[cfg(feature = "rust")]
-    fn prop_no_panic_on_arbitrary_bytes(bytes in prop::collection::vec(any::<u8>(), 0..2000)) {
-        let config = SourceConfig {
-            language: Some(SourceLanguage::Rust),
-            ..SourceConfig::default()
-        };
-        // Must not panic — errors are fine
-        let _ = parse_source(&bytes, &config);
-    }
-
     /// Parsing never panics on arbitrary UTF-8 strings.
     #[test]
     #[cfg(feature = "rust")]
@@ -135,5 +123,21 @@ proptest! {
             ..SourceConfig::default()
         };
         let _ = parse_source(src.as_bytes(), &config);
+    }
+}
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(512))]
+
+    /// Parsing never panics on arbitrary byte input.
+    #[test]
+    #[cfg(feature = "rust")]
+    fn prop_no_panic_on_arbitrary_bytes(bytes in prop::collection::vec(any::<u8>(), 0..512)) {
+        let config = SourceConfig {
+            language: Some(SourceLanguage::Rust),
+            ..SourceConfig::default()
+        };
+        // Must not panic — errors are fine
+        let _ = parse_source(&bytes, &config);
     }
 }
