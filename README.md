@@ -5,6 +5,10 @@
 <h1 align="center">Vajra</h1>
 
 <p align="center">
+  <a href="https://tokentip.to/@copyleftdev"><img src="https://tokentip.to/badge/copyleftdev.svg?logo=1" alt="Tip my tokens"></a>
+</p>
+
+<p align="center">
   <strong>Break noise. Preserve truth.</strong>
 </p>
 
