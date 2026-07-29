@@ -23,6 +23,7 @@ vajra invariants <input> [flags]
 | Flag | Description | Default |
 |---|---|---|
 | `--top-k <N>` | Maximum number of field pairs to consider | 50 |
+| `--bin <spec>` | Discretise numeric fields: `quantile:N`, `equal-width:N`, `none` | `quantile:5` |
 | `--format <fmt>` | Output format: `text`, `json`, `markdown`, `compact-ai` | `text` |
 | `--input-format <fmt>` | Override auto-detected input format | auto |
 | `--redact` | Apply built-in redaction before output | off |
@@ -41,6 +42,36 @@ H(Y|X) = -sum p(x,y) * log2(p(y|x))
 ```
 
 Low H(Y|X) means X strongly predicts Y. If H(Y|X) approaches 0, Y is functionally determined by X — knowing X tells you Y with near-certainty.
+
+### Numeric Fields Are Discretised First
+
+Conditional entropy over a continuous field is degenerate. If `score` holds 400 distinct values across 400 records, every distinct score maps to exactly one target value, so H(target | score) = 0 and the relationship reports as *perfect* whether or not one exists.
+
+`invariants` therefore buckets numeric fields before building joint distributions. Controlled by `--bin`:
+
+| `--bin` | Behaviour |
+|---|---|
+| `quantile:N` | Equal-frequency buckets, labelled `q0`..`q{N-1}`. **Default is `quantile:5`.** |
+| `equal-width:N` | Equal-width buckets over the observed range, labelled `w0`..`w{N-1}` |
+| `none` | Raw values — reproduces the degenerate behaviour above |
+
+On 400 records where `score` is unique per record and noisily drives `outcome`:
+
+```console
+$ vajra invariants scores.json --bin none      # strength 1.0000 — meaningless
+$ vajra invariants scores.json                 # strength 0.6055 — a real measurement
+$ vajra invariants scores.json --bin equal-width:4
+                                               # strength 0.4505
+```
+
+Two guards keep the transformation from doing harm:
+
+- **A field is only binned if its distinct count exceeds the bucket count.** Booleans, small integer enums and other low-cardinality numerics pass through untouched — bucketing them could only merge categories that were already separable.
+- **Non-numeric and non-finite columns are never binned.** A column containing `NaN` or `inf` is treated as non-numeric rather than silently mis-bucketed.
+
+Every result records `field_x_binned` / `field_y_binned` so you can tell which values were transformed; text output marks them `[b]`.
+
+**Known limitation.** Binning fixes *numeric* degeneracy only. A high-cardinality **string** field — a primary key, a UUID, a filename — is still near-unique and will still report a perfect relationship with everything. Treat any near-1.0 strength involving an identifier-like field as an artefact, not a finding.
 
 ### Direction Matters: `relationship_strength` vs `mutual_information`
 
@@ -155,7 +186,9 @@ vajra invariants records.json --format json --quiet
     "conditional_entropy": 0.0,
     "mean_pmi": 1.0,
     "mutual_information": 0.9999999999999999,
-    "relationship_strength": 1.0
+    "relationship_strength": 1.0,
+    "field_x_binned": false,
+    "field_y_binned": false
   },
   {
     "field_x": "$.coarse",
@@ -163,7 +196,9 @@ vajra invariants records.json --format json --quiet
     "conditional_entropy": 1.5849625007211563,
     "mean_pmi": 1.0,
     "mutual_information": 0.9999999999999999,
-    "relationship_strength": 0.3868528072345415
+    "relationship_strength": 0.3868528072345415,
+    "field_x_binned": false,
+    "field_y_binned": false
   }
 ]
 ```

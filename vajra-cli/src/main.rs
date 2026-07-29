@@ -184,6 +184,9 @@ enum Command {
         /// Maximum number of field pairs to consider
         #[arg(long, default_value = "50")]
         top_k: usize,
+        /// How to discretise numeric fields: `quantile:N`, `equal-width:N`, or `none`
+        #[arg(long, default_value = "quantile:5")]
+        bin: String,
     },
     /// Run a query expression against a document
     Query {
@@ -351,7 +354,7 @@ fn main() {
             inputs,
             similarity_threshold,
         } => cmd_cluster(inputs, *similarity_threshold, &cli),
-        Command::Invariants { input, top_k } => cmd_invariants(input, *top_k, &cli),
+        Command::Invariants { input, top_k, bin } => cmd_invariants(input, *top_k, bin, &cli),
         Command::Query { input, expression } => cmd_query(input, expression, &cli),
         Command::Batch { directory } => cmd_batch(directory, &cli),
         Command::Cascade {
@@ -2137,9 +2140,38 @@ fn cmd_cluster(inputs: &[String], similarity_threshold: f64, cli: &Cli) -> Resul
 // invariants
 // ---------------------------------------------------------------------------
 
-fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
+/// Parse the `--bin` flag into a binning strategy.
+fn parse_bin_flag(spec: &str) -> Result<vajra_stats::BinStrategy> {
+    use vajra_stats::BinStrategy;
+    let spec = spec.trim();
+    if spec.eq_ignore_ascii_case("none") {
+        return Ok(BinStrategy::None);
+    }
+    let (kind, count) = spec.split_once(':').ok_or_else(|| {
+        anyhow::anyhow!(
+            "invalid --bin value '{spec}'. Expected 'quantile:N', 'equal-width:N', or 'none'"
+        )
+    })?;
+    let n: usize = count.trim().parse().map_err(|_| {
+        anyhow::anyhow!("invalid bucket count '{count}' in --bin '{spec}': expected an integer")
+    })?;
+    if n < 2 {
+        anyhow::bail!("--bin bucket count must be at least 2 (got {n})");
+    }
+    match kind.trim().to_lowercase().as_str() {
+        "quantile" | "q" => Ok(BinStrategy::Quantile(n)),
+        "equal-width" | "equalwidth" | "w" => Ok(BinStrategy::EqualWidth(n)),
+        other => anyhow::bail!(
+            "unknown binning strategy '{other}'. Available: quantile, equal-width, none"
+        ),
+    }
+}
+
+fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()> {
+    let bins = parse_bin_flag(bin)?;
     let doc = load_document(input, cli)?;
-    let relationships = vajra_stats::relationships::discover_relationships(&doc, top_k);
+    let relationships =
+        vajra_stats::relationships::discover_relationships_binned(&doc, top_k, bins);
 
     match cli.format {
         Format::Json => {
@@ -2153,6 +2185,8 @@ fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
                         "mean_pmi": r.mean_pmi,
                         "relationship_strength": r.relationship_strength,
                         "mutual_information": r.mutual_information,
+                        "field_x_binned": r.field_x_binned,
+                        "field_y_binned": r.field_y_binned,
                     })
                 })
                 .collect();
@@ -2172,11 +2206,12 @@ fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
                     "  {:<40}  {:<40}  {:>8}  {:>8}  {:>10}  {:>8}",
                     "PREDICTOR", "TARGET", "H(Y|X)", "PMI", "STRENGTH", "MI"
                 );
+                let mark = |binned: bool| if binned { " [b]" } else { "" };
                 for r in &relationships {
                     println!(
                         "  {:<40}  {:<40}  {:>8.4}  {:>8.4}  {:>10.4}  {:>8.4}",
-                        r.field_x,
-                        r.field_y,
+                        format!("{}{}", r.field_x, mark(r.field_x_binned)),
+                        format!("{}{}", r.field_y, mark(r.field_y_binned)),
                         r.conditional_entropy,
                         r.mean_pmi,
                         r.relationship_strength,
@@ -2190,6 +2225,12 @@ fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
                 println!(
                     "  of each pair are listed. Compare across pairs using MI (symmetric, bits)."
                 );
+                if relationships
+                    .iter()
+                    .any(|r| r.field_x_binned || r.field_y_binned)
+                {
+                    println!("  [b] = numeric field discretised before analysis (see --bin).");
+                }
             }
         }
     }
@@ -3305,6 +3346,8 @@ fn cmd_audit(
                             "mean_pmi": r.mean_pmi,
                             "relationship_strength": r.relationship_strength,
                             "mutual_information": r.mutual_information,
+                            "field_x_binned": r.field_x_binned,
+                            "field_y_binned": r.field_y_binned,
                         })
                     })
                     .collect();
