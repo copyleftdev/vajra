@@ -2152,6 +2152,7 @@ fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
                         "conditional_entropy": r.conditional_entropy,
                         "mean_pmi": r.mean_pmi,
                         "relationship_strength": r.relationship_strength,
+                        "mutual_information": r.mutual_information,
                     })
                 })
                 .collect();
@@ -2168,19 +2169,27 @@ fn cmd_invariants(input: &str, top_k: usize, cli: &Cli) -> Result<()> {
                 );
             } else {
                 println!(
-                    "  {:<40}  {:<40}  {:>8}  {:>8}  {:>10}",
-                    "FIELD X", "FIELD Y", "H(Y|X)", "PMI", "STRENGTH"
+                    "  {:<40}  {:<40}  {:>8}  {:>8}  {:>10}  {:>8}",
+                    "PREDICTOR", "TARGET", "H(Y|X)", "PMI", "STRENGTH", "MI"
                 );
                 for r in &relationships {
                     println!(
-                        "  {:<40}  {:<40}  {:>8.4}  {:>8.4}  {:>10.4}",
+                        "  {:<40}  {:<40}  {:>8.4}  {:>8.4}  {:>10.4}  {:>8.4}",
                         r.field_x,
                         r.field_y,
                         r.conditional_entropy,
                         r.mean_pmi,
                         r.relationship_strength,
+                        r.mutual_information,
                     );
                 }
+                println!();
+                println!(
+                    "  STRENGTH is 1 - H(Y|X)/H(Y) and is direction-dependent; both directions"
+                );
+                println!(
+                    "  of each pair are listed. Compare across pairs using MI (symmetric, bits)."
+                );
             }
         }
     }
@@ -3295,6 +3304,7 @@ fn cmd_audit(
                             "conditional_entropy": r.conditional_entropy,
                             "mean_pmi": r.mean_pmi,
                             "relationship_strength": r.relationship_strength,
+                            "mutual_information": r.mutual_information,
                         })
                     })
                     .collect();
