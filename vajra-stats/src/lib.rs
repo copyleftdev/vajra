@@ -53,7 +53,10 @@ pub use lz_complexity::{
 };
 pub use mad::{mad, median, modified_z_score};
 pub use numeric::{compute_numeric_stats, percentile, NumericStats};
-pub use relationships::{conditional_entropy, discover_relationships, pmi, FieldRelationship};
+pub use relationships::{
+    conditional_entropy, discover_relationships, discover_relationships_binned, pmi, BinStrategy,
+    FieldRelationship,
+};
 pub use renyi::{normalized_renyi_spectrum, renyi_entropy, renyi_spectrum, RenyiSpectrum};
 pub use space_saving::SpaceSaving;
 pub use streaming::{StreamingConfig, StreamingStatsAccumulator};
