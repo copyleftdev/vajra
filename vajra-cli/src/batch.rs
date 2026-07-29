@@ -1,7 +1,11 @@
-//! Rayon-based batch parallel processing for multiple JSON documents.
+//! Rayon-based batch parallel processing for multiple documents.
 //!
 //! Parses and analyzes each document independently using `rayon::par_iter()`,
 //! then computes aggregate statistics across the entire batch.
+//!
+//! File selection and parsing are both injected by the caller, so batch runs
+//! honour the same `--input-format` resolution as every other command instead
+//! of hardcoding JSON.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -11,7 +15,6 @@ use rayon::prelude::*;
 use serde::Serialize;
 
 use vajra_anomaly::{AnomalyAnalyzer, AnomalyReport};
-use vajra_core::parse_file;
 #[cfg(test)]
 use vajra_core::parse_str;
 use vajra_fingerprint::{FingerprintAnalyzer, FingerprintResult};
@@ -66,17 +69,36 @@ pub struct BatchResult {
     pub errors: Vec<(String, String)>,
 }
 
+/// The files a directory scan chose, and the ones it passed over.
+///
+/// `skipped` exists so callers can report what was *not* analyzed. A batch
+/// that silently drops most of a directory and reports no errors is
+/// indistinguishable from a complete run.
+#[derive(Debug, Default)]
+pub struct BatchFiles {
+    /// Files that matched the selector, sorted for deterministic ordering.
+    pub selected: Vec<PathBuf>,
+    /// Files present in the directory that the selector rejected, sorted.
+    pub skipped: Vec<PathBuf>,
+}
+
 /// Analyze a batch of documents in parallel using Rayon.
 ///
 /// Each document is parsed and analyzed independently, then aggregate
 /// statistics are computed from the per-document results.
 ///
+/// `load` performs the parse, so the caller decides how each file is read.
+/// Passing the CLI's format-aware loader is what lets batch runs honour
+/// `--input-format` rather than assuming JSON.
+///
 /// # Errors
 ///
-/// Returns an error if the directory cannot be read. Individual file
-/// failures are collected in `BatchResult::errors` rather than failing
-/// the entire batch.
-pub fn analyze_batch(file_paths: &[PathBuf]) -> Result<BatchResult> {
+/// Returns an error if the batch is empty. Individual file failures are
+/// collected in `BatchResult::errors` rather than failing the entire batch.
+pub fn analyze_batch(
+    file_paths: &[PathBuf],
+    load: &(dyn Fn(&Path) -> Result<Document> + Send + Sync),
+) -> Result<BatchResult> {
     if file_paths.is_empty() {
         anyhow::bail!("no files to analyze (empty batch)");
     }
@@ -90,7 +112,9 @@ pub fn analyze_batch(file_paths: &[PathBuf]) -> Result<BatchResult> {
                 .file_name()
                 .map(|n| n.to_string_lossy().into_owned())
                 .unwrap_or_else(|| path.display().to_string());
-            let result = analyze_single(path);
+            let result = load(path)
+                .with_context(|| format!("failed to parse {}", path.display()))
+                .and_then(analyze_document);
             (index, file_name, result)
         })
         .collect();
@@ -184,14 +208,6 @@ pub fn analyze_batch_from_strings(inputs: &[(String, String)]) -> Result<BatchRe
     })
 }
 
-/// Analyze a single file on disk.
-fn analyze_single(
-    path: &Path,
-) -> Result<(Document, StatsResult, AnomalyReport, FingerprintResult)> {
-    let doc = parse_file(path).with_context(|| format!("failed to parse {}", path.display()))?;
-    analyze_document(doc)
-}
-
 /// Analyze a single JSON string.
 #[cfg(test)]
 fn analyze_single_str(
@@ -267,25 +283,38 @@ fn compute_aggregate(docs: &[DocumentAnalysis]) -> AggregateStats {
     }
 }
 
-/// Collect all JSON file paths from a directory.
+/// Partition a directory's files into those `accept` selects and those it does
+/// not.
+///
+/// Subdirectories are ignored entirely and are not reported as skipped.
 ///
 /// # Errors
 ///
-/// Returns an error if the directory cannot be read.
-pub fn collect_json_files(dir: &Path) -> Result<Vec<PathBuf>> {
+/// Returns an error if the path is not a directory, or cannot be read.
+pub fn collect_batch_files(dir: &Path, accept: &dyn Fn(&Path) -> bool) -> Result<BatchFiles> {
     if !dir.is_dir() {
         anyhow::bail!("{} is not a directory", dir.display());
     }
 
-    let mut files: Vec<PathBuf> = std::fs::read_dir(dir)
+    let mut files = BatchFiles::default();
+    for entry in std::fs::read_dir(dir)
         .with_context(|| format!("failed to read directory {}", dir.display()))?
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| entry.path().extension().is_some_and(|ext| ext == "json"))
-        .map(|entry| entry.path())
-        .collect();
+    {
+        let Ok(entry) = entry else { continue };
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        if accept(&path) {
+            files.selected.push(path);
+        } else {
+            files.skipped.push(path);
+        }
+    }
 
     // Sort for deterministic ordering
-    files.sort();
+    files.selected.sort();
+    files.skipped.sort();
     Ok(files)
 }
 
@@ -392,6 +421,15 @@ mod tests {
         Ok(())
     }
 
+    /// The `.json` selector and loader the CLI uses by default.
+    fn json_only(path: &Path) -> bool {
+        path.extension().is_some_and(|ext| ext == "json")
+    }
+
+    fn load_json(path: &Path) -> Result<Document> {
+        Ok(vajra_core::parse_file(path)?)
+    }
+
     #[test]
     fn batch_from_directory() -> Result<(), Box<dyn std::error::Error>> {
         let dir = tempfile::tempdir()?;
@@ -402,15 +440,65 @@ mod tests {
 
         fs::write(dir_path.join("b.json"), r#"{"name": "Bob", "age": 25}"#)?;
 
-        // Non-JSON file should be ignored
+        // Non-JSON file should be skipped, and reported as such.
         fs::write(dir_path.join("readme.txt"), "not json")?;
 
-        let files = collect_json_files(dir_path)?;
-        assert_eq!(files.len(), 2);
+        let files = collect_batch_files(dir_path, &json_only)?;
+        assert_eq!(files.selected.len(), 2);
+        assert_eq!(files.skipped.len(), 1, "readme.txt must be reported");
+        assert!(files.skipped[0].ends_with("readme.txt"));
 
-        let result = analyze_batch(&files)?;
+        let result = analyze_batch(&files.selected, &load_json)?;
         assert_eq!(result.per_document.len(), 2);
         assert!(result.errors.is_empty());
+        Ok(())
+    }
+
+    /// A directory whose files are all rejected must report every one of them
+    /// rather than looking like an empty directory.
+    #[test]
+    fn skipped_files_are_all_reported() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        for name in ["a.js", "b.js", "c.yaml", "notes.md"] {
+            fs::write(dir.path().join(name), "x")?;
+        }
+        fs::create_dir(dir.path().join("nested"))?;
+
+        let files = collect_batch_files(dir.path(), &json_only)?;
+        assert!(files.selected.is_empty());
+        assert_eq!(files.skipped.len(), 4, "subdirectory must not be counted");
+        Ok(())
+    }
+
+    #[test]
+    fn collect_batch_files_is_deterministic() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        for name in ["z.json", "a.json", "m.json", "q.txt", "b.txt"] {
+            fs::write(dir.path().join(name), r#"{"a": 1}"#)?;
+        }
+
+        let first = collect_batch_files(dir.path(), &json_only)?;
+        let second = collect_batch_files(dir.path(), &json_only)?;
+        assert_eq!(first.selected, second.selected);
+        assert_eq!(first.skipped, second.skipped);
+        assert!(first.selected.windows(2).all(|w| w[0] <= w[1]), "sorted");
+        assert!(first.skipped.windows(2).all(|w| w[0] <= w[1]), "sorted");
+        Ok(())
+    }
+
+    /// The selector is injected, so a non-JSON batch is selectable without
+    /// touching this module.
+    #[test]
+    fn custom_selector_changes_selection() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        fs::write(dir.path().join("keep.js"), "const a = 1;")?;
+        fs::write(dir.path().join("drop.json"), r#"{"a": 1}"#)?;
+
+        let js_only = |p: &Path| p.extension().is_some_and(|e| e == "js");
+        let files = collect_batch_files(dir.path(), &js_only)?;
+        assert_eq!(files.selected.len(), 1);
+        assert!(files.selected[0].ends_with("keep.js"));
+        assert_eq!(files.skipped.len(), 1);
         Ok(())
     }
 
@@ -452,10 +540,11 @@ mod tests {
     #[test]
     fn empty_directory_returns_error() -> Result<(), Box<dyn std::error::Error>> {
         let dir = tempfile::tempdir()?;
-        let files = collect_json_files(dir.path())?;
-        assert!(files.is_empty());
+        let files = collect_batch_files(dir.path(), &json_only)?;
+        assert!(files.selected.is_empty());
+        assert!(files.skipped.is_empty());
 
-        let result = analyze_batch(&files);
+        let result = analyze_batch(&files.selected, &load_json);
         assert!(result.is_err());
         Ok(())
     }
