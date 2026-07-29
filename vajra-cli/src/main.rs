@@ -545,6 +545,11 @@ fn load_document(input: &str, cli: &Cli) -> Result<Document> {
     load_documents_aggregated(input, fmt).map_err(|e| anyhow::anyhow!("{e}"))
 }
 
+/// `load_document` for callers that already hold a `Path` (directory walks).
+fn load_document_path(path: &Path, cli: &Cli) -> Result<Document> {
+    load_document(&path.display().to_string(), cli)
+}
+
 fn hex(bytes: &[u8; 32]) -> String {
     use std::fmt::Write;
     bytes.iter().fold(String::with_capacity(64), |mut s, b| {
@@ -2026,12 +2031,13 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
 // cluster
 // ---------------------------------------------------------------------------
 
-/// Whether a directory entry should be included when clustering.
+/// Whether a directory entry should be included when a command walks a
+/// directory (`cluster`, `batch`).
 ///
 /// Mirrors the format resolution in `load_document`: `--input-format source`
 /// selects source files, anything else keeps the `.json` filter.
 #[cfg(feature = "source")]
-fn is_clusterable_file(path: &Path, cli: &Cli) -> bool {
+fn is_selectable_file(path: &Path, cli: &Cli) -> bool {
     if matches!(cli.input_format, Some(InputFormatArg::Source)) {
         return vajra_source::is_source_file(path);
     }
@@ -2039,7 +2045,7 @@ fn is_clusterable_file(path: &Path, cli: &Cli) -> bool {
 }
 
 #[cfg(not(feature = "source"))]
-fn is_clusterable_file(path: &Path, _cli: &Cli) -> bool {
+fn is_selectable_file(path: &Path, _cli: &Cli) -> bool {
     path.extension().is_some_and(|ext| ext == "json")
 }
 
@@ -2060,7 +2066,7 @@ fn cmd_cluster(inputs: &[String], similarity_threshold: f64, cli: &Cli) -> Resul
                 .with_context(|| format!("failed to read directory {input}"))?
                 .filter_map(|e| e.ok())
                 .map(|e| e.path())
-                .filter(|p| p.is_file() && is_clusterable_file(p, cli))
+                .filter(|p| p.is_file() && is_selectable_file(p, cli))
                 .collect();
             paths.sort();
             for p in paths {
@@ -2227,17 +2233,42 @@ fn cmd_query(input: &str, expression: &str, cli: &Cli) -> Result<()> {
 
 fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
     let dir_path = PathBuf::from(directory);
-    let files = batch::collect_json_files(&dir_path)?;
+    let files = batch::collect_batch_files(&dir_path, &|p| is_selectable_file(p, cli))?;
 
-    if files.is_empty() {
-        anyhow::bail!("no JSON files found in {directory}");
+    let kind = match cli.input_format {
+        Some(InputFormatArg::Source) => "source",
+        _ => "JSON",
+    };
+
+    if files.selected.is_empty() {
+        anyhow::bail!(
+            "no {kind} files found in {directory} ({} file(s) present but not selected)",
+            files.skipped.len()
+        );
     }
 
     if !cli.quiet {
-        eprintln!("Analyzing {} JSON files in parallel...", files.len());
+        eprintln!(
+            "Analyzing {} {kind} files in parallel...",
+            files.selected.len()
+        );
+        if !files.skipped.is_empty() {
+            eprintln!("Skipping {} non-{kind} file(s).", files.skipped.len());
+        }
     }
 
-    let result = batch::analyze_batch(&files)?;
+    let skipped_names: Vec<String> = files
+        .skipped
+        .iter()
+        .map(|p| {
+            p.file_name().map_or_else(
+                || p.display().to_string(),
+                |n| n.to_string_lossy().into_owned(),
+            )
+        })
+        .collect();
+
+    let result = batch::analyze_batch(&files.selected, &|p| load_document_path(p, cli))?;
 
     match cli.format {
         Format::Json => {
@@ -2276,6 +2307,8 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
                 "rare_paths": result.aggregate.rare_paths,
                 "per_document": per_doc_json,
                 "errors": errors_json,
+                "skipped_count": skipped_names.len(),
+                "skipped": skipped_names,
             }))
             .context("JSON serialization failed")?;
             println!("{json}");
@@ -2365,6 +2398,15 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
                 println!("=== Errors ({}) ===", result.errors.len());
                 for (name, err) in &result.errors {
                     println!("  {name}: {err}");
+                }
+            }
+
+            // Files present in the directory that the selector passed over.
+            if !skipped_names.is_empty() {
+                println!();
+                println!("=== Skipped ({}) ===", skipped_names.len());
+                for name in &skipped_names {
+                    println!("  {name}");
                 }
             }
         }

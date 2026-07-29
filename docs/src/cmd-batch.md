@@ -1,6 +1,6 @@
 # batch
 
-`batch` runs parallel analysis across all JSON files in a directory. It produces aggregated statistics, per-file summaries, and batch-level observations — processing hundreds or thousands of files in seconds via Rayon-based parallelism.
+`batch` runs parallel analysis across the files in a directory. It produces aggregated statistics, per-file summaries, and batch-level observations — processing hundreds or thousands of files in seconds via Rayon-based parallelism.
 
 Where single-document commands analyze one file, `batch` analyzes the population.
 
@@ -16,7 +16,7 @@ vajra batch <directory> [flags]
 
 | Argument | Description |
 |---|---|
-| `<directory>` | Path to a directory containing JSON files |
+| `<directory>` | Path to a directory containing files to analyze |
 
 **Flags:**
 
@@ -25,15 +25,43 @@ vajra batch <directory> [flags]
 | `--format <fmt>` | Output format: `text`, `json`, `markdown`, `compact-ai` | `text` |
 | `--profile <name>` | Concern profile for essence generation | `engineer` |
 | `--input-format <fmt>` | Override auto-detected input format | auto |
+| `--lang <lang>` | Source language, with `--input-format source` | auto |
 | `--streaming` | Force streaming mode for each file | off |
 | `--redact` | Apply built-in redaction before output | off |
 | `--quiet` | Suppress progress output | off |
 
 ---
 
+## Which Files Get Analyzed
+
+The directory scan selects `.json` files by default, or source files when `--input-format source` is given:
+
+```bash
+vajra batch ./payloads                                          # .json files
+vajra batch ./src --input-format source --lang javascript       # source files
+```
+
+Everything else in the directory is **skipped and reported**, never silently dropped. Both output modes state the count, and JSON mode lists the names:
+
+```json
+{
+  "total_documents": 3,
+  "skipped_count": 4,
+  "skipped": ["p.js", "q.js", "r.js", "s.js"]
+}
+```
+
+Check `skipped_count` before trusting a batch result. A run that analyzed 3 of 19 files and one that analyzed all 3 files present are otherwise indistinguishable.
+
+Subdirectories are ignored and are not counted as skipped — the scan is not recursive. Note that the directory scan does not pick up `.yaml`, `.csv`, or `.ndjson` by extension; those files are reported as skipped. Pass them to a single-document command instead.
+
+If no file matches, `batch` fails and reports how many files were present but unselected, so "empty directory" is distinguishable from "wrong `--input-format`".
+
+---
+
 ## What It Does
 
-1. **Discovers files.** Scans the directory for all supported files (`.json`, `.yaml`, `.csv`, `.ndjson`, etc.).
+1. **Discovers files.** Scans the directory as described above, partitioning it into selected and skipped files.
 
 2. **Parallel analysis.** Each file is analyzed independently using Rayon's work-stealing thread pool. On an 8-core machine, 8 files are analyzed simultaneously.
 
