@@ -84,19 +84,34 @@ pub fn pmi(joint_count: u64, x_count: u64, y_count: u64, total: u64) -> f64 {
 // Relationship discovery
 // ---------------------------------------------------------------------------
 
-/// A discovered statistical relationship between two fields.
+/// A discovered statistical relationship between two fields, in one direction.
+///
+/// Both directions of every pair are reported, because
+/// `relationship_strength` is **not symmetric**: it normalises by H(Y), so
+/// `x -> y` and `y -> x` generally differ. Filtering on one of `field_x` /
+/// `field_y` therefore selects a direction, not a subset of the pairs.
+///
+/// Use [`Self::mutual_information`] when comparing across pairs — it is
+/// symmetric and in bits, so it is not affected by which field is the
+/// predictor or by the fields' differing entropies.
 #[derive(Debug, Clone)]
 pub struct FieldRelationship {
     /// The "predictor" field.
     pub field_x: WildcardPath,
     /// The "predicted" field.
     pub field_y: WildcardPath,
-    /// Conditional entropy H(Y|X).
+    /// Conditional entropy H(Y|X), in bits.
     pub conditional_entropy: f64,
     /// Average PMI across observed value pairs.
     pub mean_pmi: f64,
     /// Normalised relationship strength: 1 - H(Y|X)/H(Y), clamped to [0,1].
+    ///
+    /// Direction-dependent — see the type-level note.
     pub relationship_strength: f64,
+    /// Mutual information I(X;Y) = H(Y) - H(Y|X), in bits.
+    ///
+    /// Symmetric: identical for both directions of a pair.
+    pub mutual_information: f64,
 }
 
 /// Discover relationships between field pairs in a document.
@@ -160,14 +175,31 @@ pub fn discover_relationships(doc: &Document, top_k: usize) -> Vec<FieldRelation
             #[allow(clippy::cast_possible_truncation)]
             let total = n as u64;
 
-            // H(Y|X)
-            let h_y_given_x = conditional_entropy(&joint, total);
+            // The pair loop only visits (i, j) with j > i, so without an
+            // explicit reverse pass each unordered pair would be reported in
+            // exactly one direction — chosen by observation-count rank, and
+            // for the common case of equal counts by path order. Since
+            // `relationship_strength` normalises by H(Y), that made the
+            // reported strength depend on field naming. Emit both directions.
+            let joint_swapped: BTreeMap<(String, String), u64> = joint
+                .iter()
+                .map(|((x, y), &c)| ((y.clone(), x.clone()), c))
+                .collect();
 
-            // H(Y) for normalisation
+            let h_y_given_x = conditional_entropy(&joint, total);
+            let h_x_given_y = conditional_entropy(&joint_swapped, total);
+
+            let x_counts: Vec<u64> = x_marginal.values().copied().collect();
             let y_counts: Vec<u64> = y_marginal.values().copied().collect();
+            let h_x = shannon_entropy_from_counts(&x_counts);
             let h_y = shannon_entropy_from_counts(&y_counts);
 
-            // Mean PMI
+            // I(X;Y) = H(Y) - H(Y|X) = H(X) - H(X|Y). Both forms are equal in
+            // exact arithmetic; average them so floating-point error does not
+            // make the two emitted rows disagree.
+            let mutual_information = (((h_y - h_y_given_x) + (h_x - h_x_given_y)) / 2.0).max(0.0);
+
+            // Mean PMI is symmetric: PMI(x,y) == PMI(y,x).
             let mut pmi_sum = 0.0_f64;
             let mut pmi_count = 0u64;
             for ((x_val, y_val), &jc) in &joint {
@@ -183,12 +215,15 @@ pub fn discover_relationships(doc: &Document, top_k: usize) -> Vec<FieldRelation
                 0.0
             };
 
-            // Relationship strength: 1 - H(Y|X)/H(Y), clamped to [0,1].
-            let strength = if h_y > 0.0 {
-                (1.0 - h_y_given_x / h_y).clamp(0.0, 1.0)
-            } else {
-                // H(Y)=0 means Y is constant → perfectly predictable.
-                1.0
+            // Relationship strength: 1 - H(target|predictor)/H(target),
+            // clamped to [0,1]. H(target)=0 means the target is constant and
+            // so perfectly predictable.
+            let strength = |h_cond: f64, h_target: f64| {
+                if h_target > 0.0 {
+                    (1.0 - h_cond / h_target).clamp(0.0, 1.0)
+                } else {
+                    1.0
+                }
             };
 
             results.push(FieldRelationship {
@@ -196,16 +231,29 @@ pub fn discover_relationships(doc: &Document, top_k: usize) -> Vec<FieldRelation
                 field_y: path_y.clone(),
                 conditional_entropy: h_y_given_x,
                 mean_pmi,
-                relationship_strength: strength,
+                relationship_strength: strength(h_y_given_x, h_y),
+                mutual_information,
+            });
+            results.push(FieldRelationship {
+                field_x: path_y.clone(),
+                field_y: path_x.clone(),
+                conditional_entropy: h_x_given_y,
+                mean_pmi,
+                relationship_strength: strength(h_x_given_y, h_x),
+                mutual_information,
             });
         }
     }
 
-    // Sort by strength descending.
+    // Sort by strength descending, breaking ties on the path pair so the
+    // ordering is fully specified rather than dependent on insertion order.
+    // Emitting both directions makes equal-strength ties common.
     results.sort_by(|a, b| {
         b.relationship_strength
             .partial_cmp(&a.relationship_strength)
             .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| a.field_x.as_str().cmp(&b.field_x.as_str()))
+            .then_with(|| a.field_y.as_str().cmp(&b.field_y.as_str()))
     });
 
     results
@@ -521,6 +569,139 @@ mod tests {
         )?;
         let rels = discover_relationships(&doc, 1);
         assert!(rels.is_empty());
+        Ok(())
+    }
+
+    /// `coarse` is a deterministic function of `fine`, so the pair is
+    /// asymmetric: H(coarse|fine)=0 but H(fine|coarse)>0.
+    fn asymmetric_doc(first: &str, second: &str) -> String {
+        let rows: Vec<String> = (0..300)
+            .map(|i| format!(r#"{{"{first}": "v{}", "{second}": "c{}"}}"#, i % 6, i % 2))
+            .collect();
+        format!("[{}]", rows.join(","))
+    }
+
+    /// Regression: each unordered pair must be reported in *both* directions.
+    /// The pair loop only visits (i, j) with j > i, so previously a consumer
+    /// filtering on `field_y` silently saw half the pairs.
+    #[test]
+    fn discover_emits_both_directions() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(&asymmetric_doc("fine", "coarse"))?;
+        let rels = discover_relationships(&doc, 50);
+
+        let forward = rels
+            .iter()
+            .filter(|r| {
+                r.field_x.as_str().contains("fine") && r.field_y.as_str().contains("coarse")
+            })
+            .count();
+        let reverse = rels
+            .iter()
+            .filter(|r| {
+                r.field_x.as_str().contains("coarse") && r.field_y.as_str().contains("fine")
+            })
+            .count();
+        assert_eq!(forward, 1, "fine -> coarse must be present");
+        assert_eq!(reverse, 1, "coarse -> fine must be present");
+        Ok(())
+    }
+
+    /// `relationship_strength` is direction-dependent, so both directions of an
+    /// asymmetric pair must report different values.
+    #[test]
+    fn strength_differs_by_direction() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(&asymmetric_doc("fine", "coarse"))?;
+        let rels = discover_relationships(&doc, 50);
+
+        let fwd = rels
+            .iter()
+            .find(|r| r.field_x.as_str().contains("fine"))
+            .ok_or("missing fine -> coarse")?;
+        let rev = rels
+            .iter()
+            .find(|r| r.field_x.as_str().contains("coarse"))
+            .ok_or("missing coarse -> fine")?;
+
+        assert!(
+            (fwd.relationship_strength - 1.0).abs() < EPS,
+            "fine determines coarse: expected strength 1.0, got {}",
+            fwd.relationship_strength
+        );
+        assert!(
+            rev.relationship_strength < 0.9,
+            "coarse does not determine fine: expected < 0.9, got {}",
+            rev.relationship_strength
+        );
+        Ok(())
+    }
+
+    /// Mutual information is symmetric, so it must be identical for both
+    /// directions — this is the measure that is safe to compare across pairs.
+    #[test]
+    fn mutual_information_is_symmetric() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(&asymmetric_doc("fine", "coarse"))?;
+        let rels = discover_relationships(&doc, 50);
+
+        let fwd = rels
+            .iter()
+            .find(|r| r.field_x.as_str().contains("fine"))
+            .ok_or("missing forward")?;
+        let rev = rels
+            .iter()
+            .find(|r| r.field_x.as_str().contains("coarse"))
+            .ok_or("missing reverse")?;
+
+        assert!(
+            (fwd.mutual_information - rev.mutual_information).abs() < 1e-9,
+            "MI must match across directions: {} vs {}",
+            fwd.mutual_information,
+            rev.mutual_information
+        );
+        assert!(fwd.mutual_information > 0.0, "correlated fields share info");
+        Ok(())
+    }
+
+    /// The reported values must not depend on what the fields are called.
+    /// Previously, path order decided which direction was emitted, so renaming
+    /// a field changed its reported strength.
+    #[test]
+    fn results_do_not_depend_on_field_names() -> Result<(), Box<dyn std::error::Error>> {
+        // "aaa" sorts before "zzz", so these two documents present the same
+        // relationship with opposite path ordering.
+        let a = parse_doc(&asymmetric_doc("aaa_fine", "zzz_coarse"))?;
+        let b = parse_doc(&asymmetric_doc("zzz_fine", "aaa_coarse"))?;
+
+        let pick = |rels: &[FieldRelationship], predictor: &str| -> Option<(f64, f64)> {
+            rels.iter()
+                .find(|r| r.field_x.as_str().contains(predictor))
+                .map(|r| (r.relationship_strength, r.mutual_information))
+        };
+
+        let ra = discover_relationships(&a, 50);
+        let rb = discover_relationships(&b, 50);
+
+        let (sa, ma) = pick(&ra, "fine").ok_or("missing fine predictor in a")?;
+        let (sb, mb) = pick(&rb, "fine").ok_or("missing fine predictor in b")?;
+        assert!(
+            (sa - sb).abs() < EPS,
+            "strength changed with field names: {sa} vs {sb}"
+        );
+        assert!((ma - mb).abs() < 1e-9, "MI changed with field names");
+        Ok(())
+    }
+
+    #[test]
+    fn discover_is_deterministic() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(&asymmetric_doc("fine", "coarse"))?;
+        let first = discover_relationships(&doc, 50);
+        let second = discover_relationships(&doc, 50);
+
+        assert_eq!(first.len(), second.len());
+        for (a, b) in first.iter().zip(second.iter()) {
+            assert_eq!(a.field_x.as_str(), b.field_x.as_str());
+            assert_eq!(a.field_y.as_str(), b.field_y.as_str());
+            assert!((a.relationship_strength - b.relationship_strength).abs() < EPS);
+        }
         Ok(())
     }
 }

@@ -42,6 +42,36 @@ H(Y|X) = -sum p(x,y) * log2(p(y|x))
 
 Low H(Y|X) means X strongly predicts Y. If H(Y|X) approaches 0, Y is functionally determined by X — knowing X tells you Y with near-certainty.
 
+### Direction Matters: `relationship_strength` vs `mutual_information`
+
+`relationship_strength` normalises by the target's own entropy:
+
+```
+strength(X -> Y) = 1 - H(Y|X) / H(Y)
+```
+
+This is **not symmetric**. Consider a field `fine` with six distinct values and `coarse = fine mod 2`. `coarse` is fully determined by `fine`, so:
+
+| direction | H(Y&#124;X) | strength |
+|---|---|---|
+| `fine -> coarse` | 0.0000 | **1.0000** |
+| `coarse -> fine` | 1.5849 | **0.3868** |
+
+Same pair, same data, strengths differing by 2.6×. The number answers "how well does the predictor determine *this particular* target", and the target's entropy is the yardstick.
+
+Two consequences:
+
+1. **Both directions of every pair are reported.** Filtering on `field_x` or `field_y` selects a *direction*, not a subset of pairs — you get every pair either way.
+2. **Do not rank across pairs by `relationship_strength`** when the fields have different entropies. A 5-bucket numeric field has ~2.3 bits of entropy while a boolean has ~1; dividing by those different denominators makes the resulting strengths incomparable, and systematically understates the high-entropy field.
+
+For cross-pair comparison use `mutual_information`:
+
+```
+I(X;Y) = H(Y) - H(Y|X) = H(X) - H(X|Y)
+```
+
+It is symmetric, measured in bits, and identical for both directions of a pair — so it ranks fields on one common scale regardless of their individual entropies.
+
 ### Pointwise Mutual Information (PMI)
 
 ```
@@ -111,57 +141,41 @@ Field pairs screened: 1,225 (top 50 paths)
 
 ## Example: JSON Output
 
+Output is a flat array with one entry per direction per pair, sorted by `relationship_strength` descending (ties broken on the path pair, so ordering is fully deterministic).
+
 ```bash
-vajra invariants claims_batch.ndjson --format json
+vajra invariants records.json --format json --quiet
 ```
 
 ```json
-{
-  "records_analyzed": 1247,
-  "pairs_screened": 1225,
-  "functional_dependencies": [
-    {
-      "source": "$.claims[*].subscriber.id",
-      "target": "$.claims[*].subscriber.name",
-      "conditional_entropy": 0.0,
-      "strength": "exact",
-      "example": {
-        "source_value": "SUB-4421",
-        "target_value": "Martinez, Elena",
-        "count": 47
-      }
-    },
-    {
-      "source": "$.claims[*].provider.npi",
-      "target": "$.claims[*].provider.name",
-      "conditional_entropy": 0.03,
-      "strength": "near_exact",
-      "exceptions": 3,
-      "example": {
-        "source_value": "1234567890",
-        "target_value": "Valley Medical Group",
-        "count": 312
-      }
-    }
-  ],
-  "co_occurrences": [
-    {
-      "field_a": "$.claims[*].status",
-      "value_a": "denied",
-      "field_b": "$.claims[*].denial_reason",
-      "pmi": 3.8,
-      "conditional_presence": 0.97
-    }
-  ],
-  "anti_correlations": [
-    {
-      "field_a": "$.claims[*].status",
-      "value_a": "adjudicated",
-      "field_b": "$.claims[*].hold_reason",
-      "pmi": -2.1
-    }
-  ]
-}
+[
+  {
+    "field_x": "$.fine",
+    "field_y": "$.coarse",
+    "conditional_entropy": 0.0,
+    "mean_pmi": 1.0,
+    "mutual_information": 0.9999999999999999,
+    "relationship_strength": 1.0
+  },
+  {
+    "field_x": "$.coarse",
+    "field_y": "$.fine",
+    "conditional_entropy": 1.5849625007211563,
+    "mean_pmi": 1.0,
+    "mutual_information": 0.9999999999999999,
+    "relationship_strength": 0.3868528072345415
+  }
+]
+```
+
+Both rows describe the same pair. `conditional_entropy` and `relationship_strength` differ because they are directional; `mean_pmi` and `mutual_information` are symmetric and match.
+
+To rank every field by how much it tells you about one target field, filter on that target and sort by `mutual_information`:
+
+```bash
+vajra invariants records.ndjson --top-k 400 --format json --quiet \
+  | jq -r '.[] | select(.field_y == "$.label")
+           | "\(.mutual_information)\t\(.field_x)"' | sort -rn
 ```
 
 ---
