@@ -1,6 +1,6 @@
 # cluster
 
-`cluster` groups similar JSON documents by structural similarity. Feed it a batch of files and it tells you how many structural families exist, which documents belong to each, and which documents are structural outliers that fit nowhere.
+`cluster` groups similar documents by structural similarity. Feed it a batch of files and it tells you how many structural families exist, which documents belong to each, and which documents are structural outliers that fit nowhere.
 
 No predefined cluster count. No training. The algorithm discovers the natural grouping from the data.
 
@@ -16,7 +16,7 @@ vajra cluster <inputs...> [flags]
 
 | Argument | Description |
 |---|---|
-| `<inputs...>` | One or more JSON files, glob patterns, or directories |
+| `<inputs...>` | One or more files, glob patterns, or directories |
 
 **Flags:**
 
@@ -24,8 +24,24 @@ vajra cluster <inputs...> [flags]
 |---|---|---|
 | `--format <fmt>` | Output format: `text`, `json`, `markdown`, `compact-ai` | `text` |
 | `--input-format <fmt>` | Override auto-detected input format | auto |
+| `--lang <lang>` | Source language, with `--input-format source` | auto |
+| `--similarity-threshold <f>` | Jaccard similarity above which documents group (0.0–1.0) | `0.5` |
 | `--redact` | Apply built-in redaction before output | off |
 | `--quiet` | Suppress progress output | off |
+
+When a directory is given, `cluster` reads its `.json` files — or, with `--input-format source`, its source files.
+
+---
+
+## Clustering Source Code
+
+With `--input-format source`, clustering runs over tree-sitter ASTs instead of JSON structure, grouping files that share a syntactic shape regardless of identifier names:
+
+```bash
+vajra cluster ./packages --input-format source --lang javascript --similarity-threshold 0.9
+```
+
+**Pick the threshold deliberately here.** Source files of the same language share generic AST paths, so Jaccard similarity between any two JavaScript files is high in absolute terms. At the `0.5` default a corpus of unrelated JS will collapse into a single cluster; meaningful families separate in the `0.9`–`0.95` range. Sweep it and watch where clusters stabilise rather than trusting one value.
 
 ---
 

@@ -9,14 +9,15 @@ use serde::Serialize;
 
 use vajra_anomaly::{AnomalyAnalyzer, AnomalyReport};
 use vajra_core::input::load_documents_aggregated;
-use vajra_core::{parse_file, InputFormat};
+use vajra_core::InputFormat;
 use vajra_drift::full_drift;
 use vajra_essence::{
     AiProfile, AuditorProfile, CustomProfile, EngineerProfile, EssenceBuilder, FraudProfile,
     HealthProfile, StaffProfile,
 };
 use vajra_fingerprint::{
-    cluster_documents, FingerprintAnalyzer, FingerprintResult, StreamingFingerprintAccumulator,
+    cluster_documents_with_threshold, FingerprintAnalyzer, FingerprintResult,
+    StreamingFingerprintAccumulator,
 };
 use vajra_stats::{
     commit_records_from_json, detect_core_team, extract_json_path, governance_analysis,
@@ -169,9 +170,12 @@ enum Command {
     },
     /// Cluster similar documents in a batch
     Cluster {
-        /// JSON files to cluster
+        /// Files or directories to cluster
         #[arg(required = true, num_args = 1..)]
         inputs: Vec<String>,
+        /// Jaccard similarity above which documents are grouped (0.0-1.0)
+        #[arg(long, default_value_t = 0.5)]
+        similarity_threshold: f64,
     },
     /// Discover cross-field relationships
     Invariants {
@@ -343,7 +347,10 @@ fn main() {
                 }
             }
         }
-        Command::Cluster { inputs } => cmd_cluster(inputs, &cli),
+        Command::Cluster {
+            inputs,
+            similarity_threshold,
+        } => cmd_cluster(inputs, *similarity_threshold, &cli),
         Command::Invariants { input, top_k } => cmd_invariants(input, *top_k, &cli),
         Command::Query { input, expression } => cmd_query(input, expression, &cli),
         Command::Batch { directory } => cmd_batch(directory, &cli),
@@ -2019,28 +2026,53 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
 // cluster
 // ---------------------------------------------------------------------------
 
-fn cmd_cluster(inputs: &[String], cli: &Cli) -> Result<()> {
+/// Whether a directory entry should be included when clustering.
+///
+/// Mirrors the format resolution in `load_document`: `--input-format source`
+/// selects source files, anything else keeps the `.json` filter.
+#[cfg(feature = "source")]
+fn is_clusterable_file(path: &Path, cli: &Cli) -> bool {
+    if matches!(cli.input_format, Some(InputFormatArg::Source)) {
+        return vajra_source::is_source_file(path);
+    }
+    path.extension().is_some_and(|ext| ext == "json")
+}
+
+#[cfg(not(feature = "source"))]
+fn is_clusterable_file(path: &Path, _cli: &Cli) -> bool {
+    path.extension().is_some_and(|ext| ext == "json")
+}
+
+fn cmd_cluster(inputs: &[String], similarity_threshold: f64, cli: &Cli) -> Result<()> {
+    if !(0.0..=1.0).contains(&similarity_threshold) {
+        anyhow::bail!(
+            "--similarity-threshold must be between 0.0 and 1.0 (got {similarity_threshold})"
+        );
+    }
+
     let mut docs = Vec::new();
     let mut names = Vec::new();
 
     for input in inputs {
         let path = Path::new(input);
         if path.is_dir() {
-            let mut entries: Vec<_> = std::fs::read_dir(path)
+            let mut paths: Vec<std::path::PathBuf> = std::fs::read_dir(path)
                 .with_context(|| format!("failed to read directory {input}"))?
                 .filter_map(|e| e.ok())
-                .filter(|e| e.path().extension().is_some_and(|ext| ext == "json"))
+                .map(|e| e.path())
+                .filter(|p| p.is_file() && is_clusterable_file(p, cli))
                 .collect();
-            entries.sort_by_key(|e| e.path());
-            for entry in entries {
-                let p = entry.path();
+            paths.sort();
+            for p in paths {
+                let name = p.display().to_string();
                 let doc =
-                    parse_file(&p).with_context(|| format!("failed to parse {}", p.display()))?;
-                names.push(p.display().to_string());
+                    load_document(&name, cli).with_context(|| format!("failed to parse {name}"))?;
+                names.push(name);
                 docs.push(doc);
             }
         } else {
-            let doc = parse_file(path).with_context(|| format!("failed to parse {input}"))?;
+            let doc =
+                load_document(input, cli).with_context(|| format!("failed to parse {input}"))?;
             names.push(input.clone());
             docs.push(doc);
         }
@@ -2052,7 +2084,7 @@ fn cmd_cluster(inputs: &[String], cli: &Cli) -> Result<()> {
     }
 
     let doc_refs: Vec<&Document> = docs.iter().collect();
-    let result = cluster_documents(&doc_refs, 0);
+    let result = cluster_documents_with_threshold(&doc_refs, 0, similarity_threshold);
 
     match cli.format {
         Format::Json => {

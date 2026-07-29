@@ -249,20 +249,40 @@ const DEFAULT_THRESHOLD: f64 = 0.5;
 /// Batch-size threshold below which we use exact pairwise Jaccard.
 const SMALL_BATCH_LIMIT: usize = 1000;
 
+/// Cluster documents by structural similarity at the default threshold (0.5).
+///
+/// See [`cluster_documents_with_threshold`] to choose the threshold.
+#[must_use]
+pub fn cluster_documents(docs: &[&Document], seed: u64) -> ClusterResult {
+    cluster_documents_with_threshold(docs, seed, DEFAULT_THRESHOLD)
+}
+
 /// Cluster documents by structural similarity.
 ///
 /// - For small batches (< 1000): exact pairwise Jaccard.
 /// - For large batches: MinHash + LSH with verification.
 ///
-/// Documents with Jaccard similarity > 0.5 are grouped together via
-/// union-find.
+/// Documents with Jaccard similarity strictly greater than `threshold` are
+/// grouped together via union-find. `threshold` is clamped to `[0.0, 1.0]`;
+/// the value actually applied is reported in
+/// [`ClusterResult::similarity_threshold`].
 #[must_use]
-pub fn cluster_documents(docs: &[&Document], seed: u64) -> ClusterResult {
+pub fn cluster_documents_with_threshold(
+    docs: &[&Document],
+    seed: u64,
+    threshold: f64,
+) -> ClusterResult {
+    let threshold = if threshold.is_nan() {
+        DEFAULT_THRESHOLD
+    } else {
+        threshold.clamp(0.0, 1.0)
+    };
+
     let n = docs.len();
     if n == 0 {
         return ClusterResult {
             clusters: Vec::new(),
-            similarity_threshold: DEFAULT_THRESHOLD,
+            similarity_threshold: threshold,
         };
     }
 
@@ -276,7 +296,7 @@ pub fn cluster_documents(docs: &[&Document], seed: u64) -> ClusterResult {
         for i in 0..n {
             for j in (i + 1)..n {
                 let sim = jaccard_similarity(&path_sets[i], &path_sets[j]);
-                if sim > DEFAULT_THRESHOLD {
+                if sim > threshold {
                     uf.union(i, j);
                 }
             }
@@ -301,7 +321,7 @@ pub fn cluster_documents(docs: &[&Document], seed: u64) -> ClusterResult {
         // Verify candidates with exact Jaccard.
         for (i, j) in candidates {
             let sim = jaccard_similarity(&path_sets[i], &path_sets[j]);
-            if sim > DEFAULT_THRESHOLD {
+            if sim > threshold {
                 uf.union(i, j);
             }
         }
@@ -309,7 +329,7 @@ pub fn cluster_documents(docs: &[&Document], seed: u64) -> ClusterResult {
 
     ClusterResult {
         clusters: uf.clusters(),
-        similarity_threshold: DEFAULT_THRESHOLD,
+        similarity_threshold: threshold,
     }
 }
 
@@ -580,6 +600,70 @@ mod tests {
             (result.similarity_threshold - 0.5).abs() < EPS,
             "expected threshold 0.5, got {}",
             result.similarity_threshold
+        );
+        Ok(())
+    }
+
+    /// Two documents sharing 3 of 4 paths (Jaccard = 0.6) must group below
+    /// that similarity and split above it.
+    #[test]
+    fn cluster_threshold_controls_grouping() -> Result<(), Box<dyn std::error::Error>> {
+        let doc_a = parse_doc(r#"{"x": 1, "y": 2, "z": 3}"#)?;
+        let doc_b = parse_doc(r#"{"x": 1, "y": 2, "w": 4}"#)?;
+        let docs: Vec<&Document> = vec![&doc_a, &doc_b];
+
+        let loose = cluster_documents_with_threshold(&docs, 42, 0.5);
+        assert_eq!(loose.clusters.len(), 1, "0.5 should group them");
+
+        let strict = cluster_documents_with_threshold(&docs, 42, 0.9);
+        assert_eq!(strict.clusters.len(), 2, "0.9 should separate them");
+        Ok(())
+    }
+
+    #[test]
+    fn cluster_threshold_is_clamped_and_reported() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_doc(r#"{"a": 1}"#)?;
+        let docs: Vec<&Document> = vec![&doc];
+
+        let high = cluster_documents_with_threshold(&docs, 42, 7.5);
+        assert!((high.similarity_threshold - 1.0).abs() < EPS);
+
+        let low = cluster_documents_with_threshold(&docs, 42, -3.0);
+        assert!((low.similarity_threshold - 0.0).abs() < EPS);
+
+        let nan = cluster_documents_with_threshold(&docs, 42, f64::NAN);
+        assert!(
+            (nan.similarity_threshold - 0.5).abs() < EPS,
+            "NaN falls back"
+        );
+        Ok(())
+    }
+
+    /// The empty-input early return must report the requested threshold, not
+    /// the default.
+    #[test]
+    fn cluster_empty_input_reports_requested_threshold() {
+        let docs: Vec<&Document> = vec![];
+        let result = cluster_documents_with_threshold(&docs, 42, 0.85);
+        assert!(result.clusters.is_empty());
+        assert!((result.similarity_threshold - 0.85).abs() < EPS);
+    }
+
+    /// `cluster_documents` must stay identical to the threshold-aware call at
+    /// the default threshold.
+    #[test]
+    fn cluster_default_matches_explicit() -> Result<(), Box<dyn std::error::Error>> {
+        let doc_a = parse_doc(r#"{"name": "Alice", "age": 30}"#)?;
+        let doc_b = parse_doc(r#"{"name": "Bob", "age": 25}"#)?;
+        let doc_c = parse_doc(r#"{"totally": "different"}"#)?;
+        let docs: Vec<&Document> = vec![&doc_a, &doc_b, &doc_c];
+
+        let implicit = cluster_documents(&docs, 42);
+        let explicit = cluster_documents_with_threshold(&docs, 42, 0.5);
+        assert_eq!(implicit.clusters, explicit.clusters);
+        assert!(
+            (implicit.similarity_threshold - explicit.similarity_threshold).abs() < EPS,
+            "thresholds must agree"
         );
         Ok(())
     }
