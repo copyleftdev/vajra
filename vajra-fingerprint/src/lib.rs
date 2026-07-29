@@ -23,8 +23,8 @@ pub use merkle::{merkle_fingerprint, merkle_with_motifs};
 pub use ncd::{ncd, ncd_cluster, ncd_detailed, ncd_matrix, NcdResult};
 pub use path_set::path_set_fingerprint;
 pub use similarity::{
-    cluster_documents, jaccard_similarity, minhash_signature, minhash_similarity, ClusterResult,
-    LshIndex, MinHashSignature,
+    cluster_documents, cluster_documents_with_threshold, jaccard_similarity, minhash_signature,
+    minhash_similarity, ClusterResult, LshIndex, MinHashSignature,
 };
 pub use streaming::{StreamingFingerprintAccumulator, StreamingFingerprintResult};
 pub use typed_path::typed_path_fingerprint;
