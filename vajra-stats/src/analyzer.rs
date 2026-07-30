@@ -21,10 +21,28 @@ use crate::renyi::{self, RenyiSpectrum};
 /// Per-path statistics produced by the analyzer.
 #[derive(Debug, Clone)]
 pub struct PathStats {
-    /// Shannon entropy of value distribution.
-    pub entropy: f64,
+    /// Shannon entropy of the value distribution, in bits.
+    ///
+    /// `None` when it cannot be computed honestly. Past the streaming
+    /// exact-tracking threshold only the top-k values are tracked, giving
+    /// `log2(k)` — 6.64 against a true 16.87 on a 120,000-distinct field, an
+    /// error of 61% that is invisible in the number itself. Worse, it is not
+    /// comparable with an exact figure from another path, which is what
+    /// entropy is mostly used for. `entropy_upper_bound` is reported instead.
+    /// See #108.
+    pub entropy: Option<f64>,
     /// Normalized entropy (0 = constant, 1 = uniform).
-    pub normalized_entropy: f64,
+    ///
+    /// `None` whenever `entropy` is, since it is derived from it.
+    pub normalized_entropy: Option<f64>,
+    /// Provable ceiling on `entropy`: a distribution over `n` distinct values
+    /// has at most `log2(n)` bits.
+    ///
+    /// Reported only when `entropy` is `None`, since it adds nothing to an
+    /// exact figure. With the HyperLogLog cardinality estimate behind it this
+    /// is tight where the old point estimate was worst: 16.83 against a true
+    /// 16.87 on the field above, an error of 0.3%.
+    pub entropy_upper_bound: Option<f64>,
     /// Number of distinct values observed.
     ///
     /// A lower bound when `exact` is false.
@@ -42,6 +60,11 @@ pub struct PathStats {
     /// Total observations at this path.
     pub total_count: u64,
     /// Self-information of the rarest value: `-log2(min_p)`.
+    ///
+    /// A lower bound when `exact` is false: the rarest *tracked* value is at
+    /// least as common as the rarest overall, so its self-information is at
+    /// most the true maximum. Unlike entropy that direction is provable, so the
+    /// figure is reported rather than withheld.
     pub max_rarity: f64,
     /// Numeric distribution statistics, if the path contains numeric values.
     pub numeric_stats: Option<NumericStats>,
@@ -126,8 +149,10 @@ impl Analyzer for StatsAnalyzer {
                 PathStats {
                     // The DOM path counts every value by identity.
                     exact: true,
-                    entropy: h,
-                    normalized_entropy: nh,
+                    entropy: Some(h),
+                    normalized_entropy: Some(nh),
+                    // An exact figure needs no ceiling.
+                    entropy_upper_bound: None,
                     cardinality,
                     total_count,
                     max_rarity,
@@ -149,8 +174,8 @@ impl FeatureExtractor for StatsAnalyzer {
 
         for (path, stats) in &result.paths {
             let pf: &mut PathFeatures = features.get_or_create(path);
-            pf.entropy = Some(stats.entropy);
-            pf.normalized_entropy = Some(stats.normalized_entropy);
+            pf.entropy = stats.entropy;
+            pf.normalized_entropy = stats.normalized_entropy;
             pf.cardinality = Some(stats.cardinality);
             pf.count = Some(stats.total_count);
             pf.max_rarity = Some(stats.max_rarity);

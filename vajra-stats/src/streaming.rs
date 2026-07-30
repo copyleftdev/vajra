@@ -361,8 +361,16 @@ impl StreamingStatsAccumulator {
                 path,
                 PathStats {
                     exact,
-                    entropy: h,
-                    normalized_entropy: nh,
+                    // Withheld when only the top-k was tracked: log2(k) is not
+                    // an estimate of the true entropy and is not comparable
+                    // with an exact figure. See #108.
+                    entropy: exact.then_some(h),
+                    normalized_entropy: exact.then_some(nh),
+                    // log2(cardinality) is a provable ceiling, and with the
+                    // HyperLogLog estimate behind it a tight one.
+                    #[allow(clippy::cast_precision_loss)]
+                    entropy_upper_bound: (!exact && cardinality > 0)
+                        .then(|| (cardinality as f64).log2()),
                     cardinality,
                     total_count: acc.count,
                     max_rarity,

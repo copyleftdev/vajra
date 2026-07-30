@@ -30,6 +30,17 @@ pub enum QueryError {
     #[error("stats not available (run with stats context)")]
     StatsRequired,
 
+    /// The statistic exists but could not be computed for this path.
+    #[error("{metric} is unavailable for {path}: {reason}")]
+    MetricUnavailable {
+        /// The metric that was requested.
+        metric: String,
+        /// The path it was requested for.
+        path: String,
+        /// Why it could not be produced.
+        reason: String,
+    },
+
     /// A type mismatch during evaluation.
     #[error("type error: {message}")]
     TypeError {

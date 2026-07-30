@@ -162,17 +162,19 @@ fn observations_from_stats(stats: &StatsResult, candidates: &mut Vec<CandidateOb
     for (path, path_stats) in &stats.paths {
         let path_str = path.to_string();
 
-        // High entropy => "informative field"
-        if path_stats.normalized_entropy > 0.8 {
+        // High entropy => "informative field". Skipped when entropy is
+        // unavailable: a claim about a field's information content needs a
+        // figure behind it, and sketch statistics do not supply one (#108).
+        let normalized_entropy = path_stats.normalized_entropy.unwrap_or(0.0);
+        if path_stats.normalized_entropy.is_some_and(|h| h > 0.8) {
             candidates.push(CandidateObservation {
                 path: path_str.clone(),
                 description: format!(
-                    "informative field (normalized entropy {:.3})",
-                    path_stats.normalized_entropy
+                    "informative field (normalized entropy {normalized_entropy:.3})"
                 ),
                 rarity: 0.0,
                 instability: 0.0,
-                entropy_signal: path_stats.normalized_entropy,
+                entropy_signal: normalized_entropy,
                 structural_coverage: 0.0,
                 anomaly_strength: 0.0,
                 concern_relevance: 0.3,

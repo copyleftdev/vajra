@@ -1796,8 +1796,15 @@ struct StatsOutput {
 #[derive(Serialize)]
 struct StatsPathView {
     path: String,
-    entropy: f64,
-    normalized_entropy: f64,
+    /// Absent when only sketch statistics were available; see
+    /// `entropy_upper_bound`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    entropy: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    normalized_entropy: Option<f64>,
+    /// Provable ceiling, reported in entropy's place when it is withheld.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    entropy_upper_bound: Option<f64>,
     cardinality: u64,
     total_count: u64,
     max_rarity: f64,
@@ -1858,6 +1865,7 @@ fn build_stats_output(result: &StatsResult) -> StatsOutput {
             exact: stats.exact,
             entropy: stats.entropy,
             normalized_entropy: stats.normalized_entropy,
+            entropy_upper_bound: stats.entropy_upper_bound,
             cardinality: stats.cardinality,
             total_count: stats.total_count,
             max_rarity: stats.max_rarity,
@@ -1928,8 +1936,17 @@ fn cmd_stats(
             for sp in &output.paths {
                 let mut row = vec![
                     sp.path.clone(),
-                    format!("{:.4}", sp.entropy),
-                    format!("{:.4}", sp.normalized_entropy),
+                    // "<=x" rather than a blank: the ceiling is what is known,
+                    // and an empty cell would read as missing data.
+                    sp.entropy.map_or_else(
+                        || {
+                            sp.entropy_upper_bound
+                                .map_or_else(|| "--".to_owned(), |u| format!("<={u:.4}"))
+                        },
+                        |h| format!("{h:.4}"),
+                    ),
+                    sp.normalized_entropy
+                        .map_or_else(|| "--".to_owned(), |n| format!("{n:.4}")),
                     sp.cardinality.to_string(),
                     sp.total_count.to_string(),
                     format!("{:.4}", sp.max_rarity),
@@ -1942,8 +1959,10 @@ fn cmd_stats(
             report.table(summary);
             if any_inexact {
                 report.note(
-                    "approx: past the exact-tracking threshold, so cardinality is a lower \
-                     bound and entropy is a sketch estimate, not a measurement",
+                    "approx: past the exact-tracking threshold. Cardinality is a HyperLogLog \
+                     estimate (~2.3% error); entropy is withheld and its provable ceiling \
+                     log2(cardinality) shown as <=x, because the tracked top-k gives a figure \
+                     off by 61% that cannot be compared with an exact one",
                 );
             }
 

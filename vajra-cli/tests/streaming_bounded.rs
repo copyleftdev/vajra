@@ -245,3 +245,74 @@ fn a_non_streamable_input_says_it_was_loaded_whole() {
         String::from_utf8_lossy(&out.stderr)
     );
 }
+
+/// Entropy past the threshold was `log2(top_k)` — 6.64 against a true 16.87,
+/// an error of 61% invisible in the number, and not comparable with an exact
+/// figure from another path. It is withheld, and the provable ceiling
+/// `log2(cardinality)` reported in its place. See #108.
+#[test]
+fn entropy_is_withheld_past_the_threshold_and_bounded_instead() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    // Every value distinct, so true entropy is log2(20_000) = 14.29 and the
+    // old top-k figure would have been log2(100) = 6.64.
+    let path = corpus(dir.path(), "wide.json", 20_000, 20_000, false);
+
+    let streamed = paths_of(&json(&[
+        "stats",
+        &path,
+        "--streaming",
+        "--format",
+        "json",
+        "--quiet",
+    ]));
+    let v = &streamed["$[*].v"];
+
+    assert!(
+        v["entropy"].is_null(),
+        "a figure off by 61% must not be reported as entropy: {v}"
+    );
+    assert!(
+        v["normalized_entropy"].is_null(),
+        "normalized entropy is derived from it and must go too: {v}"
+    );
+
+    let bound = v["entropy_upper_bound"]
+        .as_f64()
+        .expect("the ceiling must be reported in entropy's place");
+
+    let dom = paths_of(&json(&["stats", &path, "--format", "json", "--quiet"]));
+    let truth = dom["$[*].v"]["entropy"].as_f64().expect("true entropy");
+
+    assert!(
+        bound >= truth - 0.5,
+        "the ceiling must not sit below the truth: {bound} < {truth}"
+    );
+    assert!(
+        (bound - truth).abs() < 1.0,
+        "the ceiling should be tight for a near-uniform field: {bound} against {truth}"
+    );
+    // The point being that this is far better than what it replaced.
+    assert!(
+        bound > 10.0,
+        "log2(top_k) was 6.64; the bound must not resemble it: {bound}"
+    );
+}
+
+/// The exact path is untouched: entropy present, no ceiling alongside it.
+#[test]
+fn an_exact_path_reports_entropy_and_no_ceiling() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = corpus(dir.path(), "narrow.json", 4000, 50, false);
+
+    for args in [
+        vec!["stats", &path, "--format", "json", "--quiet"],
+        vec!["stats", &path, "--streaming", "--format", "json", "--quiet"],
+    ] {
+        let v = &paths_of(&json(&args))["$[*].v"];
+        assert!(v["entropy"].as_f64().is_some(), "entropy must be present");
+        assert!(
+            v["entropy_upper_bound"].is_null(),
+            "an exact figure needs no ceiling: {v}"
+        );
+    }
+}

@@ -162,7 +162,13 @@ Below `exact_threshold` distinct values per path (default 10,000), values are tr
 Past it, the path switches to sketches and its statistics carry `exact: false`:
 
 - `cardinality` comes from **HyperLogLog**: 2 KB per tracked path, a standard error of 2.3% at any magnitude. On a 120,000-distinct field it estimates ~116,000, against the 100 it reported before the sketch existed. It is an estimate either side of the truth, not a bound.
-- `entropy`, `normalized_entropy` and `max_rarity` are rough approximations over the tracked top-k, with no proven bound, and can be off by a factor of two or more — a 120,000-distinct field reports `log2(100)` where the truth is 16.87. Space-Saving admits an evicted item at `min_count + 1`, so its counters over-attribute rather than cleanly grouping the tail, which is why neither a bound nor a tail-mass estimate is recoverable from them. Tracked in [#108](https://github.com/copyleftdev/vajra/issues/108).
+- `entropy` and `normalized_entropy` are **withheld**. Computed over the tracked top-k they gave `log2(k)` — 6.64 against a true 16.87, a 61% error invisible in the number, and not comparable with an exact figure from another path, which is most of what entropy is used for.
+
+  `entropy_upper_bound` is reported in their place: `log2(cardinality)` is a provable ceiling, and with the HyperLogLog estimate behind it a tight one — 16.83 against 16.87 on that field. Text output shows it as `<=16.8275`.
+
+  Three point estimators were measured before choosing a bound. A reservoir sample with the Miller–Madow correction still lands 17% low at n=10,000 and costs ~195 KB per path, a hundred times the HyperLogLog budget. Chao–Shen degenerates exactly where the problem is worst: its coverage term is `1 - f1/n`, which goes to zero when every value is distinct. Neither is worth its cost against a bound that is free and off by 0.3%.
+
+- `max_rarity` remains a figure, because its error direction *is* provable: the rarest tracked value is at least as common as the rarest overall, so its self-information is at most the true maximum. It is a lower bound.
 
 The sketch costs 2 KB per path and is allocated only when a path crosses the threshold — below it, values are counted by identity and the exact count is already known.
 
