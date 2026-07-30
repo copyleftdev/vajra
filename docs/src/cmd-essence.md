@@ -163,7 +163,9 @@ vajra essence claim.json --profile ai --format json --budget 500
 
 Each entry carries its scoring components alongside the final `score`, so a ranking is decomposable — `--explain` prints the same weights in text form. The active profile's weight vector determines how the components combine.
 
-The AI profile collapses aggressively. Motifs are represented once with counts. Observations are sorted by score-per-token. The `meta.truncated` field tells the downstream model whether anything was cut.
+The AI profile collapses aggressively. Motifs are represented once with counts. Observations are sorted by score-per-token.
+
+Note that `meta.truncated` belongs to the **`--format compact-ai`** output, not the `--format json` output shown above — compact-ai carries `meta`, `doc`, `notable`, `motifs`, `drill` and `v`, and it is `meta.truncated` there that tells the downstream model whether anything was cut.
 
 ---
 

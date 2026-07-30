@@ -2,7 +2,22 @@
 
 Each command does one thing. They compose.
 
+
+## A note on `--format`
+
+`json` and `text` are implemented everywhere. **`markdown` and `compact-ai` currently have a real renderer only in `essence`** — for every other command they produce the text output verbatim.
+
+Rather than accept the flag and quietly ignore it, those commands now say so on stderr:
+
+```console
+$ vajra stats data.json --format markdown
+vajra: `stats` has no markdown renderer; output is the text format. Use --format json for a machine-readable form.
+```
+
+`--quiet` suppresses the notice, and stdout is unaffected either way. Use `--format json` for anything machine-readable.
+
 ---
+
 
 ## Reference Table
 

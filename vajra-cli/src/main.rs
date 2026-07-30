@@ -352,8 +352,69 @@ enum Command {
 // Entry point
 // ---------------------------------------------------------------------------
 
+/// Commands with a real renderer for every advertised format.
+///
+/// Every other command renders `markdown` and `compact-ai` identically to
+/// `text`. Silently accepting a format and ignoring it is the same failure as
+/// reporting `errors: []` over a partial batch: the caller cannot distinguish
+/// "rendered as Markdown" from "fell back to text". Until the renderer gap is
+/// closed, say so on stderr rather than pretend.
+const FULLY_RENDERED: &[&str] = &["essence"];
+
+/// Warn when the requested format is not actually implemented for this command.
+fn warn_unimplemented_format(cli: &Cli) {
+    if cli.quiet {
+        return;
+    }
+    let needs_renderer = matches!(cli.format, Format::Markdown | Format::CompactAi);
+    if !needs_renderer {
+        return;
+    }
+    let name = command_name(&cli.command);
+    if FULLY_RENDERED.contains(&name) {
+        return;
+    }
+    let requested = match cli.format {
+        Format::Markdown => "markdown",
+        Format::CompactAi => "compact-ai",
+        _ => return,
+    };
+    eprintln!(
+        "vajra: `{name}` has no {requested} renderer; output is the text format. \
+         Use --format json for a machine-readable form."
+    );
+}
+
+/// The subcommand's name, for diagnostics.
+fn command_name(command: &Command) -> &'static str {
+    match command {
+        Command::Inspect { .. } => "inspect",
+        Command::Stats { .. } => "stats",
+        Command::Anomalies { .. } => "anomalies",
+        Command::Fingerprint { .. } => "fingerprint",
+        Command::Essence { .. } => "essence",
+        Command::Drift { .. } => "drift",
+        Command::Cluster { .. } => "cluster",
+        Command::Separation { .. } => "separation",
+        Command::Invariants { .. } => "invariants",
+        Command::Query { .. } => "query",
+        Command::Batch { .. } => "batch",
+        Command::Cascade { .. } => "cascade",
+        Command::Score { .. } => "score",
+        Command::Profiles => "profiles",
+        Command::Governance { .. } => "governance",
+        Command::IngestGithub { .. } => "ingest-github",
+        Command::CoreTeam { .. } => "core-team",
+        Command::Report { .. } => "report",
+        Command::Compare { .. } => "compare",
+        Command::Audit { .. } => "audit",
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
+
+    warn_unimplemented_format(&cli);
 
     let result = match &cli.command {
         Command::Inspect { input } => cmd_inspect(input, &cli),
