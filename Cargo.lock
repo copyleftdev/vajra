@@ -1863,6 +1863,7 @@ dependencies = [
  "vajra-domain-encoding",
  "vajra-domain-github",
  "vajra-domain-med",
+ "vajra-domain-package",
  "vajra-domain-sec",
  "vajra-domain-source",
  "vajra-drift",
@@ -1941,6 +1942,16 @@ version = "0.5.0"
 dependencies = [
  "proptest",
  "regex",
+ "vajra-types",
+]
+
+[[package]]
+name = "vajra-domain-package"
+version = "0.5.0"
+dependencies = [
+ "proptest",
+ "regex",
+ "serde_json",
  "vajra-types",
 ]
 

@@ -73,6 +73,32 @@ Every result records `field_x_binned` / `field_y_binned` so you can tell which v
 
 **Known limitation.** Binning fixes *numeric* degeneracy only. A high-cardinality **string** field — a primary key, a UUID, a filename — is still near-unique and will still report a perfect relationship with everything. Treat any near-1.0 strength involving an identifier-like field as an artefact, not a finding.
 
+### Domain Expectations
+
+Domain plugins declare *relationship hints* — "in GitHub data, `reviewer`, `pr_author` and `review_state` co-occur". When any plugin's hints apply to the document, `invariants` reports how each fared:
+
+```json
+{
+  "relationships": [ ... ],
+  "domain_hints": [
+    { "name": "pr_review_assignment", "relationship": "FunctionalDependency",
+      "weight": 0.85, "observed": false, "max_strength": 0.0,
+      "matched_fields": ["$[*].pr_author", "$[*].reviewer"] },
+    { "name": "review_network", "relationship": "CoOccurrence",
+      "weight": 0.9, "observed": true, "max_strength": 1.0,
+      "matched_fields": ["$[*].review_state", "$[*].reviewer"] }
+  ]
+}
+```
+
+**The absent ones are usually the interesting result.** `observed: false` means the domain expects those fields to relate, the fields *are* present, and this data does not show it. Above, `pr_review_assignment` expects `pr_author` to determine `reviewer`; the measured strength is 0.0, so reviewers are being assigned independently of who wrote the PR. Unobserved hints are listed first for that reason.
+
+A hint is only evaluated when at least two of its fields are present — one field is untestable, and reporting it as a failure would be noise. Confirmation requires a relationship spanning two *distinct* patterns of the hint: two paths matching the same pattern prove nothing about it.
+
+**Hints never weight the information theory.** Conditional entropy and mutual information are measured from the data alone; a hint is context laid alongside them, never an adjustment to them. `max_strength` reports the strongest relationship actually found among the hint's fields, so a near-miss below the confirmation threshold is still visible.
+
+When no hint applies — the common case for non-domain data — the output stays the flat array documented below, rather than gaining a wrapper.
+
 ### Direction Matters: `relationship_strength` vs `mutual_information`
 
 `relationship_strength` normalises by the target's own entropy:
