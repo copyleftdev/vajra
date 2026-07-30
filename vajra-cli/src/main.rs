@@ -1786,6 +1786,7 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
                         "path": dd.path,
                         "metric": format!("{:?}", dd.metric),
                         "value": dd.value,
+                        "effect_size": dd.effect_size,
                     }))
                     .collect::<Vec<_>>()),
             );
@@ -1836,8 +1837,14 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
                     report.distributional_drifts.len()
                 );
                 for dd in &report.distributional_drifts {
-                    println!("  {} : {:?} = {:.4}", dd.path, dd.metric, dd.value);
+                    println!(
+                        "  {} : {:?} = {:.4}  (effect {:.4})",
+                        dd.path, dd.metric, dd.value, dd.effect_size
+                    );
                 }
+                println!(
+                    "  Rank by effect (unit-free, 0-1); metric values use each metric's own units."
+                );
             }
         }
     }
@@ -1886,6 +1893,7 @@ fn drift_pair_to_json(
             "path": dd.path,
             "metric": format!("{:?}", dd.metric),
             "value": dd.value,
+            "effect_size": dd.effect_size,
         })).collect::<Vec<serde_json::Value>>(),
     })
 }
@@ -2020,7 +2028,10 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
                         report.distributional_drifts.len()
                     );
                     for dd in &report.distributional_drifts {
-                        println!("    {} : {:?} = {:.4}", dd.path, dd.metric, dd.value);
+                        println!(
+                            "    {} : {:?} = {:.4}  (effect {:.4})",
+                            dd.path, dd.metric, dd.value, dd.effect_size
+                        );
                     }
                 }
                 println!();

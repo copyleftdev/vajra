@@ -90,9 +90,47 @@ JSD(P || Q) = 0.5 * KL(P || M) + 0.5 * KL(Q || M)
 
 where M = 0.5 * (P + Q).
 
-JSD is symmetric, always finite, bounded to [0, 1], and its square root is a proper metric. This means drift magnitudes can be meaningfully compared and accumulated across paths.
+JSD is symmetric, always finite, bounded to [0, 1], and its square root is a proper metric.
 
-For numeric paths, Vajra also computes the **1D Wasserstein distance** (earth mover's distance), which captures *how far* values moved, not just that they moved.
+For numeric paths, Vajra instead computes the **1D Wasserstein distance** (earth mover's distance), which captures *how far* values moved, not just that they moved.
+
+#### `value` is not comparable across metrics — rank by `effect_size`
+
+Each drift carries both a `value` and an `effect_size`, and they answer different questions.
+
+`value` is in the metric's own units. JSD is bounded to `[0,1]`, but Wasserstein is in the units of the underlying field, so the two cannot be ranked against each other. On a real corpus, sorting by `value` produces this:
+
+```console
+$ vajra drift features.ndjson --group-by '$.label' --format json --quiet \
+    | jq '.pairwise_drift[0].distributional_drifts | sort_by(-.value)'
+  value=1321026.74   WassersteinDistance   $[*].total_bytes
+  value=20085.70     WassersteinDistance   $[*].file_bytes
+  value=15075.44     WassersteinDistance   $[*].ast_nodes
+```
+
+`total_bytes` leads by six orders of magnitude for one reason only: it is measured in bytes. A boolean path that separates the two populations almost perfectly reports a `value` of 0.64 and sorts near the bottom.
+
+`effect_size` is unit-free and bounded to `[0,1]`, so the same list ranks usefully:
+
+```console
+    | jq '.pairwise_drift[0].distributional_drifts | sort_by(-.effect_size)'
+  effect=1.0000   value=1.0000        JSD           $[*].label
+  effect=0.6435   value=0.6435        Wasserstein   $[*].has_repository
+  effect=0.6352   value=17.4676       Wasserstein   $[*].pj_distinct_paths
+```
+
+How it is computed:
+
+| Path type | `effect_size` |
+|---|---|
+| Numeric | \|Cliff's delta\| — a rank-based non-parametric effect size. 0 = the samples are stochastically indistinguishable; 1 = every value in one group exceeds every value in the other. |
+| Categorical | The JSD itself, which is already bounded to `[0,1]`. |
+
+Both are 0 for identical distributions and 1 for maximal separation, so they order together. They are **not the same statistic** — treat `effect_size` as a magnitude for ranking, not as an estimate of one specific quantity. When you need the real-world size of a shift ("payloads grew by 1.3 MB"), read `value`.
+
+Note that Cliff's delta relates to the AUC of the two samples as `|delta| = 2 * |AUC - 0.5|`, so it is directly comparable to a separation score computed from ranks.
+
+**Thresholds are still in raw units.** A path is only reported when its `value` exceeds a per-metric threshold (JSD > 0.05, Wasserstein > 0.1). Because the Wasserstein threshold is in field units, a byte-scale path clears it on almost any change while a small-scale path may not. `effect_size` fixes ranking, not filtering.
 
 ### Drift Classification
 
@@ -152,53 +190,36 @@ Overall severity: MEDIUM (structural additions + significant distribution shift)
 ## Example: JSON Output
 
 ```bash
-vajra drift yesterday.json today.json --format json
+vajra drift baseline.json candidate.json --format json --quiet
 ```
 
 ```json
 {
-  "baseline": "yesterday.json",
-  "candidate": "today.json",
-  "jaccard_similarity": 0.94,
-  "overall_severity": "medium",
-  "added_paths": [
+  "added_paths": [],
+  "removed_paths": [],
+  "type_changes": [],
+  "structural_similarity": 1.0,
+  "severity": "High",
+  "distributional_drifts": [
     {
-      "path": "$.response.metadata.processing_flags",
-      "type": "array"
+      "path": "$[*].latency_ms",
+      "metric": "WassersteinDistance",
+      "value": 188.25,
+      "effect_size": 1.0
     },
     {
-      "path": "$.response.metadata.api_version",
-      "type": "string"
+      "path": "$[*].status",
+      "metric": "JensenShannonDivergence",
+      "value": 0.75,
+      "effect_size": 0.75
     }
-  ],
-  "removed_paths": [],
-  "type_changes": [
-    {
-      "path": "$.response.items[*].quantity",
-      "baseline_type": "string",
-      "candidate_type": "number",
-      "jsd": 0.0
-    }
-  ],
-  "distribution_shifts": [
-    {
-      "path": "$.response.items[*].status",
-      "jsd": 0.34,
-      "baseline_distribution": {
-        "active": 0.82,
-        "pending": 0.15,
-        "error": 0.03
-      },
-      "candidate_distribution": {
-        "active": 0.61,
-        "pending": 0.12,
-        "error": 0.27
-      }
-    }
-  ],
-  "null_rate_changes": []
+  ]
 }
 ```
+
+Read both numbers together. `latency_ms` moved 188 ms (`value`) and the two samples do not overlap at all (`effect_size` 1.0). `status` has an `effect_size` equal to its `value`, because for categorical paths the effect size *is* the JSD.
+
+With `--group-by`, the same structure appears once per population pair under `pairwise_drift`, alongside `group_sizes` and `groups`.
 
 ---
 

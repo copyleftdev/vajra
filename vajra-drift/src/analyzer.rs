@@ -29,8 +29,26 @@ pub struct DistributionalDrift {
     pub path: String,
     /// Which metric was used.
     pub metric: DriftMetric,
-    /// The metric value.
+    /// The metric value, in the metric's own units.
+    ///
+    /// **Not comparable across metrics.** Jensen-Shannon divergence is bounded
+    /// to `[0,1]`; Wasserstein distance is in the units of the underlying field,
+    /// so a byte-count path can report a value in the hundreds of thousands
+    /// while a boolean path reports 0.48. Rank by [`Self::effect_size`] instead.
     pub value: f64,
+    /// Unit-free magnitude of the difference between the two groups, in
+    /// `[0,1]`, comparable across paths and metrics.
+    ///
+    /// - Numeric paths: |Cliff's delta|, a rank-based non-parametric effect
+    ///   size. 0 means the two samples are stochastically indistinguishable,
+    ///   1 means every value in one group exceeds every value in the other.
+    /// - Categorical paths: the Jensen-Shannon divergence itself, which is
+    ///   already bounded to `[0,1]`.
+    ///
+    /// Both are 0 for identical distributions and 1 for maximal separation, so
+    /// they rank together. They are not the same quantity, and this field is a
+    /// magnitude for ordering rather than an estimate of one specific statistic.
+    pub effect_size: f64,
 }
 
 /// Which distance metric detected the drift.
@@ -160,6 +178,50 @@ fn extract_numeric_values(freq: &BTreeMap<String, u64>) -> Vec<f64> {
     values
 }
 
+/// Cliff's delta between two numeric samples, in `[-1, 1]`.
+///
+/// delta = ( #{(a,b) : a > b} - #{(a,b) : a < b} ) / (|A| * |B|)
+///
+/// Computed from sorted values with a running count over `b`, so it is
+/// O(n log n) rather than the O(n*m) pairwise definition. Returns 0.0 for an
+/// empty sample, matching "no detectable difference".
+fn cliffs_delta(a: &mut [f64], b: &mut [f64]) -> f64 {
+    if a.is_empty() || b.is_empty() {
+        return 0.0;
+    }
+    a.sort_by(|x, y| x.partial_cmp(y).unwrap_or(std::cmp::Ordering::Equal));
+    b.sort_by(|x, y| x.partial_cmp(y).unwrap_or(std::cmp::Ordering::Equal));
+
+    // For each value in `a`, count how many of `b` are strictly below and
+    // strictly above it by advancing two cursors over the sorted `b`.
+    let mut below = 0usize; // b values < current a
+    let mut at_or_below = 0usize; // b values <= current a
+    let mut greater = 0u128;
+    let mut less = 0u128;
+
+    for &av in a.iter() {
+        while below < b.len() && b[below] < av {
+            below += 1;
+        }
+        if at_or_below < below {
+            at_or_below = below;
+        }
+        while at_or_below < b.len() && b[at_or_below] <= av {
+            at_or_below += 1;
+        }
+        greater += below as u128;
+        less += (b.len() - at_or_below) as u128;
+    }
+
+    let total = (a.len() as u128) * (b.len() as u128);
+    if total == 0 {
+        return 0.0;
+    }
+    #[allow(clippy::cast_precision_loss)]
+    let delta = (greater as f64 - less as f64) / total as f64;
+    delta.clamp(-1.0, 1.0)
+}
+
 /// Convert a frequency map to a normalized probability distribution.
 ///
 /// Returns a pair of aligned probability vectors over the union of all keys,
@@ -231,10 +293,14 @@ fn compute_distributional_drifts(
             if !a.is_empty() && !b.is_empty() {
                 let dist = wasserstein_1d(&mut a, &mut b);
                 if dist > WASSERSTEIN_THRESHOLD {
+                    // Wasserstein is in field units; Cliff's delta gives a
+                    // unit-free magnitude that ranks against JSD.
+                    let delta = cliffs_delta(&mut a, &mut b);
                     drifts.push(DistributionalDrift {
                         path: path.as_str(),
                         metric: DriftMetric::WassersteinDistance,
                         value: dist,
+                        effect_size: delta.abs(),
                     });
                 }
             }
@@ -248,7 +314,9 @@ fn compute_distributional_drifts(
                         drifts.push(DistributionalDrift {
                             path: path.as_str(),
                             metric: DriftMetric::JensenShannonDivergence,
+                            // JSD is already bounded to [0,1].
                             value: jsd,
+                            effect_size: jsd,
                         });
                     }
                 }
@@ -552,5 +620,172 @@ mod tests {
         assert!(DriftSeverity::Low < DriftSeverity::Medium);
         assert!(DriftSeverity::Medium < DriftSeverity::High);
         assert!(DriftSeverity::High < DriftSeverity::Critical);
+    }
+
+    // -----------------------------------------------------------------------
+    // Cliff's delta
+    // -----------------------------------------------------------------------
+
+    const DELTA_EPS: f64 = 1e-12;
+
+    fn delta(a: &[f64], b: &[f64]) -> f64 {
+        let mut av = a.to_vec();
+        let mut bv = b.to_vec();
+        cliffs_delta(&mut av, &mut bv)
+    }
+
+    #[test]
+    fn cliffs_delta_identical_samples_is_zero() {
+        let s = [1.0, 2.0, 3.0, 4.0];
+        assert!(delta(&s, &s).abs() < DELTA_EPS);
+    }
+
+    #[test]
+    fn cliffs_delta_complete_separation_is_one() {
+        let a = [10.0, 11.0, 12.0];
+        let b = [1.0, 2.0, 3.0];
+        assert!(
+            (delta(&a, &b) - 1.0).abs() < DELTA_EPS,
+            "a strictly above b"
+        );
+        assert!((delta(&b, &a) + 1.0).abs() < DELTA_EPS, "sign reverses");
+    }
+
+    /// Hand-computed: a=[1,2], b=[1,2,3] gives 1 greater pair and 3 lesser,
+    /// over 6 pairs, so delta = -1/3.
+    #[test]
+    fn cliffs_delta_matches_hand_computation() {
+        let d = delta(&[1.0, 2.0], &[1.0, 2.0, 3.0]);
+        assert!((d + 1.0 / 3.0).abs() < DELTA_EPS, "expected -1/3, got {d}");
+    }
+
+    /// All values tied across both samples: no pair is greater or lesser.
+    #[test]
+    fn cliffs_delta_all_ties_is_zero() {
+        let d = delta(&[5.0, 5.0, 5.0], &[5.0, 5.0]);
+        assert!(d.abs() < DELTA_EPS, "expected 0 for all ties, got {d}");
+    }
+
+    #[test]
+    fn cliffs_delta_empty_sample_is_zero() {
+        assert!(delta(&[], &[1.0, 2.0]).abs() < DELTA_EPS);
+        assert!(delta(&[1.0, 2.0], &[]).abs() < DELTA_EPS);
+    }
+
+    #[test]
+    fn cliffs_delta_is_bounded() {
+        let a: Vec<f64> = (0..50).map(f64::from).collect();
+        let b: Vec<f64> = (25..90).map(f64::from).collect();
+        let d = delta(&a, &b);
+        assert!((-1.0..=1.0).contains(&d), "delta out of range: {d}");
+    }
+
+    /// Order of the input slices must not matter beyond the sign.
+    #[test]
+    fn cliffs_delta_is_antisymmetric() {
+        let a = [1.0, 5.0, 9.0, 2.0];
+        let b = [4.0, 4.0, 7.0];
+        assert!((delta(&a, &b) + delta(&b, &a)).abs() < DELTA_EPS);
+    }
+
+    // -----------------------------------------------------------------------
+    // effect_size reporting
+    // -----------------------------------------------------------------------
+
+    /// Every reported drift must carry a unit-free effect size in [0,1], even
+    /// when the raw metric value is orders of magnitude larger.
+    #[test]
+    fn effect_size_is_bounded_and_present() -> Result<(), Box<dyn std::error::Error>> {
+        // `bytes` differs by ~100000 units; `flag` differs on a 0/1 scale.
+        let lhs = parse(
+            r#"[{"bytes": 10, "flag": 0}, {"bytes": 20, "flag": 0}, {"bytes": 30, "flag": 0}]"#,
+        )?;
+        let rhs = parse(
+            r#"[{"bytes": 100010, "flag": 1}, {"bytes": 100020, "flag": 1}, {"bytes": 100030, "flag": 1}]"#,
+        )?;
+        let report = full_drift(&lhs, &rhs);
+        assert!(
+            !report.distributional_drifts.is_empty(),
+            "expected drift on both paths"
+        );
+        for dd in &report.distributional_drifts {
+            assert!(
+                (0.0..=1.0).contains(&dd.effect_size),
+                "{} effect_size {} out of [0,1]",
+                dd.path,
+                dd.effect_size
+            );
+        }
+        let bytes = report
+            .distributional_drifts
+            .iter()
+            .find(|d| d.path.contains("bytes"))
+            .ok_or("missing bytes drift")?;
+        assert!(
+            bytes.value > 1000.0,
+            "raw Wasserstein should be large: {}",
+            bytes.value
+        );
+        assert!(
+            (bytes.effect_size - 1.0).abs() < 1e-9,
+            "disjoint numeric samples should have effect_size 1, got {}",
+            bytes.effect_size
+        );
+        Ok(())
+    }
+
+    /// For categorical paths the effect size *is* the JSD, which is already
+    /// bounded, so the two must agree exactly.
+    #[test]
+    fn categorical_effect_size_equals_jsd() -> Result<(), Box<dyn std::error::Error>> {
+        let lhs = parse(r#"[{"k": "a"}, {"k": "a"}, {"k": "b"}]"#)?;
+        let rhs = parse(r#"[{"k": "c"}, {"k": "c"}, {"k": "d"}]"#)?;
+        let report = full_drift(&lhs, &rhs);
+        let cat = report
+            .distributional_drifts
+            .iter()
+            .find(|d| d.metric == DriftMetric::JensenShannonDivergence)
+            .ok_or("missing categorical drift")?;
+        assert!((cat.effect_size - cat.value).abs() < DELTA_EPS);
+        Ok(())
+    }
+
+    /// The ranking fix: a large-unit path must not outrank a genuinely more
+    /// separated small-unit path once effect_size is used.
+    #[test]
+    fn effect_size_reorders_large_unit_paths() -> Result<(), Box<dyn std::error::Error>> {
+        // `big` shifts a lot in absolute terms but the samples overlap heavily.
+        // `small` shifts little in absolute terms but separates completely.
+        let lhs = parse(
+            r#"[{"big": 0, "small": 0.0}, {"big": 1000, "small": 0.1},
+                {"big": 2000, "small": 0.2}, {"big": 3000, "small": 0.3}]"#,
+        )?;
+        let rhs = parse(
+            r#"[{"big": 500, "small": 1.0}, {"big": 1500, "small": 1.1},
+                {"big": 2500, "small": 1.2}, {"big": 3500, "small": 1.3}]"#,
+        )?;
+        let report = full_drift(&lhs, &rhs);
+        let get = |name: &str| {
+            report
+                .distributional_drifts
+                .iter()
+                .find(|d| d.path.contains(name))
+        };
+        let big = get("big").ok_or("missing big")?;
+        let small = get("small").ok_or("missing small")?;
+
+        assert!(
+            big.value > small.value,
+            "raw values rank `big` first: {} vs {}",
+            big.value,
+            small.value
+        );
+        assert!(
+            small.effect_size > big.effect_size,
+            "effect_size must rank `small` first: {} vs {}",
+            small.effect_size,
+            big.effect_size
+        );
+        Ok(())
     }
 }
