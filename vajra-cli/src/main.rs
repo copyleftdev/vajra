@@ -364,7 +364,7 @@ enum Command {
 /// accepting a format and ignoring it is the same failure as reporting
 /// `errors: []` over a partial batch: the caller cannot distinguish "rendered
 /// as Markdown" from "fell back to text".
-const RENDERS_MARKDOWN: &[&str] = &["essence", "anomalies"];
+const RENDERS_MARKDOWN: &[&str] = &["essence", "anomalies", "stats", "invariants"];
 
 /// Commands with a bespoke compact-AI view.
 const RENDERS_COMPACT_AI: &[&str] = &["essence"];
@@ -1509,43 +1509,85 @@ fn cmd_stats(
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            if output.paths.is_empty() {
-                println!("No per-path statistics (document has no scalar or array paths).");
-                return Ok(());
-            }
+            let mut report = render::Report::new();
 
-            let mut text = String::new();
+            report.heading("Per-Path Statistics");
+            let mut summary = render::Table::new(
+                &["PATH", "ENTROPY", "NORM", "CARD", "COUNT", "MAX RARITY"],
+                "no scalar or array paths in this document",
+            );
             for sp in &output.paths {
-                use std::fmt::Write;
-                let _ = writeln!(text, "--- {} ---", sp.path);
-                let _ = writeln!(
-                    text,
-                    "  Entropy: {:.4}  Normalized: {:.4}  Cardinality: {}  Count: {}",
-                    sp.entropy, sp.normalized_entropy, sp.cardinality, sp.total_count
+                summary.push(vec![
+                    sp.path.clone(),
+                    format!("{:.4}", sp.entropy),
+                    format!("{:.4}", sp.normalized_entropy),
+                    sp.cardinality.to_string(),
+                    sp.total_count.to_string(),
+                    format!("{:.4}", sp.max_rarity),
+                ]);
+            }
+            report.table(summary);
+
+            // Numeric quantiles only exist for numeric paths, so they get their
+            // own table rather than empty columns in the summary above.
+            let numeric: Vec<&StatsPathView> = output
+                .paths
+                .iter()
+                .filter(|sp| sp.numeric.is_some())
+                .collect();
+            if !numeric.is_empty() {
+                report.heading("Numeric Distributions");
+                let mut t = render::Table::new(
+                    &[
+                        "PATH", "MIN", "MAX", "MEAN", "MEDIAN", "MAD", "P05", "P25", "P75", "P95",
+                    ],
+                    "none",
                 );
-                let _ = writeln!(text, "  Max rarity: {:.4} bits", sp.max_rarity);
-
-                if let Some(ref ns) = sp.numeric {
-                    let _ = writeln!(
-                        text,
-                        "  Numeric: min={:.4} max={:.4} mean={:.4} median={:.4} mad={:.4}",
-                        ns.min, ns.max, ns.mean, ns.median, ns.mad
-                    );
-                    let _ = writeln!(
-                        text,
-                        "           p05={:.4} p25={:.4} p75={:.4} p95={:.4}",
-                        ns.p05, ns.p25, ns.p75, ns.p95
-                    );
-                }
-
-                if !sp.top_values.is_empty() {
-                    let _ = writeln!(text, "  Top values:");
-                    for tv in &sp.top_values {
-                        let _ = writeln!(text, "    {:>6}x  {}", tv.count, tv.value);
+                for sp in numeric {
+                    if let Some(ref ns) = sp.numeric {
+                        t.push(vec![
+                            sp.path.clone(),
+                            format!("{:.4}", ns.min),
+                            format!("{:.4}", ns.max),
+                            format!("{:.4}", ns.mean),
+                            format!("{:.4}", ns.median),
+                            format!("{:.4}", ns.mad),
+                            format!("{:.4}", ns.p05),
+                            format!("{:.4}", ns.p25),
+                            format!("{:.4}", ns.p75),
+                            format!("{:.4}", ns.p95),
+                        ]);
                     }
                 }
-                text.push('\n');
+                report.table(t);
+                report.note(
+                    "MAD is the median absolute deviation — a robust spread estimate with a\n50% breakdown point, unlike the standard deviation.",
+                );
             }
+
+            let with_values: Vec<(String, Vec<String>)> = output
+                .paths
+                .iter()
+                .filter(|sp| !sp.top_values.is_empty())
+                .map(|sp| {
+                    (
+                        sp.path.clone(),
+                        sp.top_values
+                            .iter()
+                            .map(|tv| format!("{}x  {}", tv.count, tv.value))
+                            .collect(),
+                    )
+                })
+                .collect();
+            if !with_values.is_empty() {
+                report.heading("Top Values");
+                report.nested(with_values);
+            }
+
+            let text = match cli.format {
+                Format::Markdown => report.to_markdown(),
+                _ => report.to_text(),
+            };
             let text = maybe_redact(&text, cli);
             print!("{text}");
         }
@@ -2910,61 +2952,64 @@ fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()>
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("=== Cross-Field Relationships ===");
-            if relationships.is_empty() {
-                println!("  (no significant relationships discovered)");
-                println!(
-                    "  Hint: relationships require repeated objects (e.g., arrays of records)."
-                );
-            } else {
-                println!(
-                    "  {:<40}  {:<40}  {:>8}  {:>8}  {:>10}  {:>8}",
-                    "PREDICTOR", "TARGET", "H(Y|X)", "PMI", "STRENGTH", "MI"
-                );
-                let mark = |binned: bool| if binned { " [b]" } else { "" };
-                for r in &relationships {
-                    println!(
-                        "  {:<40}  {:<40}  {:>8.4}  {:>8.4}  {:>10.4}  {:>8.4}",
-                        format!("{}{}", r.field_x, mark(r.field_x_binned)),
-                        format!("{}{}", r.field_y, mark(r.field_y_binned)),
-                        r.conditional_entropy,
-                        r.mean_pmi,
-                        r.relationship_strength,
-                        r.mutual_information,
-                    );
-                }
-                println!();
-                println!(
-                    "  STRENGTH is 1 - H(Y|X)/H(Y) and is direction-dependent; both directions"
-                );
-                println!(
-                    "  of each pair are listed. Compare across pairs using MI (symmetric, bits)."
+            let mut report = render::Report::new();
+            let mark = |binned: bool| if binned { " [b]" } else { "" };
+
+            report.heading("Cross-Field Relationships");
+            let mut t = render::Table::new(
+                &["PREDICTOR", "TARGET", "H(Y|X)", "PMI", "STRENGTH", "MI"],
+                "no significant relationships discovered — these require repeated objects, e.g. an array of records",
+            );
+            for r in &relationships {
+                t.push(vec![
+                    format!("{}{}", r.field_x, mark(r.field_x_binned)),
+                    format!("{}{}", r.field_y, mark(r.field_y_binned)),
+                    format!("{:.4}", r.conditional_entropy),
+                    format!("{:.4}", r.mean_pmi),
+                    format!("{:.4}", r.relationship_strength),
+                    format!("{:.4}", r.mutual_information),
+                ]);
+            }
+            report.table(t);
+
+            if !relationships.is_empty() {
+                let mut note = String::from(
+                    "STRENGTH is 1 - H(Y|X)/H(Y) and is direction-dependent; both directions\nof each pair are listed. Compare across pairs using MI (symmetric, bits).",
                 );
                 if relationships
                     .iter()
                     .any(|r| r.field_x_binned || r.field_y_binned)
                 {
-                    println!("  [b] = numeric field discretised before analysis (see --bin).");
+                    note.push_str("\n[b] = numeric field discretised before analysis (see --bin).");
                 }
+                report.note(note);
             }
 
             if !hint_outcomes.is_empty() {
-                println!();
-                println!("=== Domain Expectations ===");
+                report.heading("Domain Expectations");
+                let mut h_table = render::Table::new(
+                    &["STATUS", "HINT", "RELATIONSHIP", "MAX STRENGTH"],
+                    "none applicable",
+                );
                 for h in &hint_outcomes {
-                    println!(
-                        "  {:<10} {:<28} {:<20} max strength {:.4}",
-                        if h.observed { "observed" } else { "MISSING" },
-                        h.name,
-                        h.relationship,
-                        h.max_strength
-                    );
+                    h_table.push(vec![
+                        if h.observed { "observed" } else { "MISSING" }.to_owned(),
+                        h.name.clone(),
+                        h.relationship.clone(),
+                        format!("{:.4}", h.max_strength),
+                    ]);
                 }
-                println!();
-                println!("  MISSING means the domain expects these fields to relate and this");
-                println!("  document's data does not show it. Hints are context only — they");
-                println!("  never weight the entropy measures above.");
+                report.table(h_table);
+                report.note(
+                    "MISSING means the domain expects these fields to relate and this\ndocument's data does not show it. Hints are context only — they never\nweight the entropy measures above.",
+                );
             }
+
+            let text = match cli.format {
+                Format::Markdown => report.to_markdown(),
+                _ => report.to_text(),
+            };
+            print!("{text}");
         }
     }
 

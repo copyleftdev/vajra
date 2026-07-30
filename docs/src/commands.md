@@ -9,7 +9,7 @@ Each command does one thing. They compose.
 
 | format | commands with a real renderer |
 |---|---|
-| `markdown` | `essence`, `anomalies` |
+| `markdown` | `essence`, `anomalies`, `stats`, `invariants` |
 | `compact-ai` | `essence` |
 
 For every other command those formats produce the text output verbatim. Commands are being migrated onto a shared renderer, and a command only joins the table above once it genuinely renders that format — so the notice below can never claim more than is true.
