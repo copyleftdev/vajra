@@ -103,9 +103,8 @@ fn documented_examples_use_real_keys() -> Result<()> {
 
     for (page, args) in cases {
         let path = docs_dir().join(page);
-        let Some(documented) = documented_keys(&path)? else {
-            panic!("{page} has no parseable JSON example");
-        };
+        let documented = documented_keys(&path)?
+            .ok_or_else(|| anyhow!("{page} has no parseable JSON example"))?;
         let real = real_keys(args, &fixture)?;
         let invented: Vec<&String> = documented
             .iter()
