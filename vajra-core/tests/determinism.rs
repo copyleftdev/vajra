@@ -113,7 +113,10 @@ fn determinism_stats_10_runs() -> Result<(), Box<dyn std::error::Error>> {
             .map(|(path, ps)| {
                 format!(
                     "{}:entropy={:.15},norm_entropy={:.15},card={},count={},max_rarity={:.15},top={:?}",
-                    path, ps.entropy, ps.normalized_entropy, ps.cardinality,
+                    path,
+                    ps.entropy.unwrap_or(f64::NAN),
+                    ps.normalized_entropy.unwrap_or(f64::NAN),
+                    ps.cardinality,
                     ps.total_count, ps.max_rarity, ps.top_values
                 )
             })

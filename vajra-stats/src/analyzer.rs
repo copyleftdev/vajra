@@ -268,7 +268,7 @@ mod tests {
         let a_path = WildcardPath::root().push_key("a");
         let a_stats = result.paths.get(&a_path).ok_or("expected stats for $.a")?;
 
-        assert!((a_stats.entropy - 0.0).abs() < EPS);
+        assert!((a_stats.entropy.unwrap_or(f64::NAN) - 0.0).abs() < EPS);
         assert_eq!(a_stats.cardinality, 1);
         assert_eq!(a_stats.total_count, 1);
         Ok(())
@@ -289,7 +289,7 @@ mod tests {
         // Entropy for p=[3/5, 2/5]
         let expected_h =
             -(3.0 / 5.0 * (3.0_f64 / 5.0).log2()) - (2.0 / 5.0 * (2.0_f64 / 5.0).log2());
-        assert!((stats.entropy - expected_h).abs() < 1e-8);
+        assert!((stats.entropy.unwrap_or(f64::NAN) - expected_h).abs() < 1e-8);
         Ok(())
     }
 
@@ -418,8 +418,8 @@ mod tests {
         let path = WildcardPath::root().push_array_wildcard();
         let stats = result.paths.get(&path).ok_or("missing")?;
 
-        assert!((stats.entropy - 0.0).abs() < EPS);
-        assert!((stats.normalized_entropy - 0.0).abs() < EPS);
+        assert!((stats.entropy.unwrap_or(f64::NAN) - 0.0).abs() < EPS);
+        assert!((stats.normalized_entropy.unwrap_or(f64::NAN) - 0.0).abs() < EPS);
         Ok(())
     }
 
@@ -433,8 +433,8 @@ mod tests {
         let stats = result.paths.get(&path).ok_or("missing")?;
 
         // H = log2(4) = 2.0, normalized = 1.0
-        assert!((stats.entropy - 2.0).abs() < EPS);
-        assert!((stats.normalized_entropy - 1.0).abs() < EPS);
+        assert!((stats.entropy.unwrap_or(f64::NAN) - 2.0).abs() < EPS);
+        assert!((stats.normalized_entropy.unwrap_or(f64::NAN) - 1.0).abs() < EPS);
         Ok(())
     }
 }
