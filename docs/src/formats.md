@@ -269,6 +269,36 @@ against the fields the records actually carry, so git input needs no flags —
 they select `$.author_name` and `$.subject` automatically and say so on stderr.
 Pass the flag explicitly to override; an explicit selector is never second-guessed.
 
+### Contributor aliases
+
+Git records the author as a free-text `(name, email)` pair chosen per commit, so
+one person routinely appears as several. `governance`, `score` and `core-team`
+accept `--resolve-identities`, which merges names that share a name or an email,
+transitively, before analysing:
+
+```bash
+vajra governance ./my-repo --resolve-identities
+```
+
+```
+vajra: identity resolution merged 3 name(s) into 64 contributor(s), from 67:
+vajra:   DietrichGebert <- DietrichGebert, Emeriko, dgebert (101 commits, 3 address(es))
+vajra:   Lakshya77089 <- Lakshya Sharma, Lakshya77089 (10 commits, 1 address(es))
+```
+
+On that repository the merge moved `bus_factor_50` from 3 to 1 and `top1_share`
+from 0.369 to 0.510 — the difference between "three people cover half the
+commits" and "one person is half the project".
+
+The rule is deliberately aggressive: two distinct people who share a display
+name merge. It is therefore **opt-in**, and every fold is named on stderr rather
+than applied silently. GitHub's `<user-id>+` email prefix is stripped before
+comparison, so `137048761+alice@users.noreply.github.com` and
+`alice@users.noreply.github.com` are one address; a non-numeric tag such as
+`first+last@example.com` is left alone. The identity's canonical name is its
+most frequently observed one, ties broken lexicographically, so the result does
+not depend on the order commits arrive in.
+
 **Flags:**
 
 | Flag | Description | Default |
