@@ -24,6 +24,8 @@ vajra fingerprint <input> [flags]
 |---|---|---|
 | `--format <fmt>` | Output format: `text`, `json`, `markdown`, `compact-ai` | `text` |
 | `--min-nodes <N>` | Withhold hashes for documents with fewer than N nodes (0 = never) | `0` |
+| `--corpus` | Index a directory tree, reporting which shapes recur across documents | off |
+| `--corpus-group-depth <N>` | Path components below the corpus root that identify one clustering unit | `1` |
 | `--input-format <fmt>` | Override auto-detected input format | auto |
 | `--streaming` | Force streaming mode | off |
 | `--redact` | Apply built-in redaction before output | off |
@@ -60,6 +62,65 @@ A critical secondary benefit: subtree hashes at every node enable motif detectio
 ### MinHash Signature
 
 A 128-hash MinHash signature over the path set, enabling constant-time Jaccard similarity estimation between documents. Used internally by `cluster` and `drift`, but exposed here for direct access.
+
+---
+
+## Corpus Mode: Who Else Has This Shape?
+
+A single fingerprint answers "what is this document's shape?". The question that comes up in practice is **"who else has this shape?"** — reuse of a structural hash across otherwise unrelated documents. `--corpus` walks a directory tree and answers it in one pass:
+
+```bash
+vajra fingerprint ./packages --corpus \
+  --input-format source --lang javascript --min-nodes 200 --format json --quiet
+```
+
+```json
+{
+  "files_scanned": 3382,
+  "documents_indexed": 955,
+  "groups_indexed": 158,
+  "skipped": 2237,
+  "suppressed": 186,
+  "distinct_shapes": 626,
+  "shapes_in_multiple_documents": 169,
+  "shapes_in_multiple_groups": 161,
+  "reuse_groups": [
+    { "shape": "06cff2479715…", "count": 10, "node_count": 4551, "members": ["…"] }
+  ],
+  "clusters": [
+    { "size": 10, "shared_shapes": 118, "min_node_count": 207, "members": ["…"] }
+  ],
+  "errors": []
+}
+```
+
+Unlike `batch` and `cluster`, this walk **recurses** — a corpus is normally a tree of extracted packages or checkouts, so the interesting files are nested. Symlinks are not followed. Files the format selector rejects are counted in `skipped`, files below `--min-nodes` in `suppressed`, and parse failures land in `errors` — nothing is dropped silently.
+
+### Two views, and why clustering needs a coarser unit
+
+**`reuse_groups`** is the inverted index: shape → the files carrying it, for shapes seen in more than one file.
+
+**`clusters`** links things transitively through *any* shared shape, because related packages typically share several files rather than exactly one.
+
+That transitive view cannot operate on files. A file has exactly one shape, so a file can never link two shapes together — clustering files would produce one cluster per reuse group and tell you nothing new. `--corpus-group-depth N` sets the unit: how many path components below the corpus root identify one "thing". With `packages/<name>/…`, the default depth of 1 groups by package. Depth 0 makes every file its own unit, which disables transitive linking.
+
+`shapes_in_multiple_documents` counts shapes reused across *files*; `shapes_in_multiple_groups` counts those reused across *units* — the latter is what actually links anything.
+
+### Reading the strength of a cluster
+
+Each cluster reports `shared_shapes` and `min_node_count`, and both matter:
+
+- **`shared_shapes`** — a cluster linked by 118 distinct shapes is near-certainly one origin. A cluster linked by exactly 1 is a lead, not a conclusion.
+- **`min_node_count`** — the weakest link. A cluster resting on a small shape may be a boilerplate collision (see the complexity floor below).
+
+Measured on a corpus of 288 real npm packages, indexing every JS file at `--min-nodes 200`:
+
+| population | units | clusters | units in a cluster |
+|---|---|---|---|
+| known-malicious | 158 | 14 | 52 (**32.9%**) |
+| popular + obscure benign | 130 | 1 | 2 (**1.5%**) |
+
+The single benign cluster is `@angular/cli` with `@angular-devkit/schematics-cli` — the same monorepo, so a correct link rather than a false one.
 
 ---
 
