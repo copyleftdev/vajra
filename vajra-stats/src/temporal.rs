@@ -372,6 +372,34 @@ pub struct TrendLine {
     pub r_squared: f64,
 }
 
+/// A field's two selector forms.
+///
+/// `extract_json_path` walks a single record, so reading a value needs the
+/// record-relative `$.author`. Every other command reports the
+/// document-relative `$[*].author`, and windowed output used to report the
+/// record-relative form for the same field — so a consumer that read
+/// `$[*].author` off `stats --window` silently got nothing, with no error and
+/// no warning. Carrying both forms is what keeps the two from diverging again.
+/// See #91.
+struct FieldSelector {
+    /// `$.author` — used to read a value out of one record.
+    record: String,
+    /// `$[*].author` — the vocabulary reported to callers.
+    document: String,
+}
+
+/// Rewrite a document-relative selector to the record-relative form.
+///
+/// `$[*].commit.date` becomes `$.commit.date`; anything else is returned
+/// unchanged, so nested and record-relative selectors keep working. Only the
+/// leading `$[*]` is touched — truncating to the trailing key would silently
+/// turn `$.commit.date` into `$.date`.
+fn to_record_relative(selector: &str) -> String {
+    selector
+        .strip_prefix("$[*].")
+        .map_or_else(|| selector.to_owned(), |rest| format!("$.{rest}"))
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WindowSummary {
     pub window: String,
@@ -677,10 +705,15 @@ pub fn windowed_analysis(
     if records.is_empty() {
         return Err("no records provided".to_owned());
     }
+    // Accept the time field in either vocabulary. `stats` reports paths as
+    // `$[*].date`, so a caller who copies one back into `--time-field` must not
+    // be told there are no timestamps: extraction walks a single record and
+    // needs the record-relative form.
+    let time_selector = to_record_relative(time_field);
     let mut timestamped: Vec<(i64, &serde_json::Value)> = Vec::new();
     let mut skipped = 0_usize;
     for record in records {
-        if let Some(tv) = extract_json_path(record, time_field).and_then(value_to_epoch) {
+        if let Some(tv) = extract_json_path(record, &time_selector).and_then(value_to_epoch) {
             timestamped.push((tv, record));
         } else {
             skipped += 1;
@@ -695,17 +728,26 @@ pub fn windowed_analysis(
         eprintln!("vajra: warning: skipped {skipped} records with invalid/missing timestamps");
     }
     let buckets = bucket_by_window(timestamped, granularity);
-    let field_paths: Vec<String> = {
+    let field_paths: Vec<FieldSelector> = {
         let mut paths = Vec::new();
         if let Some(first) = records.iter().find_map(|r| r.as_object()) {
+            // Compared on the top-level key of the record-relative form, since
+            // field_paths only ever names top-level keys.
+            let time_record = to_record_relative(time_field);
+            let time_key = time_record
+                .strip_prefix("$.")
+                .and_then(|rest| rest.split('.').next())
+                .unwrap_or_default();
             for key in first.keys() {
-                let path = format!("$.{key}");
-                if path != time_field {
-                    paths.push(path);
+                if key.as_str() != time_key {
+                    paths.push(FieldSelector {
+                        record: format!("$.{key}"),
+                        document: format!("$[*].{key}"),
+                    });
                 }
             }
         }
-        paths.sort();
+        paths.sort_by(|a, b| a.document.cmp(&b.document));
         paths
     };
     let mut window_summaries: Vec<WindowSummary> = Vec::new();
@@ -715,22 +757,22 @@ pub fn windowed_analysis(
             let mut counter = FrequencyCounter::new();
             let mut value_count = 0_u64;
             for record in window_records {
-                if let Some(val) = extract_json_path(record, field_path) {
+                if let Some(val) = extract_json_path(record, &field_path.record) {
                     let val_str = match val {
                         serde_json::Value::String(s) => s.clone(),
                         serde_json::Value::Null => "null".to_owned(),
                         other => serde_json::to_string(other).unwrap_or_default(),
                     };
-                    counter.observe_raw(field_path, &val_str);
+                    counter.observe_raw(&field_path.record, &val_str);
                     value_count += 1;
                 }
             }
             if value_count > 0 {
-                let counts = counter.count_values_raw(field_path);
+                let counts = counter.count_values_raw(&field_path.record);
                 let entropy = shannon_entropy_from_counts(&counts);
-                let cardinality = counter.cardinality_raw(field_path);
+                let cardinality = counter.cardinality_raw(&field_path.record);
                 field_stats_map.insert(
-                    field_path.clone(),
+                    field_path.document.clone(),
                     FieldWindowStats {
                         entropy,
                         cardinality,
@@ -756,21 +798,25 @@ pub fn windowed_analysis(
     for field_path in &field_paths {
         let entropies: Vec<f64> = window_summaries
             .iter()
-            .filter_map(|w| w.field_stats.get(field_path).map(|s| s.entropy))
+            .filter_map(|w| w.field_stats.get(&field_path.document).map(|s| s.entropy))
             .collect();
         if entropies.len() >= 2 {
             if let Some(t) = linear_regression(&entropies) {
-                trends.insert(format!("{field_path}.entropy"), t);
+                trends.insert(format!("{}.entropy", field_path.document), t);
             }
         }
         #[allow(clippy::cast_precision_loss)]
         let cards: Vec<f64> = window_summaries
             .iter()
-            .filter_map(|w| w.field_stats.get(field_path).map(|s| s.cardinality as f64))
+            .filter_map(|w| {
+                w.field_stats
+                    .get(&field_path.document)
+                    .map(|s| s.cardinality as f64)
+            })
             .collect();
         if cards.len() >= 2 {
             if let Some(t) = linear_regression(&cards) {
-                trends.insert(format!("{field_path}.cardinality"), t);
+                trends.insert(format!("{}.cardinality", field_path.document), t);
             }
         }
     }

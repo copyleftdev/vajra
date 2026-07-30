@@ -36,6 +36,8 @@ vajra stats <input> [flags]
 
 When `--window` is specified, `stats` partitions records by time period and computes per-window statistics. Cross-window trend lines are included in the output, showing how distributions shift over time.
 
+Field paths use the same document-relative vocabulary as unwindowed output, so `$[*].author` names the same field in `paths` and in `windows[].field_stats`, and a path copied from one can be used against the other. `--time-field` accepts either form: `$.date` and `$[*].date` both work, and nested paths such as `$.commit.date` are left intact.
+
 The `--time-field` flag tells Vajra which field contains the timestamp. If omitted, Vajra auto-detects by scanning for fields with date/time patterns (ISO 8601, Unix timestamps, common date formats).
 
 ```bash
