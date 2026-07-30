@@ -365,16 +365,21 @@ enum Command {
 /// `errors: []` over a partial batch: the caller cannot distinguish "rendered
 /// as Markdown" from "fell back to text".
 const RENDERS_MARKDOWN: &[&str] = &[
-    "essence",
     "anomalies",
-    "stats",
-    "invariants",
+    "cascade",
+    "essence",
     "fingerprint",
+    "invariants",
     "separation",
+    "stats",
 ];
 
 /// Commands with a bespoke compact-AI view.
-const RENDERS_COMPACT_AI: &[&str] = &["essence"];
+///
+/// `cascade` and `score` predate the shared renderer and hand-roll their own;
+/// they are listed because they genuinely produce distinct output, verified
+/// empirically by `format_honesty.rs` rather than by reading the match arms.
+const RENDERS_COMPACT_AI: &[&str] = &["cascade", "essence", "score"];
 
 /// Warn when the requested format is not actually implemented for this command.
 fn warn_unimplemented_format(cli: &Cli) {

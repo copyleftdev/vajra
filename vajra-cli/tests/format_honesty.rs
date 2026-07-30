@@ -100,6 +100,79 @@ fn per_format_tracking_is_exact() -> Result<()> {
     Ok(())
 }
 
+/// Every command claimed as renderer-backed must genuinely produce output that
+/// differs from its text form — measured, not assumed.
+///
+/// This exists because the claim lists were wrong in both directions when first
+/// written: they were built by reading match arms, which missed that `cascade`
+/// hand-rolls all three formats and `score` hand-rolls compact-ai. `cascade`
+/// was therefore warning about a renderer it has always had. Measuring the
+/// output is the only way to keep the lists honest.
+#[test]
+fn claimed_renderers_produce_distinct_output() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let plain = dir.path().join("d.json");
+    std::fs::write(&plain, FIXTURE)?;
+    let commits = dir.path().join("commits.json");
+    std::fs::write(
+        &commits,
+        r#"[{"author":"a","date":"2025-01-01T00:00:00Z","subject":"feat: x"},
+            {"author":"b","date":"2025-01-02T00:00:00Z","subject":"fix: y"},
+            {"author":"a","date":"2025-01-03T00:00:00Z","subject":"feat: z"}]"#,
+    )?;
+    let events = dir.path().join("events.json");
+    std::fs::write(
+        &events,
+        r#"[{"file":"a.rs","t":"2025-01-01","msg":"feat: add"},
+            {"file":"a.rs","t":"2025-01-02","msg":"fix: repair"}]"#,
+    )?;
+
+    let cascade_args = [
+        "cascade",
+        "--entity-field",
+        "$.file",
+        "--time-field",
+        "$.t",
+        "--event-field",
+        "$.msg",
+        "--response-values",
+        "fix",
+    ];
+
+    // (input, base args, format, must-differ-from-text)
+    let cases: &[(&std::path::PathBuf, &[&str], &str)] = &[
+        (&plain, &["anomalies"], "markdown"),
+        (&plain, &["stats"], "markdown"),
+        (&plain, &["invariants"], "markdown"),
+        (&plain, &["fingerprint"], "markdown"),
+        (&plain, &["essence"], "markdown"),
+        (&plain, &["essence"], "compact-ai"),
+        (&events, &cascade_args, "markdown"),
+        (&events, &cascade_args, "compact-ai"),
+        (&commits, &["score"], "compact-ai"),
+    ];
+
+    for (input, base, format) in cases {
+        let mut a = base.to_vec();
+        a.extend_from_slice(&["--format", format, "--quiet"]);
+        let mut t = base.to_vec();
+        t.extend_from_slice(&["--format", "text", "--quiet"]);
+        let (rendered, err) = run(input, &a)?;
+        let (text, _) = run(input, &t)?;
+        assert!(
+            err.is_empty(),
+            "`{} --format {format}` is claimed, so must not warn: {err:?}",
+            base[0]
+        );
+        assert_ne!(
+            rendered, text,
+            "`{} --format {format}` is claimed but matches its text output",
+            base[0]
+        );
+    }
+    Ok(())
+}
+
 /// `separation` needs a labelled fixture and its own flags, so it cannot join the
 /// simple loop above — but it is claimed as renderer-backed, so it needs the
 /// same assertion. Without this, adding a command to `RENDERS_MARKDOWN` without
