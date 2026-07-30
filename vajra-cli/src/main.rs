@@ -75,7 +75,7 @@ struct Cli {
     #[arg(long, global = true)]
     budget: Option<usize>,
 
-    /// Use streaming analysis pipeline (bounded memory, sketch-based stats)
+    /// Use the sketch-based accumulators (NOT yet bounded memory — see #102)
     #[arg(long, global = true)]
     streaming: bool,
 
@@ -550,6 +550,23 @@ fn resolve_field_labelled(
     resolved.selector
 }
 
+/// Say that `--streaming` does not yet bound memory.
+///
+/// The flag selects the sketch-based accumulators, but reaching them still
+/// parses the whole document and then materialises a `Vec<JsonEvent>` beside
+/// it: measured at 402 MB against the DOM path's 233 MB on a 15 MB input. A
+/// user passing it to survive a large file gets the opposite of what the name
+/// promises, so it says so rather than accepting the flag quietly. See #102.
+fn warn_streaming_not_bounded(cli: &Cli) {
+    if cli.quiet || !cli.streaming {
+        return;
+    }
+    eprintln!(
+        "vajra: --streaming selects the sketch-based accumulators but does not yet bound \
+         memory — it currently uses more than the default path (see issue #102)"
+    );
+}
+
 fn warn_unimplemented_format(cli: &Cli) {
     if cli.quiet {
         return;
@@ -599,6 +616,7 @@ fn main() {
     let cli = Cli::parse();
 
     warn_unimplemented_format(&cli);
+    warn_streaming_not_bounded(&cli);
 
     let result = match &cli.command {
         Command::Inspect { input } => cmd_inspect(input, &cli),

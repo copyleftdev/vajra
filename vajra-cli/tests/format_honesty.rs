@@ -477,3 +477,32 @@ fn command_sub_modes_emit_real_markdown() -> Result<()> {
     }
     Ok(())
 }
+
+/// `--streaming` advertised "bounded memory". It selects the sketch-based
+/// accumulators, but reaching them parses the whole document and then
+/// materialises a `Vec<JsonEvent>` beside it — measured at 402 MB against the
+/// DOM path's 233 MB on a 15 MB input. A flag that is accepted and does the
+/// opposite of what it says is the same defect as `--redact` doing nothing.
+/// See #102.
+#[test]
+fn streaming_says_it_is_not_yet_bounded() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let f = dir.path().join("d.json");
+    std::fs::write(&f, FIXTURE)?;
+
+    let (_, stderr) = run(&f, &["stats", "--streaming", "--format", "json"])?;
+    assert!(
+        stderr.contains("does not yet bound memory"),
+        "--streaming must not claim bounded memory silently: {stderr:?}"
+    );
+
+    let (_, quiet) = run(&f, &["stats", "--streaming", "--format", "json", "--quiet"])?;
+    assert!(quiet.is_empty(), "--quiet must silence it: {quiet:?}");
+
+    let (_, without) = run(&f, &["stats", "--format", "json"])?;
+    assert!(
+        !without.contains("bound memory"),
+        "the warning must not fire without the flag: {without:?}"
+    );
+    Ok(())
+}
