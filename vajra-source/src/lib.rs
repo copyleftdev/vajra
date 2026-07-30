@@ -122,19 +122,98 @@ fn parse_with_language(
     let root = tree.root_node();
     let json_value = convert::tree_to_json(root, source, config, &lang.to_string());
 
-    // Serialize to string and parse through vajra-core to build Document
-    let json_string = serde_json::to_string(&json_value).map_err(|e| VajraError::Parse {
-        message: format!("failed to serialize CST to JSON: {e}"),
-        byte_offset: 0,
-        source_path: None,
-    })?;
-
-    vajra_core::parse::parse_str(&json_string)
+    // Build the Document straight from the value. Round-tripping it through a
+    // JSON string cost a full copy of the CST and, when the re-parse hit
+    // serde_json's recursion limit, produced an error whose byte offset indexed
+    // that string rather than the source file — "byte 202923" for a 50 KB
+    // input. `walk` enforces its own depth limit and reports the offending
+    // path, so nothing is lost by skipping the round trip. See #90.
+    vajra_core::parse::parse_value(json_value, source.len() as u64)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Any byte offset a parse failure reports must be a position that exists
+    /// in the input. Serialising the CST and re-parsing it meant offsets
+    /// indexed that intermediate string: a 50,646-byte file reported a parse
+    /// error at byte 202,923, line 1 column 202,923, in a 968-line file whose
+    /// longest line was 142 characters. See #90.
+    #[test]
+    #[cfg(feature = "python")]
+    fn a_reported_byte_offset_never_exceeds_the_input() {
+        // Deep nesting is what used to trip serde_json's recursion limit
+        // during the round trip.
+        let mut source = String::new();
+        for depth in 0..400 {
+            source.push_str(&" ".repeat(depth));
+            source.push_str("if x:\n");
+        }
+        source.push_str(&" ".repeat(400));
+        source.push_str("pass\n");
+
+        let config = SourceConfig {
+            language: Some(SourceLanguage::Python),
+            ..SourceConfig::default()
+        };
+        match parse_source(source.as_bytes(), &config) {
+            Ok(doc) => {
+                assert_eq!(
+                    doc.metadata().raw_size_bytes,
+                    source.len() as u64,
+                    "raw_size_bytes must be the input, not an intermediate form"
+                );
+            }
+            Err(VajraError::Parse { byte_offset, .. }) => {
+                assert!(
+                    byte_offset <= source.len(),
+                    "reported byte {byte_offset} is past the end of a {}-byte input",
+                    source.len()
+                );
+            }
+            // Depth limits are reported by path, not by offset, which is the
+            // honest way to describe a failure with no source position.
+            Err(_) => {}
+        }
+    }
+
+    /// Depth beyond the cap is marked, not silently flattened: a truncated
+    /// node must be distinguishable from a genuine leaf.
+    #[test]
+    #[cfg(feature = "python")]
+    fn deep_nesting_is_truncated_visibly_rather_than_overflowing() {
+        let mut source = String::new();
+        for depth in 0..400 {
+            source.push_str(&" ".repeat(depth));
+            source.push_str("if x:\n");
+        }
+        source.push_str(&" ".repeat(400));
+        source.push_str("pass\n");
+
+        let config = SourceConfig {
+            language: Some(SourceLanguage::Python),
+            ..SourceConfig::default()
+        };
+        let doc = parse_source(source.as_bytes(), &config).expect("deep source still parses");
+        let rendered = doc.value().to_string();
+        assert!(
+            rendered.contains("\"truncated\":true"),
+            "the cut must be visible in the document"
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "python")]
+    fn raw_size_bytes_is_the_source_length() {
+        let source = b"def f(items):\n    return [i for i in items if i]\n";
+        let config = SourceConfig {
+            language: Some(SourceLanguage::Python),
+            ..SourceConfig::default()
+        };
+        let doc = parse_source(source, &config).expect("python source parses");
+        assert_eq!(doc.metadata().raw_size_bytes, source.len() as u64);
+    }
 
     #[test]
     #[cfg(feature = "rust")]

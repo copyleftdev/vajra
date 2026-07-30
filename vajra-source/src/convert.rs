@@ -27,6 +27,29 @@ pub fn node_to_json(
     field_name: Option<&str>,
     language_name: &str,
 ) -> Value {
+    node_to_json_at(node, source, config, field_name, language_name, 0)
+}
+
+/// Maximum CST depth converted.
+///
+/// Two jobs. It bounds this recursion — without a cap a deeply nested file
+/// overflows the stack, which serialising through serde_json used to abort
+/// first, by accident, so the limit was never needed here before (see #90).
+/// And it keeps the result inside vajra-core's 256-level document limit: each
+/// CST level becomes two JSON levels (a `children` array wrapping an object),
+/// so the ceiling is half of core's, with headroom for the leaf keys. Set any
+/// higher and a deep file converts successfully only to be rejected whole by
+/// `walk`, which is strictly worse than analysing it with a marked cut.
+const MAX_CONVERT_DEPTH: u32 = 120;
+
+fn node_to_json_at(
+    node: Node<'_>,
+    source: &[u8],
+    config: &SourceConfig,
+    field_name: Option<&str>,
+    language_name: &str,
+    depth: u32,
+) -> Value {
     let mut obj = Map::new();
 
     obj.insert("kind".to_owned(), json!(node.kind()));
@@ -65,6 +88,14 @@ pub fn node_to_json(
     let child_count = node.child_count();
     let mut children = Vec::new();
 
+    // Stop descending at the cap and say so, rather than silently emitting a
+    // leaf that cannot be told apart from a real one.
+    if depth >= MAX_CONVERT_DEPTH && child_count > 0 {
+        obj.insert("truncated".to_owned(), json!(true));
+        obj.insert("truncated_children".to_owned(), json!(child_count));
+        return Value::Object(obj);
+    }
+
     if child_count > 0 {
         let mut cursor = node.walk();
         for i in 0..child_count {
@@ -80,7 +111,14 @@ pub fn node_to_json(
                     cursor.reset(child);
                     cursor.field_name()
                 });
-                children.push(node_to_json(child, source, config, field, language_name));
+                children.push(node_to_json_at(
+                    child,
+                    source,
+                    config,
+                    field,
+                    language_name,
+                    depth + 1,
+                ));
             }
         }
     }
