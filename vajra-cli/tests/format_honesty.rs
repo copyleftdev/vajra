@@ -431,3 +431,48 @@ fn all_migrated_commands_emit_real_markdown() -> Result<()> {
     }
     Ok(())
 }
+
+/// `--redact` must apply to text output, not only JSON.
+///
+/// Six commands ignored it entirely — `fingerprint`, `invariants`, `separation`,
+/// `cluster`, `batch`, and `inspect` for its text branch. `separation` is the
+/// clearest case: it prints field *values* in the rule column of its
+/// operating-point table, so `== "alice@example.com"` reached stdout with
+/// `--redact` set. Migrating onto the renderer funnels each command through one
+/// output site, which is what makes this a one-line fix per command.
+#[test]
+fn redact_applies_to_text_output() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let f = dir.path().join("pii.json");
+    std::fs::write(
+        &f,
+        r#"[{"who":"alice@example.com","label":"a"},{"who":"bob@example.com","label":"b"},
+            {"who":"alice@example.com","label":"a"},{"who":"bob@example.com","label":"b"}]"#,
+    )?;
+
+    let base = [
+        "separation",
+        "--label-field",
+        "label",
+        "--base-rate",
+        "0.1",
+        "--quiet",
+    ];
+
+    // Without the flag the value reaches stdout — that is what makes the flag
+    // meaningful, and pins the test against a fixture that actually leaks.
+    let (plain, _) = run(&f, &base)?;
+    assert!(
+        plain.contains("example.com"),
+        "fixture must actually leak, or the test proves nothing:\n{plain}"
+    );
+
+    let mut redacted_args = base.to_vec();
+    redacted_args.push("--redact");
+    let (redacted, _) = run(&f, &redacted_args)?;
+    assert!(
+        !redacted.contains("example.com"),
+        "--redact must suppress values in text output:\n{redacted}"
+    );
+    Ok(())
+}

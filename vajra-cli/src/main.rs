@@ -1416,13 +1416,11 @@ fn cmd_inspect(input: &str, cli: &Cli) -> Result<()> {
                 );
             }
 
-            print!(
-                "{}",
-                match cli.format {
-                    Format::Markdown => report.to_markdown(),
-                    _ => report.to_text(),
-                }
-            );
+            let rendered = match cli.format {
+                Format::Markdown => report.to_markdown(),
+                _ => report.to_text(),
+            };
+            print!("{}", maybe_redact(&rendered, cli));
         }
     }
 
@@ -2137,13 +2135,11 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
                 report.note(
                     "Streaming mode cannot produce the Merkle shape hash, which needs the\nwhole tree in memory.",
                 );
-                print!(
-                    "{}",
-                    match cli.format {
-                        Format::Markdown => report.to_markdown(),
-                        _ => report.to_text(),
-                    }
-                );
+                let rendered = match cli.format {
+                    Format::Markdown => report.to_markdown(),
+                    _ => report.to_text(),
+                };
+                print!("{}", maybe_redact(&rendered, cli));
             }
         }
     } else {
@@ -2196,13 +2192,11 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
                     report.table(t);
                 }
 
-                print!(
-                    "{}",
-                    match cli.format {
-                        Format::Markdown => report.to_markdown(),
-                        _ => report.to_text(),
-                    }
-                );
+                let rendered = match cli.format {
+                    Format::Markdown => report.to_markdown(),
+                    _ => report.to_text(),
+                };
+                print!("{}", maybe_redact(&rendered, cli));
             }
         }
     }
@@ -2792,13 +2786,11 @@ fn cmd_cluster(inputs: &[String], similarity_threshold: f64, cli: &Cli) -> Resul
                 );
             }
 
-            print!(
-                "{}",
-                match cli.format {
-                    Format::Markdown => report.to_markdown(),
-                    _ => report.to_text(),
-                }
-            );
+            let rendered = match cli.format {
+                Format::Markdown => report.to_markdown(),
+                _ => report.to_text(),
+            };
+            print!("{}", maybe_redact(&rendered, cli));
         }
     }
 
@@ -2977,13 +2969,11 @@ fn cmd_separation(
                 );
             }
 
-            print!(
-                "{}",
-                match cli.format {
-                    Format::Markdown => out.to_markdown(),
-                    _ => out.to_text(),
-                }
-            );
+            let rendered = match cli.format {
+                Format::Markdown => out.to_markdown(),
+                _ => out.to_text(),
+            };
+            print!("{}", maybe_redact(&rendered, cli));
         }
     }
 
@@ -3109,7 +3099,7 @@ fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()>
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            print!("{text}");
+            print!("{}", maybe_redact(&text, cli));
         }
     }
 
