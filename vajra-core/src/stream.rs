@@ -25,17 +25,26 @@ pub fn emit_events(value: &serde_json::Value) -> Vec<JsonEvent> {
 
 /// Emit events for one record of a top-level array, into a reused buffer.
 ///
-/// Paths are rooted at `$[*]` so they match what a whole-document walk would
-/// produce, which is what lets records be fed to an accumulator one at a time
-/// and still key on the same paths.
+/// The root decides the prefix: an element of a top-level sequence is rooted at
+/// `$[*]`, a whole document at `$`. This is what makes paths match a
+/// whole-document walk — rooting a single top-level object at `$[*]` made
+/// streaming report `$[*].a` where the DOM path reports `$.a`, the same input
+/// answered two ways depending on a flag.
 ///
 /// The caller owns `events` so the allocation is reused across records rather
 /// than one buffer per record — the point of streaming is that nothing grows
 /// with the record count. See #102.
-pub fn emit_record_events(value: &serde_json::Value, events: &mut Vec<JsonEvent>) {
+pub fn emit_record_events(
+    value: &serde_json::Value,
+    root: crate::records::RecordRoot,
+    events: &mut Vec<JsonEvent>,
+) {
     events.clear();
-    let root = WildcardPath::root().push_array_wildcard();
-    walk(value, &root, events);
+    let base = match root {
+        crate::records::RecordRoot::Document => WildcardPath::root(),
+        crate::records::RecordRoot::Element => WildcardPath::root().push_array_wildcard(),
+    };
+    walk(value, &base, events);
 }
 
 /// Recursively walk the JSON value tree and append events.
@@ -370,7 +379,7 @@ mod tests {
         let mut buf = Vec::new();
         let mut streamed: Vec<String> = Vec::new();
         for record in records {
-            emit_record_events(record, &mut buf);
+            emit_record_events(record, crate::records::RecordRoot::Element, &mut buf);
             streamed.extend(
                 buf.iter()
                     .filter(|e| matches!(e, JsonEvent::Value { .. }))
@@ -392,10 +401,10 @@ mod tests {
     {
         let record = parse_value(r#"{"a":1,"b":2}"#)?;
         let mut buf = Vec::new();
-        emit_record_events(&record, &mut buf);
+        emit_record_events(&record, crate::records::RecordRoot::Element, &mut buf);
         let first = buf.len();
         for _ in 0..1000 {
-            emit_record_events(&record, &mut buf);
+            emit_record_events(&record, crate::records::RecordRoot::Element, &mut buf);
         }
         assert_eq!(
             buf.len(),

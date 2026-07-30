@@ -12,14 +12,24 @@
 > | 15 MB / 120k records | 232 MB | **6.4 MB** |
 > | 142 MB / 1.2M records | 2,284 MB | **6.3 MB** |
 >
-> Ten times the input, the same memory: bounded, not merely smaller.
+> Ten times the input, the same memory. Those two runs share a schema; what is
+> constant is memory per record, not memory regardless of content.
 >
-> Two limits are real and stated rather than implied. Memory is bounded by the
-> largest single **record**, not by the file — one enormous record is still
-> materialised. And other inputs (stdin, URLs, git repositories, CSV, YAML,
-> source code) go through readers that produce a whole document by
-> construction; passing `--streaming` to those reports that the input was
-> loaded whole rather than silently doing nothing.
+> **What memory actually scales with**, since "bounded" alone would overclaim:
+>
+> - the largest single **record** — one enormous record is still materialised,
+>   and two are live briefly while distinguishing a lone document from a stream;
+> - the number of **distinct paths**, times the configured sketch state per
+>   path. A document with unboundedly many distinct paths still grows.
+>
+> It does *not* scale with the number of records, which is what the measurements
+> above show and what the file size was previously standing in for.
+>
+> **Scope.** Only `stats` streams, and only for JSON and NDJSON *files*. Other
+> commands, and other inputs (stdin, URLs, git repositories, CSV, YAML, source
+> code), go through readers that produce a whole document by construction;
+> passing `--streaming` to those reports that the input was loaded whole rather
+> than silently doing nothing.
 >
 > Past the exact-tracking threshold, results carry `exact: false`. See
 > [Accuracy](#accuracy) below.
@@ -143,7 +153,7 @@ Fingerprint:         ~10 KB
 Total:               ~5.2 MB
 ```
 
-This budget holds regardless of whether the document is 100 MB or 100 GB, for JSON and NDJSON files. Measured at 6.3 MB on a 142 MB input; see the status note at the top of this page.
+This budget is per path, so the total holds regardless of whether the document is 100 MB or 100 GB *at a fixed schema* — it grows with the number of distinct paths, not with the number of records. Measured at 7.7 MB on a 142 MB input; see the status note at the top of this page.
 
 ## Accuracy
 

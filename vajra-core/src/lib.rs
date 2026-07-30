@@ -39,4 +39,5 @@ pub use markdown::parse_markdown;
 pub use parse::{parse_file, parse_str};
 pub use pdf::{parse_pdf_bytes, parse_pdf_file};
 pub use pipeline::{emit_and_index, metadata_from_events, trie_from_events};
+pub use records::{RecordRoot, RecordShape};
 pub use stream::{emit_events, emit_record_events, load_adaptive, AnalysisMode};

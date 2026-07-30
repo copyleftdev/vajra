@@ -953,7 +953,7 @@ fn load_custom_profiles(cli: &Cli) -> Result<Vec<CustomProfile>> {
 /// the record count. See #102.
 fn stream_records_into<F>(input: &str, cli: &Cli, mut visit: F) -> Result<()>
 where
-    F: FnMut(&serde_json::Value, &mut Vec<vajra_core::JsonEvent>),
+    F: FnMut(&serde_json::Value, vajra_core::RecordRoot, &mut Vec<vajra_core::JsonEvent>),
 {
     let path = Path::new(input);
     let streamable = input != "-"
@@ -968,8 +968,10 @@ where
     if streamable {
         let shape = vajra_core::records::detect_shape(path).map_err(|e| anyhow::anyhow!("{e}"))?;
         let mut events = Vec::new();
-        vajra_core::records::for_each_record(path, shape, |record| visit(record, &mut events))
-            .map_err(|e| anyhow::anyhow!("{e}"))?;
+        vajra_core::records::for_each_record(path, shape, |record, root| {
+            visit(record, root, &mut events);
+        })
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
         return Ok(());
     }
 
@@ -981,10 +983,10 @@ where
     match doc.value().as_array() {
         Some(records) => {
             for record in records {
-                visit(record, &mut events);
+                visit(record, vajra_core::RecordRoot::Element, &mut events);
             }
         }
-        None => visit(doc.value(), &mut events),
+        None => visit(doc.value(), vajra_core::RecordRoot::Document, &mut events),
     }
     Ok(())
 }
@@ -1878,8 +1880,8 @@ fn cmd_stats(
 
     let result = if cli.streaming {
         let mut acc = StreamingStatsAccumulator::default();
-        stream_records_into(input, cli, |record, events| {
-            vajra_core::emit_record_events(record, events);
+        stream_records_into(input, cli, |record, root, events| {
+            vajra_core::emit_record_events(record, root, events);
             acc.process_events(events);
         })?;
         acc.finalize()
@@ -1902,21 +1904,48 @@ fn cmd_stats(
             let mut report = render::Report::new();
 
             report.heading("Per-Path Statistics");
-            let mut summary = render::Table::new(
-                &["PATH", "ENTROPY", "NORM", "CARD", "COUNT", "MAX RARITY"],
-                "no scalar or array paths in this document",
-            );
+            // The BASIS column exists only when something is approximate:
+            // adding it unconditionally would put "exact" beside every row of
+            // ordinary output, and omitting it entirely would leave a reader of
+            // text output unable to tell a sketch figure from a measurement —
+            // which the JSON has said since #102.
+            let any_inexact = output.paths.iter().any(|sp| !sp.exact);
+            let headers: &[&str] = if any_inexact {
+                &[
+                    "PATH",
+                    "ENTROPY",
+                    "NORM",
+                    "CARD",
+                    "COUNT",
+                    "MAX RARITY",
+                    "BASIS",
+                ]
+            } else {
+                &["PATH", "ENTROPY", "NORM", "CARD", "COUNT", "MAX RARITY"]
+            };
+            let mut summary =
+                render::Table::new(headers, "no scalar or array paths in this document");
             for sp in &output.paths {
-                summary.push(vec![
+                let mut row = vec![
                     sp.path.clone(),
                     format!("{:.4}", sp.entropy),
                     format!("{:.4}", sp.normalized_entropy),
                     sp.cardinality.to_string(),
                     sp.total_count.to_string(),
                     format!("{:.4}", sp.max_rarity),
-                ]);
+                ];
+                if any_inexact {
+                    row.push(if sp.exact { "exact" } else { "approx" }.to_owned());
+                }
+                summary.push(row);
             }
             report.table(summary);
+            if any_inexact {
+                report.note(
+                    "approx: past the exact-tracking threshold, so cardinality is a lower \
+                     bound and entropy is a sketch estimate, not a measurement",
+                );
+            }
 
             // Numeric quantiles only exist for numeric paths, so they get their
             // own table rather than empty columns in the summary above.

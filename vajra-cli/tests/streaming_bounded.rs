@@ -104,6 +104,42 @@ fn streaming_matches_the_dom_path_below_the_sketch_threshold() {
     );
 }
 
+/// Every streamable top-level shape must produce the same path names as the
+/// DOM path. A lone object rooted at `$[*]` reported `$[*].a` where the DOM
+/// path reports `$.a` — the same input answered two ways depending on a flag.
+#[test]
+fn path_names_match_the_dom_path_for_every_top_level_shape() {
+    let dir = tempfile::tempdir().expect("tempdir");
+
+    let cases = [
+        ("object.json", r#"{"a":1,"b":{"c":"x"},"d":[1,2]}"#),
+        ("array.json", r#"[{"a":1},{"a":2}]"#),
+        ("one_element.json", r#"[{"a":1}]"#),
+        ("stream.ndjson", "{\"a\":1}\n{\"a\":2}\n"),
+    ];
+
+    for (name, body) in cases {
+        let path = dir.path().join(name);
+        std::fs::write(&path, body).expect("write");
+        let path = path.to_str().expect("utf-8 path");
+
+        let dom = paths_of(&json(&["stats", path, "--format", "json", "--quiet"]));
+        let streamed = paths_of(&json(&[
+            "stats",
+            path,
+            "--streaming",
+            "--format",
+            "json",
+            "--quiet",
+        ]));
+        assert_eq!(
+            dom.keys().collect::<Vec<_>>(),
+            streamed.keys().collect::<Vec<_>>(),
+            "`{name}` must yield the same paths under both modes"
+        );
+    }
+}
+
 /// NDJSON is the other streamable shape and must behave identically.
 #[test]
 fn ndjson_streams_and_agrees_with_the_dom_path() {

@@ -13,10 +13,12 @@
 //!   at a time from a buffered reader. This is the shape vajra's own docs use as
 //!   the large-input example, and the one that is not simply line-splitting.
 //!
-//! What is bounded is the number of *records* held at once: exactly one. A
-//! single enormous record is still materialised in full, so memory is bounded
-//! by the largest record, not by the file. That is a real limit and is stated
-//! rather than implied.
+//! What is bounded is the number of *records* held at once — one, or two while
+//! looking ahead to tell a single document from a stream. Total memory is that
+//! plus the accumulator state, which is O(distinct paths) times the configured
+//! sketch size. So it is bounded by the schema and the largest record, not by
+//! the file: a document with unboundedly many distinct paths still grows. Both
+//! limits are real and stated rather than implied.
 
 use std::fs::File;
 use std::io::BufReader;
@@ -31,10 +33,28 @@ use vajra_types::VajraError;
 /// Top-level shape of a record stream.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RecordShape {
-    /// One JSON value per line.
+    /// One or more whitespace-separated JSON values.
+    ///
+    /// A file holding exactly one is a single document, not a one-record
+    /// stream; the two are indistinguishable from the leading byte, so they are
+    /// told apart by looking ahead one value.
     Ndjson,
     /// A single top-level `[...]` whose elements are the records.
     JsonArray,
+}
+
+/// Where a record sits in the document, and therefore what its paths are
+/// rooted at.
+///
+/// A single top-level object is rooted at `$`; an element of a record stream at
+/// `$[*]`. Getting this wrong makes streaming disagree with the DOM path on
+/// every path name for the same input — `$[*].a` against `$.a`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RecordRoot {
+    /// The record is the whole document.
+    Document,
+    /// The record is one element of a top-level sequence.
+    Element,
 }
 
 /// Decide how to stream a file, by reading only its first non-whitespace byte.
@@ -76,7 +96,7 @@ pub fn detect_shape(path: &Path) -> Result<RecordShape, VajraError> {
 /// shape.
 pub fn for_each_record<F>(path: &Path, shape: RecordShape, f: F) -> Result<u64, VajraError>
 where
-    F: FnMut(&serde_json::Value),
+    F: FnMut(&serde_json::Value, RecordRoot),
 {
     let file = File::open(path).map_err(|e| VajraError::Io {
         path: path.to_path_buf(),
@@ -98,19 +118,41 @@ fn parse_error(path: &Path, e: &serde_json::Error) -> VajraError {
     }
 }
 
-/// One JSON value per line, via `StreamDeserializer`.
+/// Whitespace-separated JSON values, via `StreamDeserializer`.
+///
+/// A file holding exactly one value is a single document — `{"a":1}` — not a
+/// one-record stream, and its paths must be rooted at `$` to match the DOM
+/// path. The two cases share a leading byte, so the first value is held while
+/// the second is attempted: one extra record live, still bounded.
 fn stream_ndjson<R, F>(reader: R, path: &Path, mut f: F) -> Result<u64, VajraError>
 where
     R: std::io::Read,
-    F: FnMut(&serde_json::Value),
+    F: FnMut(&serde_json::Value, RecordRoot),
 {
-    let stream = serde_json::Deserializer::from_reader(reader).into_iter::<serde_json::Value>();
-    let mut count = 0_u64;
+    let mut stream = serde_json::Deserializer::from_reader(reader).into_iter::<serde_json::Value>();
+
+    let Some(first) = stream.next() else {
+        return Ok(0);
+    };
+    let first = first.map_err(|e| parse_error(path, &e))?;
+
+    let Some(second) = stream.next() else {
+        // Exactly one value: the file is that document.
+        f(&first, RecordRoot::Document);
+        return Ok(1);
+    };
+    let second = second.map_err(|e| parse_error(path, &e))?;
+
+    f(&first, RecordRoot::Element);
+    drop(first);
+    f(&second, RecordRoot::Element);
+    drop(second);
+
+    let mut count = 2_u64;
     for value in stream {
         let value = value.map_err(|e| parse_error(path, &e))?;
-        f(&value);
+        f(&value, RecordRoot::Element);
         count += 1;
-        // `value` is dropped here: at most one record is live at a time.
     }
     Ok(count)
 }
@@ -124,7 +166,7 @@ where
 fn stream_array<R, F>(reader: R, path: &Path, f: F) -> Result<u64, VajraError>
 where
     R: std::io::Read,
-    F: FnMut(&serde_json::Value),
+    F: FnMut(&serde_json::Value, RecordRoot),
 {
     struct ArrayVisitor<F> {
         f: F,
@@ -132,7 +174,7 @@ where
 
     impl<'de, F> Visitor<'de> for ArrayVisitor<F>
     where
-        F: FnMut(&serde_json::Value),
+        F: FnMut(&serde_json::Value, RecordRoot),
     {
         type Value = u64;
 
@@ -146,7 +188,7 @@ where
         {
             let mut count = 0_u64;
             while let Some(value) = seq.next_element::<serde_json::Value>()? {
-                (self.f)(&value);
+                (self.f)(&value, RecordRoot::Element);
                 count += 1;
                 // Dropped before the next element is decoded.
                 drop(value);
@@ -162,7 +204,7 @@ where
 
     impl<'de, F> DeserializeSeed<'de> for ArraySeed<F>
     where
-        F: FnMut(&serde_json::Value),
+        F: FnMut(&serde_json::Value, RecordRoot),
     {
         type Value = u64;
 
@@ -216,7 +258,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("tempdir");
         let p = write(&dir, "a.json", r#"[{"a":1},{"a":2},{"a":3}]"#);
         let mut seen = Vec::new();
-        let n = for_each_record(&p, RecordShape::JsonArray, |v| {
+        let n = for_each_record(&p, RecordShape::JsonArray, |v, _| {
             seen.push(v["a"].as_u64().unwrap_or_default());
         })
         .expect("stream");
@@ -229,7 +271,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("tempdir");
         let p = write(&dir, "a.ndjson", "{\"a\":1}\n{\"a\":2}\n{\"a\":3}\n");
         let mut seen = Vec::new();
-        let n = for_each_record(&p, RecordShape::Ndjson, |v| {
+        let n = for_each_record(&p, RecordShape::Ndjson, |v, _| {
             seen.push(v["a"].as_u64().unwrap_or_default());
         })
         .expect("stream");
@@ -242,7 +284,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("tempdir");
         let p = write(&dir, "a.json", "[]");
         let mut count = 0;
-        let n = for_each_record(&p, RecordShape::JsonArray, |_| count += 1).expect("stream");
+        let n = for_each_record(&p, RecordShape::JsonArray, |_, _| count += 1).expect("stream");
         assert_eq!((n, count), (0, 0));
     }
 
@@ -250,13 +292,52 @@ mod tests {
     fn malformed_json_reports_the_source_file() {
         let dir = tempfile::tempdir().expect("tempdir");
         let p = write(&dir, "a.json", r#"[{"a":1},{"a":]"#);
-        let err = for_each_record(&p, RecordShape::JsonArray, |_| {}).expect_err("must fail");
+        let err = for_each_record(&p, RecordShape::JsonArray, |_, _| {}).expect_err("must fail");
         match err {
             VajraError::Parse { source_path, .. } => {
                 assert_eq!(source_path.as_deref(), Some(p.as_path()));
             }
             other => panic!("expected a parse error, got {other:?}"),
         }
+    }
+
+    /// A file holding one JSON object is that document, not a one-record
+    /// stream. Rooting it at `$[*]` made streaming report `$[*].a` where the
+    /// DOM path reports `$.a` — the same input answered two ways.
+    #[test]
+    fn a_lone_object_is_a_document_not_a_record() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let p = write(&dir, "a.json", r#"{"a":1,"b":{"c":"x"}}"#);
+        let mut roots = Vec::new();
+        let n =
+            for_each_record(&p, RecordShape::Ndjson, |_, root| roots.push(root)).expect("stream");
+        assert_eq!(n, 1);
+        assert_eq!(roots, vec![RecordRoot::Document]);
+    }
+
+    #[test]
+    fn two_or_more_values_are_a_record_stream() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let p = write(&dir, "a.ndjson", "{\"a\":1}\n{\"a\":2}\n{\"a\":3}\n");
+        let mut roots = Vec::new();
+        let n =
+            for_each_record(&p, RecordShape::Ndjson, |_, root| roots.push(root)).expect("stream");
+        assert_eq!(n, 3);
+        assert_eq!(
+            roots,
+            vec![RecordRoot::Element; 3],
+            "including the first two"
+        );
+    }
+
+    /// An array is always a sequence, even with a single element.
+    #[test]
+    fn a_single_element_array_is_still_a_sequence() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let p = write(&dir, "a.json", r#"[{"a":1}]"#);
+        let mut roots = Vec::new();
+        for_each_record(&p, RecordShape::JsonArray, |_, root| roots.push(root)).expect("stream");
+        assert_eq!(roots, vec![RecordRoot::Element]);
     }
 
     /// Records are visited as they are decoded, not collected first — so the
@@ -272,7 +353,7 @@ mod tests {
 
         let mut first_seen_at = None;
         let mut count = 0_usize;
-        for_each_record(&p, RecordShape::JsonArray, |v| {
+        for_each_record(&p, RecordShape::JsonArray, |v, _| {
             if v["i"].as_u64() == Some(0) {
                 first_seen_at = Some(count);
             }
