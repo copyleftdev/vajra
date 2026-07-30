@@ -401,7 +401,14 @@ pub fn compute_health_score(
     let mut weighted_sum = 0.0_f64;
     let mut total_weight = 0.0_f64;
 
-    if let Some(share) = metrics.top1_share {
+    // A share outside [0, 1] — or NaN — is not a share. Every comparison in
+    // grade_top1_share is false for NaN, so it would silently return F; the
+    // dimension is dropped instead, and its weight redistributed, exactly as
+    // for a metric that was never supplied.
+    if let Some(share) = metrics
+        .top1_share
+        .filter(|s| s.is_finite() && (0.0..=1.0).contains(s))
+    {
         let grade = grade_top1_share(share);
         dimensions.insert(
             "bus_factor".to_owned(),
@@ -629,6 +636,16 @@ mod tests {
         assert_eq!(grade_commit_entropy(0.0), LetterGrade::F);
     }
 
+    /// Non-panicking fallback for `compute_health_score`, matching this
+    /// module's existing test style.
+    fn empty_score() -> HealthScore {
+        HealthScore {
+            overall: LetterGrade::F,
+            overall_numeric: 0.0,
+            dimensions: BTreeMap::new(),
+        }
+    }
+
     #[test]
     fn grade_top1_share_thresholds() {
         assert_eq!(grade_top1_share(0.10), LetterGrade::A);
@@ -655,27 +672,31 @@ mod tests {
             commit_entropy: Some(3.68),
             ..HealthMetrics::default()
         };
-        let score =
-            compute_health_score(&metrics, &HealthWeights::default()).expect("scorable dimensions");
+        let score = compute_health_score(&metrics, &HealthWeights::default());
+        assert!(score.is_some(), "the metrics supply scorable dimensions");
+        let score = score.unwrap_or_else(empty_score);
 
-        let bus = score
-            .dimensions
-            .get("bus_factor")
-            .expect("bus_factor dimension");
-        assert_eq!(bus.metric_name, "top1_share");
-        assert!(
-            bus.grade.to_numeric() <= LetterGrade::C.to_numeric(),
-            "52% single-author concentration graded {:?}",
-            bus.grade
-        );
+        let bus = score.dimensions.get("bus_factor");
+        assert!(bus.is_some(), "bus_factor dimension must be present");
+        if let Some(bus) = bus {
+            assert_eq!(bus.metric_name, "top1_share");
+            assert!(
+                bus.grade.to_numeric() <= LetterGrade::C.to_numeric(),
+                "52% single-author concentration graded {:?}",
+                bus.grade
+            );
+        }
 
         // The entropy signal is not lost, only renamed to what it measures.
-        let diversity = score
-            .dimensions
-            .get("contribution_diversity")
-            .expect("contribution_diversity dimension");
-        assert_eq!(diversity.metric_name, "commit_entropy");
-        assert_eq!(diversity.grade, LetterGrade::B);
+        let diversity = score.dimensions.get("contribution_diversity");
+        assert!(
+            diversity.is_some(),
+            "contribution_diversity dimension must be present"
+        );
+        if let Some(diversity) = diversity {
+            assert_eq!(diversity.metric_name, "commit_entropy");
+            assert_eq!(diversity.grade, LetterGrade::B);
+        }
     }
 
     #[test]
@@ -685,16 +706,39 @@ mod tests {
             commit_entropy: Some(5.2),
             ..HealthMetrics::default()
         };
-        let score =
-            compute_health_score(&metrics, &HealthWeights::default()).expect("scorable dimensions");
-        assert_eq!(
-            score
-                .dimensions
-                .get("bus_factor")
-                .expect("bus_factor")
-                .grade,
-            LetterGrade::A
-        );
+        let score = compute_health_score(&metrics, &HealthWeights::default());
+        assert!(score.is_some(), "the metrics supply scorable dimensions");
+        let score = score.unwrap_or_else(empty_score);
+        let bus = score.dimensions.get("bus_factor");
+        assert!(bus.is_some(), "bus_factor dimension must be present");
+        if let Some(bus) = bus {
+            assert_eq!(bus.grade, LetterGrade::A);
+        }
+    }
+
+    /// A share outside [0, 1] is not a share; the dimension must be dropped
+    /// rather than graded. NaN in particular would otherwise fall through every
+    /// comparison in `grade_top1_share` and silently return F.
+    #[test]
+    fn an_out_of_domain_top1_share_drops_the_dimension() {
+        for bad in [f64::NAN, -0.1, 1.5, f64::INFINITY] {
+            let metrics = HealthMetrics {
+                top1_share: Some(bad),
+                commit_entropy: Some(3.6),
+                ..HealthMetrics::default()
+            };
+            let score = compute_health_score(&metrics, &HealthWeights::default());
+            assert!(score.is_some());
+            let score = score.unwrap_or_else(empty_score);
+            assert!(
+                !score.dimensions.contains_key("bus_factor"),
+                "top1_share {bad} must not be graded"
+            );
+            assert!(
+                score.dimensions.contains_key("contribution_diversity"),
+                "the other dimensions must still score"
+            );
+        }
     }
 
     #[test]

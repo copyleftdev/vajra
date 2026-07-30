@@ -892,6 +892,9 @@ fn extract_health_metrics(
         metrics.commit_entropy = Some(entropy);
         // Concentration at the top, which entropy over a long one-commit tail
         // cannot see. This is what the bus_factor dimension grades.
+        //
+        // The u64 -> f64 casts lose precision only past 2^53 commits, which no
+        // repository reaches; the ratio is exact for any real input.
         #[allow(clippy::cast_precision_loss)]
         {
             metrics.top1_share = counts
