@@ -142,49 +142,26 @@ vajra essence claim.json --profile ai --format json --budget 500
 
 ```json
 {
-  "vajra_essence": {
-    "version": "0.1.0",
-    "profile": "ai",
-    "input_hash": "b3a7f2c1d4e5...",
-    "structure": {
-      "root_type": "object",
-      "total_nodes": 847,
-      "distinct_paths": 23,
-      "max_depth": 6
-    },
-    "dominant_motif": {
-      "path": "$.claims[0].service_lines[*]",
-      "count": 14,
-      "shape_hash": "f2c1d4e5...",
-      "fields": ["procedure_code", "service_date", "charge_amount", "allowed_amount", "status", "adjustment"]
-    },
-    "anomalies": [
-      {
-        "path": "$.claims[0].service_lines[2,7,11].allowed_amount",
-        "type": "missing",
-        "severity": 4.2
-      },
-      {
-        "path": "$.claims[0].diagnosis[1]",
-        "type": "structural_deviation",
-        "severity": 3.1
-      }
-    ],
-    "notable": [
-      {
-        "path": "$.claims[0].service_lines[*].adjustment.reason_code",
-        "observation": "value 'CO-45' in 8/14 instances (57%)"
-      }
-    ],
-    "meta": {
-      "budget_tokens": 500,
-      "truncated": false,
-      "observations_included": 4,
-      "observations_total": 7
+  "identity": "document(nodes=25, paths=9, depth=3)",
+  "structure": [],
+  "anomalies": [
+    {
+      "path": "$[*].score",
+      "description": "numeric outlier (value=22.1, z_mad=13.04)",
+      "score": 0.22499999999999998,
+      "anomaly_strength": 1.0,
+      "concern_relevance": 0.5,
+      "entropy_signal": 0.0,
+      "instability": 0.0,
+      "rarity": 0.0,
+      "structural_coverage": 0.0
     }
-  }
+  ],
+  "observations": []
 }
 ```
+
+Each entry carries its scoring components alongside the final `score`, so a ranking is decomposable — `--explain` prints the same weights in text form. The active profile's weight vector determines how the components combine.
 
 The AI profile collapses aggressively. Motifs are represented once with counts. Observations are sorted by score-per-token. The `meta.truncated` field tells the downstream model whether anything was cut.
 

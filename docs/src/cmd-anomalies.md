@@ -131,60 +131,21 @@ vajra anomalies claims_batch.ndjson --format json
 
 ```json
 {
-  "records_analyzed": 1247,
-  "anomaly_count": 8,
+  "type_instabilities": [],
   "numeric_outliers": [
     {
-      "path": "$.claims[*].service_lines[*].charge_amount",
-      "record": 834,
-      "value": 47250.0,
-      "z_mad": 6.3,
-      "median": 285.0,
-      "mad": 195.0
-    },
-    {
-      "path": "$.claims[*].service_lines[*].charge_amount",
-      "record": 1102,
-      "value": 0.01,
-      "z_mad": -4.8,
-      "median": 285.0,
-      "mad": 195.0
+      "path": "$[*].score",
+      "value": 22.1,
+      "z_mad": 13.040333333333344,
+      "median": 10.5,
+      "mad": 0.5999999999999996
     }
   ],
-  "rarity_outliers": [
-    {
-      "path": "$.claims[*].status",
-      "record": 419,
-      "value": "voided",
-      "self_information_bits": 10.3,
-      "frequency": 1,
-      "total": 1247
-    }
-  ],
-  "structural_deviations": [
-    {
-      "record": 662,
-      "jaccard_distance": 0.31,
-      "missing_paths": [
-        "$.claims[*].subscriber.group_number",
-        "$.claims[*].subscriber.member_id",
-        "$.claims[*].provider.npi",
-        "$.claims[*].provider.taxonomy"
-      ],
-      "extra_paths": []
-    }
-  ],
-  "type_instability": [
-    {
-      "path": "$.claims[*].service_lines[*].quantity",
-      "records": [88, 204, 917],
-      "expected_type": "number",
-      "actual_type": "string",
-      "instability": 0.002
-    }
-  ]
+  "rare_values": []
 }
 ```
+
+Three arrays, always present even when empty. `z_mad` is the modified z-score — deviation from the median in MAD units — so it is robust to the outliers it is detecting.
 
 ---
 

@@ -104,24 +104,25 @@ vajra cascade commits.ndjson \
 
 ```json
 {
-  "records": 1247,
-  "entities": 34,
-  "trigger_events": 312,
-  "response_events": 89,
-  "cascade_rate": 0.285,
-  "self_fix_rate": 0.742,
-  "hot_entities": [
-    {"entity": "alice", "cascades": 23, "fraction": 0.258},
-    {"entity": "bob", "cascades": 14, "fraction": 0.157},
-    {"entity": "charlie", "cascades": 9, "fraction": 0.101}
+  "cascade_rate": 0.3333333333333333,
+  "total_events": 3,
+  "total_cascades": 1,
+  "self_fix_rate": 0.0,
+  "cascades": [
+    {
+      "entity": "a.rs",
+      "trigger": { "author": "", "time": "2025-01-01", "value": "feat: add" },
+      "response": { "author": "", "time": "2025-01-02", "value": "fix: repair" },
+      "same_author": false
+    }
   ],
-  "chains": [
-    {"trigger": "bug", "response": "fix", "count": 62, "median_delta_days": 2.3},
-    {"trigger": "bug", "response": "revert", "count": 18, "median_delta_days": 0.4},
-    {"trigger": "regression", "response": "fix", "count": 9, "median_delta_days": 4.1}
+  "hot_entities": [
+    { "entity": "a.rs", "total": 2, "cascades": 1, "cascade_ratio": 0.5 }
   ]
 }
 ```
+
+`self_fix_rate` is the share of cascades where trigger and response share an author. A low rate means someone else is cleaning up.
 
 ---
 
