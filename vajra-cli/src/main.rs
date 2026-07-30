@@ -2494,7 +2494,14 @@ fn cmd_separation(
             println!("  Ranked by MI (symmetric, bits) — the only column comparable across");
             println!("  field types. SEP is |2*AUC-1| and is reported for ordered fields only.");
 
-            if report.base_rate.is_some() {
+            if report.base_rate.is_some() && !report.binary {
+                println!();
+                println!(
+                    "  --base-rate is only meaningful for a two-class label; this one has {}",
+                    report.classes.len()
+                );
+                println!("  classes, so no single decision rule is defined.");
+            } else if report.base_rate.is_some() {
                 println!();
                 println!("=== Best single rule, priced at the assumed prevalence ===");
                 println!(
