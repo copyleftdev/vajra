@@ -457,10 +457,18 @@ fn command_sub_modes_emit_real_markdown() -> Result<()> {
         let md_out = String::from_utf8_lossy(&md.stdout).into_owned();
         let text_out = String::from_utf8_lossy(&text.stdout).into_owned();
 
+        // Checked without --quiet, which would suppress the very warning this
+        // is asserting is absent. `profiles` emitted `## Built-in Profiles`
+        // while warning it had no markdown renderer — the inverse false claim,
+        // and invisible while this ran with --quiet.
+        let loud = Command::new(vajra_bin())
+            .args(&base)
+            .args(["--format", "markdown"])
+            .output()?;
+        let loud_err = String::from_utf8_lossy(&loud.stderr).into_owned();
         assert!(
-            md.stderr.is_empty(),
-            "`{label}` must not warn about markdown: {:?}",
-            String::from_utf8_lossy(&md.stderr)
+            !loud_err.contains("no markdown renderer"),
+            "`{label}` renders markdown but claims it does not: {loud_err}"
         );
         assert_ne!(
             md_out, text_out,

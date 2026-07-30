@@ -398,6 +398,7 @@ const RENDERS_MARKDOWN: &[&str] = &[
     "governance",
     "inspect",
     "invariants",
+    "profiles",
     "score",
     "separation",
     "stats",
@@ -2151,12 +2152,20 @@ fn corpus_index_report(index: &corpus::CorpusIndex) -> render::Report {
         ("Skipped (format)".to_owned(), index.skipped.to_string()),
         ("Suppressed (size)".to_owned(), index.suppressed.to_string()),
         (
+            "Groups indexed".to_owned(),
+            index.groups_indexed.to_string(),
+        ),
+        (
             "Distinct shapes".to_owned(),
             index.distinct_shapes.to_string(),
         ),
         (
-            "Reused shapes".to_owned(),
+            "Reused across documents".to_owned(),
             index.shapes_in_multiple_documents.to_string(),
+        ),
+        (
+            "Reused across groups".to_owned(),
+            index.shapes_in_multiple_groups.to_string(),
         ),
     ]);
 
