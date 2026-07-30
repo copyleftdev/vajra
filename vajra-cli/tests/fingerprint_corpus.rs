@@ -296,6 +296,85 @@ fn index_is_deterministic() -> Result<()> {
     Ok(())
 }
 
+/// Text mode must state the counts and label clusters as *groups*, not
+/// documents — `size` counts clustering units, and a cluster of 3 packages can
+/// span dozens of files.
+#[test]
+fn text_output_reports_counts_and_labels_groups() -> Result<()> {
+    let dir = three_package_corpus()?;
+    let out = Command::new(vajra_bin())
+        .arg("fingerprint")
+        .arg(as_str(dir.path())?)
+        .arg("--corpus")
+        .args(JS)
+        .arg("--quiet")
+        .output()?;
+
+    assert!(
+        out.status.success(),
+        "text mode failed: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    for expected in [
+        "Corpus Shape Index",
+        "Files scanned:",
+        "Documents indexed:",
+        "Distinct shapes:",
+        "Reuse Groups",
+        "Clusters",
+    ] {
+        assert!(stdout.contains(expected), "missing {expected:?}:\n{stdout}");
+    }
+    assert!(
+        stdout.contains("group(s)"),
+        "clusters must be labelled as groups, not documents:\n{stdout}"
+    );
+    assert!(
+        !stdout.contains("document(s), "),
+        "cluster size must not be called documents:\n{stdout}"
+    );
+    Ok(())
+}
+
+/// An unreadable subdirectory must be reported and the walk must continue —
+/// failing a scan of thousands of files because one directory denied permission
+/// would be the wrong trade.
+#[cfg(unix)]
+#[test]
+fn unreadable_directory_is_reported_not_fatal() -> Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let dir = TempDir::new()?;
+    write(dir.path(), "pkg-a/lib/index.js", TEMPLATE_A)?;
+    write(dir.path(), "pkg-b/lib/index.js", TEMPLATE_B)?;
+    let locked = dir.path().join("locked");
+    std::fs::create_dir(&locked)?;
+    write(dir.path(), "locked/hidden.js", OTHER)?;
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000))?;
+
+    let result = corpus(dir.path(), JS);
+
+    // Restore permissions before any assertion so the TempDir can clean up.
+    let _ = std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755));
+    let json = result?;
+
+    assert_eq!(
+        json["documents_indexed"], 2,
+        "readable packages still indexed"
+    );
+    let errors = json["errors"]
+        .as_array()
+        .ok_or_else(|| anyhow!("errors missing"))?;
+    assert!(
+        errors
+            .iter()
+            .any(|e| e["file"].as_str().is_some_and(|f| f.contains("locked"))),
+        "the unreadable directory must be reported: {errors:?}"
+    );
+    Ok(())
+}
+
 #[test]
 fn parse_failures_are_reported_not_dropped() -> Result<()> {
     let dir = TempDir::new()?;
