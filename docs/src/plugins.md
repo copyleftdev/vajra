@@ -277,20 +277,22 @@ Six domain plugins ship with Vajra, all enabled by default via feature flags:
 | Source Code | `vajra-domain-source` | snake_case, camelCase, PascalCase, SCREAMING_SNAKE, import paths, source file paths | 6 (function definition, class definition, import statement, parameter list, conditional, loop) |
 | Encoding | `vajra-domain-encoding` | Base64, Base64URL, hex, URL-encoded, HTML entities, Unicode escapes, PEM, data URI, quoted-printable, MIME encoded word, Punycode, double-encoded, mixed-encoding | 3 (content+encoding, transfer encoding, encoded/decoded pairs) |
 | GitHub | `vajra-domain-github` | PR number, issue number, GitHub username, repo slug, commit SHA, branch name, label, milestone, review state, merge method | 7 (pull request, issue, review, commit, release, workflow run, discussion) |
+| Package | `vajra-domain-package` | Registry URL, SPDX licence, lifecycle hook name, semver range, npm package name | — (uses structural detectors instead, see below) |
 
 ### Feature Flags
 
 ```toml
 # vajra-cli/Cargo.toml
 [features]
-default = ["medical", "security", "devops", "source", "encoding", "github"]
+default = ["medical", "security", "devops", "source", "encoding", "github", "package"]
 medical = ["vajra-domain-med"]
 security = ["vajra-domain-sec"]
 devops = ["vajra-domain-devops"]
 source = ["vajra-source", "vajra-domain-source"]
 encoding = ["vajra-domain-encoding"]
 github = ["vajra-domain-github"]
-all-plugins = ["medical", "security", "devops", "source", "encoding", "github"]
+package = ["vajra-domain-package"]
+all-plugins = ["medical", "security", "devops", "source", "encoding", "github", "package"]
 ```
 
 Build without a plugin: `cargo build --no-default-features --features security,devops`
@@ -460,3 +462,70 @@ The architecture supports any domain:
 | Financial | `vajra-domain-finance` | SWIFT, IBAN, CUSIP, currency codes |
 | Telecom | `vajra-domain-telecom` | E.164 numbers, IMSI, CDR fields |
 | IoT / Sensor | `vajra-domain-iot` | Sensor types, unit patterns, device IDs |
+
+---
+
+## Structural Detectors
+
+A `TypeRecognizer` classifies a **value**. Some domain knowledge is instead about **shape** — that a key exists, how many entries a map holds, whether a field is absent.
+
+The motivating case: an npm package declaring
+
+```json
+{ "scripts": { "preinstall": "node install.js" } }
+```
+
+runs that code on `npm install`, before anyone has read the package. That is a fact about `$.scripts.preinstall` *existing*. No value recogniser can express it, because there is no value to classify.
+
+`StructuralDetector` fills that gap:
+
+```rust
+pub trait StructuralDetector: Send + Sync {
+    fn name(&self) -> &str;
+    fn applies(&self, value: &Value) -> bool;
+    fn inspect(&self, value: &Value) -> Vec<StructuralFinding>;
+}
+```
+
+`applies` is checked first, so an unrelated document costs one cheap test rather than a full walk. Findings appear under `structural_findings` in `vajra inspect`:
+
+```json
+{
+  "structural_findings": [
+    { "signal": "npm_install_hook", "path": "$.scripts.preinstall",
+      "detail": "`preinstall` runs automatically at install time", "severity": "concern" },
+    { "signal": "npm_missing_provenance", "path": "$",
+      "detail": "no repository, homepage, bugs", "severity": "notable" },
+    { "signal": "npm_script_count", "path": "$.scripts",
+      "detail": "1 script(s) declared", "severity": "info" }
+  ]
+}
+```
+
+Severity is `concern`, `notable` or `info`, and findings are ordered concern-first. **`concern` marks structure that carries known risk — it is not a verdict on the package.** Plenty of legitimate packages compile native extensions in a `postinstall`.
+
+---
+
+## The Package Plugin: vajra-domain-package
+
+### Structural detectors
+
+| Ecosystem | Signals |
+|---|---|
+| npm | `npm_install_hook` (concern), `npm_bundled_dependencies`, `npm_bin_entry`, `npm_missing_provenance` (notable), `npm_script_count`, `npm_dependency_count` (info) |
+| Python | `python_in_tree_backend`, `python_cmdclass_override` (concern), `python_console_script` (notable), `python_build_backend`, `python_entry_points`, `python_dependency_list` (info) |
+| Cargo | `cargo_build_script` (concern), `cargo_missing_provenance` (notable), `cargo_dependency_count` (info) |
+
+The `concern` signals are the ones where code executes as a side effect of installing or building: npm lifecycle hooks, a Python in-tree build backend or `cmdclass` override, a Cargo build script.
+
+Exactly one detector claims any given manifest — the Cargo detector explicitly declines documents carrying a `build-system` key, since a `pyproject.toml` can present a similar shape.
+
+### Note on TOML input
+
+Python and Cargo manifests are TOML. Pass them through vajra's TOML/YAML handling, or convert to JSON first; the detectors operate on the parsed document, not the file format.
+
+### Why this matters
+
+Measured on a labelled corpus of npm packages, whether a manifest declares an install-time hook was the **strongest single per-package signal** of malicious intent, and the only one that grew stronger once package-maturity confounds were controlled for. Before this plugin it was invisible to vajra and had to be read with `jq`.
+
+Applied to 219 manifests from that corpus, 129 declare an install hook.

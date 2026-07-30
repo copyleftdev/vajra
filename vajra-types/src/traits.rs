@@ -225,4 +225,63 @@ pub trait VajraPlugin: Send + Sync {
     fn relationship_hints(&self) -> Vec<RelationshipHint> {
         vec![]
     }
+    /// Structural detectors provided by this plugin.
+    fn structural_detectors(&self) -> Vec<Box<dyn StructuralDetector>> {
+        vec![]
+    }
+}
+
+/// A structural fact a domain plugin found in a document.
+///
+/// [`TypeRecognizer`] classifies *values*; some domain knowledge is instead
+/// about *shape* — that a key exists, how many entries a map holds, whether a
+/// field is absent. A package manifest declaring an install-time hook is a fact
+/// about `scripts.preinstall` being present, which no value recogniser can
+/// express.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StructuralFinding {
+    /// Stable identifier for the kind of finding, e.g. `npm_install_hook`.
+    pub signal: String,
+    /// JSONPath the finding is anchored to.
+    pub path: String,
+    /// Human-readable statement of what was found.
+    pub detail: String,
+    /// Whether this warrants attention on its own, or is context.
+    pub severity: FindingSeverity,
+}
+
+/// How much attention a [`StructuralFinding`] warrants on its own.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum FindingSeverity {
+    /// Neutral context — a count, a present field.
+    Info,
+    /// Worth a look; unusual but not inherently wrong.
+    Notable,
+    /// Carries known risk, e.g. code that runs at install time.
+    Concern,
+}
+
+impl FindingSeverity {
+    /// Stable string form for output.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Info => "info",
+            Self::Notable => "notable",
+            Self::Concern => "concern",
+        }
+    }
+}
+
+/// Detects structural facts in a document that value recognizers cannot.
+pub trait StructuralDetector: Send + Sync {
+    /// The detector's name, for diagnostics.
+    fn name(&self) -> &str;
+    /// Whether this detector applies to the given document at all.
+    ///
+    /// Checked before [`Self::inspect`] so an unrelated document costs one
+    /// cheap test rather than a full walk.
+    fn applies(&self, value: &serde_json::Value) -> bool;
+    /// Findings for a document this detector applies to.
+    fn inspect(&self, value: &serde_json::Value) -> Vec<StructuralFinding>;
 }
