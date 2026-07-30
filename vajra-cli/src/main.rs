@@ -187,6 +187,23 @@ enum Command {
         #[arg(long, default_value_t = 0.5)]
         similarity_threshold: f64,
     },
+    /// Evaluate how well each field separates a labelled corpus
+    Separation {
+        /// Path to JSON file, or `-` for stdin
+        input: String,
+        /// Field holding the ground-truth label (e.g. `label` or `$.label`)
+        #[arg(long)]
+        label_field: String,
+        /// Assumed population prevalence of the positive class, for priced precision
+        #[arg(long)]
+        base_rate: Option<f64>,
+        /// Which label value is the positive class (default: first by name)
+        #[arg(long)]
+        positive_class: Option<String>,
+        /// Maximum number of features to report (0 = all)
+        #[arg(long, default_value_t = 0)]
+        top_k: usize,
+    },
     /// Discover cross-field relationships
     Invariants {
         /// Path to JSON file, or `-` for stdin
@@ -375,6 +392,20 @@ fn main() {
             inputs,
             similarity_threshold,
         } => cmd_cluster(inputs, *similarity_threshold, &cli),
+        Command::Separation {
+            input,
+            label_field,
+            base_rate,
+            positive_class,
+            top_k,
+        } => cmd_separation(
+            input,
+            label_field,
+            *base_rate,
+            positive_class.as_deref(),
+            *top_k,
+            &cli,
+        ),
         Command::Invariants { input, top_k, bin } => cmd_invariants(input, *top_k, bin, &cli),
         Command::Query { input, expression } => cmd_query(input, expression, &cli),
         Command::Batch { directory } => cmd_batch(directory, &cli),
@@ -2358,6 +2389,150 @@ fn parse_bin_flag(spec: &str) -> Result<vajra_stats::BinStrategy> {
             "unknown binning strategy '{other}'. Available: quantile, equal-width, none"
         ),
     }
+}
+
+fn cmd_separation(
+    input: &str,
+    label_field: &str,
+    base_rate: Option<f64>,
+    positive_class: Option<&str>,
+    top_k: usize,
+    cli: &Cli,
+) -> Result<()> {
+    let doc = load_document(input, cli)?;
+    let report = vajra_stats::separation_analysis(&doc, label_field, base_rate, positive_class)
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
+
+    let shown: Vec<&vajra_stats::FeatureSeparation> = if top_k == 0 {
+        report.features.iter().collect()
+    } else {
+        report.features.iter().take(top_k).collect()
+    };
+
+    match cli.format {
+        Format::Json => {
+            let features: Vec<serde_json::Value> = shown
+                .iter()
+                .map(|f| {
+                    serde_json::json!({
+                        "path": f.path,
+                        "kind": f.kind.as_str(),
+                        "count": f.count,
+                        "distinct_values": f.distinct_values,
+                        "coverage": f.coverage,
+                        "binned": f.binned,
+                        "mutual_information": f.mutual_information,
+                        "relationship_strength": f.relationship_strength,
+                        "conditional_entropy": f.conditional_entropy,
+                        "auc": f.auc,
+                        "separation": f.separation,
+                        "operating_point": f.operating_point.as_ref().map(|op| serde_json::json!({
+                            "rule": op.rule,
+                            "tpr": op.tpr,
+                            "fpr": op.fpr,
+                            "youden_j": op.youden_j,
+                            "precision_at_base_rate": op.precision_at_base_rate,
+                        })),
+                    })
+                })
+                .collect();
+            let json = serde_json::to_string_pretty(&serde_json::json!({
+                "label_field": report.label_field,
+                "labelled_records": report.labelled_records,
+                "classes": report.classes,
+                "baseline_entropy": report.baseline_entropy,
+                "binary": report.binary,
+                "positive_class": report.positive_class,
+                "base_rate": report.base_rate,
+                "features": features,
+            }))
+            .context("JSON serialization failed")?;
+            println!("{json}");
+        }
+        Format::Text | Format::Markdown | Format::CompactAi => {
+            println!("=== Separation: {} ===", report.label_field);
+            println!("  Labelled records:  {}", report.labelled_records);
+            for (class, count) in &report.classes {
+                println!("    {class}: {count}");
+            }
+            println!("  Baseline entropy:  {:.4} bits", report.baseline_entropy);
+            if let Some(pos) = &report.positive_class {
+                println!("  Positive class:    {pos}");
+            } else {
+                println!(
+                    "  Positive class:    (none — {} classes, so AUC is undefined)",
+                    report.classes.len()
+                );
+            }
+            if let Some(rate) = report.base_rate {
+                println!("  Assumed prevalence: {rate}");
+            }
+            println!();
+
+            println!(
+                "  {:<44}  {:>4}  {:>8}  {:>8}  {:>7}",
+                "FEATURE", "KIND", "MI(bits)", "STRENGTH", "SEP"
+            );
+            for f in &shown {
+                let sep = f
+                    .separation
+                    .map_or_else(|| "   --  ".to_owned(), |s| format!("{s:>7.4}"));
+                println!(
+                    "  {:<44}  {:>4}  {:>8.4}  {:>8.4}  {}",
+                    f.path,
+                    if f.kind == vajra_stats::FieldKind::Numeric {
+                        "num"
+                    } else {
+                        "cat"
+                    },
+                    f.mutual_information,
+                    f.relationship_strength,
+                    sep,
+                );
+            }
+            println!();
+            println!("  Ranked by MI (symmetric, bits) — the only column comparable across");
+            println!("  field types. SEP is |2*AUC-1| and is reported for ordered fields only.");
+
+            if report.base_rate.is_some() {
+                println!();
+                println!("=== Best single rule, priced at the assumed prevalence ===");
+                println!(
+                    "  {:<30}  {:>7}  {:>7}  {:>9}  RULE",
+                    "FEATURE", "TPR", "FPR", "PRECISION"
+                );
+                for f in &shown {
+                    if let Some(op) = &f.operating_point {
+                        let precision = op
+                            .precision_at_base_rate
+                            .map_or_else(|| "   --  ".to_owned(), |p| format!("{p:>9.5}"));
+                        println!(
+                            "  {:<30}  {:>7.4}  {:>7.4}  {}  {}",
+                            truncate_path(&f.path, 30),
+                            op.tpr,
+                            op.fpr,
+                            precision,
+                            op.rule
+                        );
+                    }
+                }
+                println!();
+                println!("  Precision here is what the rule would deliver in a population with");
+                println!("  the assumed prevalence — usually far below its corpus precision.");
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Trim a long JSONPath for fixed-width output.
+fn truncate_path(path: &str, width: usize) -> String {
+    if path.len() <= width {
+        return path.to_owned();
+    }
+    let tail = path.len() - (width - 3);
+    format!("...{}", &path[tail..])
 }
 
 fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()> {

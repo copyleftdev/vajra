@@ -16,6 +16,7 @@ Vajra ships 11 commands. Each does one thing. They compose.
 | [`drift`](./cmd-drift.md) | Schema drift detection | Two documents | Added/removed paths, type changes, JSD |
 | [`cluster`](./cmd-cluster.md) | Similarity clustering | Multiple documents | Cluster assignments, centroids, outliers |
 | [`invariants`](./cmd-invariants.md) | Cross-field relationships | Single or batch | Conditional entropy, PMI, dependencies |
+| [`separation`](./cmd-separation.md) | Labelled feature evaluation | Labelled batch | MI, AUC, effect size, priced precision |
 | [`query`](./cmd-query.md) | Path-based query with analysis functions | Single document | Filtered analysis results |
 | [`batch`](./cmd-batch.md) | Parallel batch analysis | Directory | Aggregated stats, per-file summaries |
 | `profiles` | List available profiles | None | Built-in and custom profile descriptions |

@@ -6,7 +6,7 @@
 
 use std::collections::BTreeMap;
 
-use vajra_stats::FrequencyCounter;
+use vajra_stats::{cliffs_delta, FrequencyCounter};
 use vajra_types::document::Document;
 use vajra_types::json_type::JsonType;
 use vajra_types::path::WildcardPath;
@@ -176,50 +176,6 @@ fn extract_numeric_values(freq: &BTreeMap<String, u64>) -> Vec<f64> {
         }
     }
     values
-}
-
-/// Cliff's delta between two numeric samples, in `[-1, 1]`.
-///
-/// delta = ( #{(a,b) : a > b} - #{(a,b) : a < b} ) / (|A| * |B|)
-///
-/// Computed from sorted values with a running count over `b`, so it is
-/// O(n log n) rather than the O(n*m) pairwise definition. Returns 0.0 for an
-/// empty sample, matching "no detectable difference".
-fn cliffs_delta(a: &mut [f64], b: &mut [f64]) -> f64 {
-    if a.is_empty() || b.is_empty() {
-        return 0.0;
-    }
-    a.sort_by(|x, y| x.partial_cmp(y).unwrap_or(std::cmp::Ordering::Equal));
-    b.sort_by(|x, y| x.partial_cmp(y).unwrap_or(std::cmp::Ordering::Equal));
-
-    // For each value in `a`, count how many of `b` are strictly below and
-    // strictly above it by advancing two cursors over the sorted `b`.
-    let mut below = 0usize; // b values < current a
-    let mut at_or_below = 0usize; // b values <= current a
-    let mut greater = 0u128;
-    let mut less = 0u128;
-
-    for &av in a.iter() {
-        while below < b.len() && b[below] < av {
-            below += 1;
-        }
-        if at_or_below < below {
-            at_or_below = below;
-        }
-        while at_or_below < b.len() && b[at_or_below] <= av {
-            at_or_below += 1;
-        }
-        greater += below as u128;
-        less += (b.len() - at_or_below) as u128;
-    }
-
-    let total = (a.len() as u128) * (b.len() as u128);
-    if total == 0 {
-        return 0.0;
-    }
-    #[allow(clippy::cast_precision_loss)]
-    let delta = (greater as f64 - less as f64) / total as f64;
-    delta.clamp(-1.0, 1.0)
 }
 
 /// Convert a frequency map to a normalized probability distribution.
