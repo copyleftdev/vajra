@@ -419,10 +419,28 @@ fn resolve_field(
     records: &[serde_json::Value],
     cli: &Cli,
 ) -> String {
+    resolve_field_labelled(explicit, candidates, records, None, cli)
+}
+
+/// As [`resolve_field`], but attributes the note to a named dataset.
+///
+/// `compare` resolves once per input, so without the label two datasets that
+/// both fall back would emit identical notes and neither could be traced to
+/// the file it came from.
+fn resolve_field_labelled(
+    explicit: Option<&str>,
+    candidates: &fields::Candidates,
+    records: &[serde_json::Value],
+    label: Option<&str>,
+    cli: &Cli,
+) -> String {
     let resolved = fields::resolve(explicit, candidates, records);
     if let Some(note) = &resolved.note {
         if !cli.quiet {
-            eprintln!("vajra: {note}");
+            match label {
+                Some(label) => eprintln!("vajra: [{label}] {note}"),
+                None => eprintln!("vajra: {note}"),
+            }
         }
     }
     resolved.selector
@@ -3919,8 +3937,10 @@ fn cmd_compare(
             // Resolved per dataset: comparing a git repository against a GitHub
             // ingest means the two carry different field names, and a single
             // selector cannot read both.
-            let author = resolve_field(author_field, &fields::AUTHOR, records, cli);
-            let message = resolve_field(message_field, &fields::MESSAGE, records, cli);
+            let author =
+                resolve_field_labelled(author_field, &fields::AUTHOR, records, Some(label), cli);
+            let message =
+                resolve_field_labelled(message_field, &fields::MESSAGE, records, Some(label), cli);
             compute_dataset_metrics(records, label, &author, &message)
         })
         .collect();

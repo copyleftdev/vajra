@@ -181,6 +181,86 @@ fn a_missing_field_names_the_field_and_lists_alternatives() {
     );
 }
 
+/// `compare` resolves once per input, because a git checkout and a GitHub
+/// ingest carry different field names and one selector cannot read both.
+#[test]
+fn compare_resolves_each_dataset_against_its_own_schema() {
+    let tmp = tempfile::tempdir().expect("tempdir");
+
+    // Git vocabulary: author_name / subject.
+    let git_shaped = tmp.path().join("git-shaped.json");
+    std::fs::write(
+        &git_shaped,
+        r#"[{"author_name":"Alice","subject":"feat: a","date":"2026-01-01"},
+            {"author_name":"Bob","subject":"fix: b","date":"2026-01-02"}]"#,
+    )
+    .expect("write");
+
+    // GitHub vocabulary: author / message.
+    let github_shaped = tmp.path().join("github-shaped.json");
+    std::fs::write(
+        &github_shaped,
+        r#"[{"author":"Carol","message":"feat: c","date":"2026-01-01"},
+            {"author":"Dave","message":"fix: d","date":"2026-01-02"},
+            {"author":"Carol","message":"fix: e","date":"2026-01-03"}]"#,
+    )
+    .expect("write");
+
+    let out = vajra(&[
+        "compare",
+        git_shaped.to_str().expect("utf-8 path"),
+        github_shaped.to_str().expect("utf-8 path"),
+        "--labels",
+        "git,github",
+        "--format",
+        "json",
+    ]);
+    assert!(
+        out.status.success(),
+        "compare failed across mixed schemas: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("invalid JSON");
+    let sets = v["datasets"].as_array().expect("datasets array");
+    assert_eq!(sets.len(), 2);
+
+    // Both datasets must be measured. A single shared selector would leave one
+    // of them with zero authors, which is the bug this resolution prevents.
+    assert_eq!(
+        sets[0]["author_cardinality"], 2,
+        "the git-shaped dataset must resolve $.author_name"
+    );
+    assert_eq!(
+        sets[1]["author_cardinality"], 2,
+        "the github-shaped dataset must resolve $.author"
+    );
+
+    // fix_ratio proves the message field resolved too: 1/2 and 2/3.
+    let git_fix = sets[0]["fix_ratio"].as_f64().expect("git fix_ratio");
+    let github_fix = sets[1]["fix_ratio"].as_f64().expect("github fix_ratio");
+    assert!(
+        (git_fix - 0.5).abs() < 1e-9,
+        "expected 1/2 from $.subject, got {git_fix}"
+    );
+    assert!(
+        (github_fix - 2.0 / 3.0).abs() < 1e-9,
+        "expected 2/3 from $.message, got {github_fix}"
+    );
+
+    // The note must name the dataset it applies to, or two fallbacks are
+    // indistinguishable.
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.contains("[git]"),
+        "the resolution note must be attributed to its dataset: {err}"
+    );
+    assert!(
+        !err.contains("[github]"),
+        "the github-shaped dataset resolves to the primary candidate and needs no note: {err}"
+    );
+}
+
 /// The resolution note is a diagnostic; it must not contaminate the JSON on
 /// stdout, and `--quiet` must silence it.
 #[test]
