@@ -197,8 +197,8 @@ fn chaos_huge_array_identical_elements() -> Result<(), Box<dyn std::error::Error
             "expected cardinality 1 for identical values"
         );
         assert!(
-            ps.entropy.abs() < 1e-10,
-            "expected entropy ~0 for identical values, got {}",
+            ps.entropy.is_some_and(|h| h.abs() < 1e-10),
+            "expected entropy ~0 for identical values, got {:?}",
             ps.entropy
         );
     }
@@ -228,8 +228,9 @@ fn chaos_huge_array_unique_elements() -> Result<(), Box<dyn std::error::Error>> 
     if let Some(ps) = stats.paths.get(&path) {
         assert_eq!(ps.cardinality, 10_000, "expected cardinality 10000");
         assert!(
-            ps.entropy > 0.0,
-            "expected positive entropy for unique values"
+            ps.entropy.is_some_and(|h| h > 0.0),
+            "expected positive entropy for unique values, got {:?}",
+            ps.entropy
         );
     }
     Ok(())

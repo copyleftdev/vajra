@@ -158,9 +158,9 @@ fn extract_values(
 /// Evaluate a function call.
 fn eval_function(fc: &FunctionCall, ctx: &QueryContext<'_>) -> Result<QueryResult, QueryError> {
     match fc.name.as_str() {
-        "entropy" => eval_stats_fn(fc, ctx, |ps| ps.entropy),
-        "cardinality" => eval_stats_fn(fc, ctx, |ps| ps.cardinality as f64),
-        "rarity" => eval_stats_fn(fc, ctx, |ps| ps.max_rarity),
+        "entropy" => eval_stats_fn(fc, ctx, "entropy", |ps| ps.entropy),
+        "cardinality" => eval_stats_fn(fc, ctx, "cardinality", |ps| Some(ps.cardinality as f64)),
+        "rarity" => eval_stats_fn(fc, ctx, "rarity", |ps| Some(ps.max_rarity)),
         "null_rate" => eval_trie_fn(fc, ctx, |meta| meta.null_rate()),
         "instability" => eval_trie_fn(fc, ctx, |meta| meta.type_instability()),
         "count" => eval_trie_fn(fc, ctx, |meta| meta.count as f64),
@@ -175,7 +175,8 @@ fn eval_function(fc: &FunctionCall, ctx: &QueryContext<'_>) -> Result<QueryResul
 fn eval_stats_fn(
     fc: &FunctionCall,
     ctx: &QueryContext<'_>,
-    extractor: fn(&vajra_stats::PathStats) -> f64,
+    metric: &str,
+    extractor: fn(&vajra_stats::PathStats) -> Option<f64>,
 ) -> Result<QueryResult, QueryError> {
     let path = require_path_arg(fc)?;
     let stats = ctx.stats.ok_or(QueryError::StatsRequired)?;
@@ -189,7 +190,15 @@ fn eval_stats_fn(
             path: path.as_str(),
         })?;
 
-    Ok(QueryResult::Scalar(extractor(path_stats)))
+    // A missing statistic is reported, not substituted. Entropy is withheld
+    // when only a sketch was available, and answering a query with a stand-in
+    // number would be worse than answering with nothing. See #108.
+    let value = extractor(path_stats).ok_or_else(|| QueryError::MetricUnavailable {
+        metric: metric.to_owned(),
+        path: path.as_str(),
+        reason: "only sketch statistics were available for this path".to_owned(),
+    })?;
+    Ok(QueryResult::Scalar(value))
 }
 
 /// Evaluate a trie-based function (null_rate, instability, count).

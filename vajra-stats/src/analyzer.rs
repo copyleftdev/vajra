@@ -21,10 +21,28 @@ use crate::renyi::{self, RenyiSpectrum};
 /// Per-path statistics produced by the analyzer.
 #[derive(Debug, Clone)]
 pub struct PathStats {
-    /// Shannon entropy of value distribution.
-    pub entropy: f64,
+    /// Shannon entropy of the value distribution, in bits.
+    ///
+    /// `None` when it cannot be computed honestly. Past the streaming
+    /// exact-tracking threshold only the top-k values are tracked, giving
+    /// `log2(k)` — 6.64 against a true 16.87 on a 120,000-distinct field, an
+    /// error of 61% that is invisible in the number itself. Worse, it is not
+    /// comparable with an exact figure from another path, which is what
+    /// entropy is mostly used for. `entropy_upper_bound` is reported instead.
+    /// See #108.
+    pub entropy: Option<f64>,
     /// Normalized entropy (0 = constant, 1 = uniform).
-    pub normalized_entropy: f64,
+    ///
+    /// `None` whenever `entropy` is, since it is derived from it.
+    pub normalized_entropy: Option<f64>,
+    /// Provable ceiling on `entropy`: a distribution over `n` distinct values
+    /// has at most `log2(n)` bits.
+    ///
+    /// Reported only when `entropy` is `None`, since it adds nothing to an
+    /// exact figure. With the HyperLogLog cardinality estimate behind it this
+    /// is tight where the old point estimate was worst: 16.83 against a true
+    /// 16.87 on the field above, an error of 0.3%.
+    pub entropy_upper_bound: Option<f64>,
     /// Number of distinct values observed.
     ///
     /// A lower bound when `exact` is false.
@@ -42,6 +60,11 @@ pub struct PathStats {
     /// Total observations at this path.
     pub total_count: u64,
     /// Self-information of the rarest value: `-log2(min_p)`.
+    ///
+    /// A lower bound when `exact` is false: the rarest *tracked* value is at
+    /// least as common as the rarest overall, so its self-information is at
+    /// most the true maximum. Unlike entropy that direction is provable, so the
+    /// figure is reported rather than withheld.
     pub max_rarity: f64,
     /// Numeric distribution statistics, if the path contains numeric values.
     pub numeric_stats: Option<NumericStats>,
@@ -126,8 +149,10 @@ impl Analyzer for StatsAnalyzer {
                 PathStats {
                     // The DOM path counts every value by identity.
                     exact: true,
-                    entropy: h,
-                    normalized_entropy: nh,
+                    entropy: Some(h),
+                    normalized_entropy: Some(nh),
+                    // An exact figure needs no ceiling.
+                    entropy_upper_bound: None,
                     cardinality,
                     total_count,
                     max_rarity,
@@ -149,8 +174,8 @@ impl FeatureExtractor for StatsAnalyzer {
 
         for (path, stats) in &result.paths {
             let pf: &mut PathFeatures = features.get_or_create(path);
-            pf.entropy = Some(stats.entropy);
-            pf.normalized_entropy = Some(stats.normalized_entropy);
+            pf.entropy = stats.entropy;
+            pf.normalized_entropy = stats.normalized_entropy;
             pf.cardinality = Some(stats.cardinality);
             pf.count = Some(stats.total_count);
             pf.max_rarity = Some(stats.max_rarity);
@@ -243,7 +268,7 @@ mod tests {
         let a_path = WildcardPath::root().push_key("a");
         let a_stats = result.paths.get(&a_path).ok_or("expected stats for $.a")?;
 
-        assert!((a_stats.entropy - 0.0).abs() < EPS);
+        assert!((a_stats.entropy.unwrap_or(f64::NAN) - 0.0).abs() < EPS);
         assert_eq!(a_stats.cardinality, 1);
         assert_eq!(a_stats.total_count, 1);
         Ok(())
@@ -264,7 +289,7 @@ mod tests {
         // Entropy for p=[3/5, 2/5]
         let expected_h =
             -(3.0 / 5.0 * (3.0_f64 / 5.0).log2()) - (2.0 / 5.0 * (2.0_f64 / 5.0).log2());
-        assert!((stats.entropy - expected_h).abs() < 1e-8);
+        assert!((stats.entropy.unwrap_or(f64::NAN) - expected_h).abs() < 1e-8);
         Ok(())
     }
 
@@ -393,8 +418,8 @@ mod tests {
         let path = WildcardPath::root().push_array_wildcard();
         let stats = result.paths.get(&path).ok_or("missing")?;
 
-        assert!((stats.entropy - 0.0).abs() < EPS);
-        assert!((stats.normalized_entropy - 0.0).abs() < EPS);
+        assert!((stats.entropy.unwrap_or(f64::NAN) - 0.0).abs() < EPS);
+        assert!((stats.normalized_entropy.unwrap_or(f64::NAN) - 0.0).abs() < EPS);
         Ok(())
     }
 
@@ -408,8 +433,8 @@ mod tests {
         let stats = result.paths.get(&path).ok_or("missing")?;
 
         // H = log2(4) = 2.0, normalized = 1.0
-        assert!((stats.entropy - 2.0).abs() < EPS);
-        assert!((stats.normalized_entropy - 1.0).abs() < EPS);
+        assert!((stats.entropy.unwrap_or(f64::NAN) - 2.0).abs() < EPS);
+        assert!((stats.normalized_entropy.unwrap_or(f64::NAN) - 1.0).abs() < EPS);
         Ok(())
     }
 }

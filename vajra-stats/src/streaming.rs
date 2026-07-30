@@ -361,8 +361,16 @@ impl StreamingStatsAccumulator {
                 path,
                 PathStats {
                     exact,
-                    entropy: h,
-                    normalized_entropy: nh,
+                    // Withheld when only the top-k was tracked: log2(k) is not
+                    // an estimate of the true entropy and is not comparable
+                    // with an exact figure. See #108.
+                    entropy: exact.then_some(h),
+                    normalized_entropy: exact.then_some(nh),
+                    // log2(cardinality) is a provable ceiling, and with the
+                    // HyperLogLog estimate behind it a tight one.
+                    #[allow(clippy::cast_precision_loss)]
+                    entropy_upper_bound: (!exact && cardinality > 0)
+                        .then(|| (cardinality as f64).log2()),
                     cardinality,
                     total_count: acc.count,
                     max_rarity,
@@ -494,7 +502,11 @@ mod tests {
 
         assert_eq!(dom_stats.cardinality, stream_stats.cardinality);
         assert_eq!(dom_stats.total_count, stream_stats.total_count);
-        assert!((dom_stats.entropy - stream_stats.entropy).abs() < 1e-10);
+        // Both must be present: below the threshold streaming is exact, so a
+        // withheld figure on either side is itself the failure.
+        let dom_h = dom_stats.entropy.ok_or("dom entropy withheld")?;
+        let stream_h = stream_stats.entropy.ok_or("streaming entropy withheld")?;
+        assert!((dom_h - stream_h).abs() < 1e-10);
         Ok(())
     }
 
@@ -516,13 +528,13 @@ mod tests {
         let dom_h = dom_result
             .paths
             .get(&path)
-            .map(|s| s.entropy)
-            .unwrap_or(0.0);
+            .and_then(|s| s.entropy)
+            .ok_or("dom entropy withheld")?;
         let stream_h = stream_result
             .paths
             .get(&path)
-            .map(|s| s.entropy)
-            .unwrap_or(0.0);
+            .and_then(|s| s.entropy)
+            .ok_or("streaming entropy withheld")?;
 
         assert!(
             (dom_h - stream_h).abs() < 1e-10,
@@ -705,7 +717,7 @@ mod tests {
         let stats = result.paths.get(&path).ok_or("missing")?;
         assert_eq!(stats.total_count, 1);
         assert_eq!(stats.cardinality, 1);
-        assert!((stats.entropy - 0.0).abs() < 1e-10);
+        assert!((stats.entropy.unwrap_or(f64::NAN) - 0.0).abs() < 1e-10);
         Ok(())
     }
 }
