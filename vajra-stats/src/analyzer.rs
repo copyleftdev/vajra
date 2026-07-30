@@ -26,7 +26,17 @@ pub struct PathStats {
     /// Normalized entropy (0 = constant, 1 = uniform).
     pub normalized_entropy: f64,
     /// Number of distinct values observed.
+    ///
+    /// A lower bound when `exact` is false.
     pub cardinality: u64,
+    /// Whether the distribution statistics are exact.
+    ///
+    /// False when the streaming accumulator passed its exact-tracking
+    /// threshold and fell back to sketches. `entropy`, `normalized_entropy`
+    /// and `max_rarity` are then approximations, and `cardinality` is a lower
+    /// bound — k occupied counters means at least k distinct values were seen.
+    /// The DOM path is always exact. See #102.
+    pub exact: bool,
     /// Total observations at this path.
     pub total_count: u64,
     /// Self-information of the rarest value: `-log2(min_p)`.
@@ -112,6 +122,8 @@ impl Analyzer for StatsAnalyzer {
             paths.insert(
                 path,
                 PathStats {
+                    // The DOM path counts every value by identity.
+                    exact: true,
                     entropy: h,
                     normalized_entropy: nh,
                     cardinality,

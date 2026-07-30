@@ -10,7 +10,9 @@ Vajra is a deterministic semantic reduction and anomaly analysis engine for JSON
 
 1. **Every algorithm must work at any scale.** 1KB, 1GB, 100GB. Design accumulators to bounded memory: sketches over exact collections, one pass where one pass suffices, a documented accuracy bound where it does not.
 
-   This is the target, and the codebase does not meet it yet — there is no incremental parser, so every analysis materialises the corpus first (#102). Stating the rule as "if it doesn't stream, it doesn't ship" made it unfalsifiable: two commands were flagged for violating it while nothing in the tool actually streamed. A new analysis should say what its memory scales with, and `separation`'s docs are the example to follow.
+   Partially met. `stats --streaming` holds one record at a time for JSON and NDJSON files — 7.7 MB peak on a 142 MB input against the DOM path's 2,231 MB, and flat as the input grows tenfold. Other inputs and other commands still materialise the corpus.
+
+   Stating the rule as "if it doesn't stream, it doesn't ship" made it unfalsifiable: two commands were flagged for violating it while nothing in the tool actually streamed. A new analysis should say what its memory scales with — `separation`'s docs are the example — and, where it approximates, mark the figures so a caller can tell a sketch from a measurement (`stats` sets `exact: false`).
 2. **Determinism is sacred.** Same input + same config = same output. Always. Use `BTreeMap` for any externally-visible ordering. Seed all randomized algorithms. Fixed traversal order everywhere.
 3. **Strong primitives only.** No speculative ML, no O(n^2) algorithms, no techniques requiring tuning. Published, peer-reviewed, deployed at scale — or it doesn't belong.
 4. **Honest inference.** Every heuristic is labeled. Every score is decomposable. Never silently assert a guess as truth.

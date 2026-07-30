@@ -1,25 +1,30 @@
 # Streaming
 
-> **Status: this page describes the intended design, not the current implementation.**
+> **Status: `--streaming` is bounded for JSON and NDJSON files.**
 >
-> There is no SAX parser yet. `load_adaptive`'s large-input branch reads the
-> whole file, parses a full DOM, and then materialises a `Vec<JsonEvent>`
-> alongside it — so `--streaming` currently uses *more* memory than the default
-> path, not less. Measured on a 15 MB, 120,000-record input:
+> Records are pulled one at a time — NDJSON line by line, a top-level array
+> element by element through a `SeqAccess` visitor — and each is converted to
+> events in a reused buffer, so nothing grows with the record count. Measured
+> peak RSS on `vajra stats`:
 >
-> | mode | peak RSS |
-> |---|---|
-> | default (DOM) | 233 MB |
-> | `--streaming` | 402 MB |
+> | input | default (DOM) | `--streaming` |
+> |---|---|---|
+> | 15 MB / 120k records | 232 MB | **6.4 MB** |
+> | 142 MB / 1.2M records | 2,284 MB | **6.3 MB** |
 >
-> The flag selects the sketch-based accumulators, which are real and tested;
-> what is missing is an incremental parser to feed them. Passing `--streaming`
-> prints a warning saying so. Tracked in
-> [#102](https://github.com/copyleftdev/vajra/issues/102). The memory budget
-> below is the target the accumulators were designed against, and holds once a
-> record iterator exists that never materialises the corpus.
+> Ten times the input, the same memory: bounded, not merely smaller.
+>
+> Two limits are real and stated rather than implied. Memory is bounded by the
+> largest single **record**, not by the file — one enormous record is still
+> materialised. And other inputs (stdin, URLs, git repositories, CSV, YAML,
+> source code) go through readers that produce a whole document by
+> construction; passing `--streaming` to those reports that the input was
+> loaded whole rather than silently doing nothing.
+>
+> Past the exact-tracking threshold, results carry `exact: false`. See
+> [Accuracy](#accuracy) below.
 
-Vajra aims to handle JSON of any size: a 50 KB medical claim and a 10 GB event log entering the same pipeline. The streaming engine is what would make this possible.
+Vajra aims to handle JSON of any size: a 50 KB medical claim and a 10 GB event log entering the same pipeline. The streaming engine is what makes this possible for record-oriented JSON.
 
 ---
 
@@ -35,7 +40,7 @@ For documents that fit in memory. The parser builds a full in-memory tree with r
 
 ### Streaming Mode
 
-*Intended:* for documents that exceed available memory, SAX-style event parsing with bounded memory. *Today:* the events are produced by walking a fully parsed DOM, so this mode costs more memory than the DOM mode it is meant to replace (#102). The parser emits events (start-object, key, value, end-object, start-array, end-array) and the analyzers update their accumulators incrementally.
+For documents that exceed available memory. Records are pulled one at a time and converted to events individually, so memory is bounded by the largest record rather than the file. The reader emits events (start-object, key, value, end-object, start-array, end-array) and the analyzers update their accumulators incrementally.
 
 **Memory:** O(p + s) where p = distinct paths and s = sum of sketch sizes. For typical JSON with < 1,000 distinct paths: < 10 MB regardless of document size.  
 **Activates:** Automatically when document size exceeds the streaming threshold. Force with `--streaming`.
@@ -138,7 +143,18 @@ Fingerprint:         ~10 KB
 Total:               ~5.2 MB
 ```
 
-This budget is what the accumulators were designed to hold to, regardless of whether the document is 100 MB or 100 GB. It is not yet achieved: the accumulators are fed from a fully materialised event vector, so today's memory scales with input size. See the status note at the top of this page and [#102](https://github.com/copyleftdev/vajra/issues/102).
+This budget holds regardless of whether the document is 100 MB or 100 GB, for JSON and NDJSON files. Measured at 6.3 MB on a 142 MB input; see the status note at the top of this page.
+
+## Accuracy
+
+Below `exact_threshold` distinct values per path (default 10,000), values are tracked by identity and the streaming result is **identical** to the DOM path — not an approximation. There is a test asserting entropy agrees to 1e-12.
+
+Past it, the path switches to sketches and its statistics carry `exact: false`:
+
+- `cardinality` becomes a **lower bound** — k occupied Space-Saving counters means at least k distinct values were seen. It is a weak one: 120,000 distinct values currently report 100, the counter budget. A distinct-count sketch would fix this and is tracked in [#106](https://github.com/copyleftdev/vajra/issues/106).
+- `entropy`, `normalized_entropy` and `max_rarity` are approximations with no proven bound, because Space-Saving admits an evicted item at `min_count + 1` rather than cleanly grouping the tail.
+
+`exact` is omitted from the output when true, so the DOM path's output is unchanged and the flag only ever appears to mark a figure that is not a measurement.
 
 ---
 

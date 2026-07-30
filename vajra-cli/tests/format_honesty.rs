@@ -486,31 +486,27 @@ fn command_sub_modes_emit_real_markdown() -> Result<()> {
     Ok(())
 }
 
-/// `--streaming` advertised "bounded memory". It selects the sketch-based
-/// accumulators, but reaching them parses the whole document and then
-/// materialises a `Vec<JsonEvent>` beside it — measured at 402 MB against the
-/// DOM path's 233 MB on a 15 MB input. A flag that is accepted and does the
-/// opposite of what it says is the same defect as `--redact` doing nothing.
-/// See #102.
+/// `--streaming` once advertised "bounded memory" while using 402 MB against
+/// the DOM path's 233 MB, and carried a warning saying so. It is now genuinely
+/// bounded for JSON and NDJSON files, so the warning is gone — and its absence
+/// is asserted, because a stale caveat is its own kind of false claim.
+///
+/// The remaining honest caveat is the *fallback*: inputs that cannot be
+/// streamed still say so. See #102.
 #[test]
-fn streaming_says_it_is_not_yet_bounded() -> Result<()> {
+fn streaming_no_longer_warns_on_a_streamable_input() -> Result<()> {
     let dir = tempfile::tempdir()?;
     let f = dir.path().join("d.json");
     std::fs::write(&f, FIXTURE)?;
 
     let (_, stderr) = run(&f, &["stats", "--streaming", "--format", "json"])?;
     assert!(
-        stderr.contains("does not yet bound memory"),
-        "--streaming must not claim bounded memory silently: {stderr:?}"
+        !stderr.contains("bound memory"),
+        "the not-yet-bounded caveat is stale and must not fire: {stderr:?}"
     );
-
-    let (_, quiet) = run(&f, &["stats", "--streaming", "--format", "json", "--quiet"])?;
-    assert!(quiet.is_empty(), "--quiet must silence it: {quiet:?}");
-
-    let (_, without) = run(&f, &["stats", "--format", "json"])?;
     assert!(
-        !without.contains("bound memory"),
-        "the warning must not fire without the flag: {without:?}"
+        !stderr.contains("loaded whole"),
+        "a JSON file is streamable, so the fallback must not fire: {stderr:?}"
     );
     Ok(())
 }

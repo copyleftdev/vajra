@@ -209,6 +209,7 @@ impl StreamingStatsAccumulator {
         let mut paths = BTreeMap::new();
 
         for (path, acc) in self.path_accumulators {
+            let exact = matches!(acc.values, ValueTracker::Exact(_));
             let (h, nh, cardinality, max_rarity) = match &acc.values {
                 ValueTracker::Exact(map) => {
                     let count_vec: Vec<u64> = map.values().copied().collect();
@@ -233,23 +234,38 @@ impl StreamingStatsAccumulator {
                     (h, nh, card, max_rarity)
                 }
                 ValueTracker::Approximate(_cms) => {
-                    // In approximate mode, we estimate from top-k
+                    // Past the exact threshold values are no longer tracked by
+                    // identity, so these are sketch approximations, not
+                    // measurements. On 120,000 distinct values this reports
+                    // cardinality 100 and entropy log2(100) against true
+                    // figures of 120,000 and 16.87 — which is why the result
+                    // carries `exact: false` rather than sitting in the same
+                    // fields the DOM path uses for true values. See #102.
+                    //
+                    // `cardinality` is a genuine lower bound: k occupied
+                    // counters means at least k distinct values were seen.
+                    // `entropy` is only an approximation — Space-Saving admits
+                    // an evicted item at `min_count + 1`, over-attributing
+                    // rather than cleanly grouping, so no bound is claimed for
+                    // it. Recovering true cardinality needs a distinct-count
+                    // sketch the crate does not yet have (#106).
                     let top = acc.top_k.top_k();
                     let count_vec: Vec<u64> = top.iter().map(|(_, c)| *c).collect();
-                    let card = top.len() as u64; // Lower-bound estimate
+                    let card = top.len() as u64;
                     let h = entropy::shannon_entropy_from_counts(&count_vec);
                     #[allow(clippy::cast_possible_truncation)]
                     let nh = entropy::normalized_entropy(h, card as usize);
-                    let total: u64 = count_vec.iter().sum();
+                    // Against the exact observation count, not the counter sum,
+                    // which Space-Saving inflates.
                     #[allow(clippy::cast_precision_loss)]
-                    let max_rarity = if total > 0 {
+                    let max_rarity = if acc.count > 0 {
                         let min_count = count_vec
                             .iter()
                             .copied()
                             .filter(|&c| c > 0)
                             .min()
                             .unwrap_or(1);
-                        let min_p = min_count as f64 / total as f64;
+                        let min_p = min_count as f64 / acc.count as f64;
                         -min_p.log2()
                     } else {
                         0.0
@@ -320,6 +336,7 @@ impl StreamingStatsAccumulator {
             paths.insert(
                 path,
                 PathStats {
+                    exact,
                     entropy: h,
                     normalized_entropy: nh,
                     cardinality,
