@@ -3460,8 +3460,34 @@ fn cmd_cascade(
 }
 fn cascade_json(r: &vajra_cascade::CascadeResult) -> serde_json::Value {
     let cj: Vec<serde_json::Value> = r.cascades.iter().map(|c| serde_json::json!({"entity":c.entity,"trigger":{"value":c.trigger.value,"author":c.trigger.author,"time":c.trigger.time},"response":{"value":c.response.value,"author":c.response.author,"time":c.response.time},"same_author":c.same_author})).collect();
-    let hj: Vec<serde_json::Value> = r.hot_entities.iter().map(|h| serde_json::json!({"entity":h.entity,"total":h.total,"cascades":h.cascades,"cascade_ratio":h.cascade_ratio})).collect();
-    serde_json::json!({"cascade_rate":r.cascade_rate,"self_fix_rate":r.self_fix_rate,"total_events":r.total_events,"total_cascades":r.cascades.len(),"hot_entities":hj,"cascades":cj})
+    let hj: Vec<serde_json::Value> = r
+        .hot_entities
+        .iter()
+        .map(|h| {
+            serde_json::json!({
+                "entity": h.entity,
+                "total": h.total,
+                "cascades": h.cascades,
+                "cascade_ratio": h.cascade_ratio,
+                "cascade_ratio_lower_bound": h.cascade_ratio_lower_bound,
+            })
+        })
+        .collect();
+    let mut out = serde_json::json!({
+        "cascade_rate": r.cascade_rate,
+        "self_fix_rate": r.self_fix_rate,
+        "total_events": r.total_events,
+        "total_cascades": r.cascades.len(),
+        "hot_entities": hj,
+        "cascades": cj,
+    });
+    if let (Some(note), Some(map)) = (&r.self_fix_rate_note, out.as_object_mut()) {
+        map.insert(
+            "self_fix_rate_note".to_owned(),
+            serde_json::Value::String(note.clone()),
+        );
+    }
+    out
 }
 fn cascade_text(r: &vajra_cascade::CascadeResult) -> String {
     use std::fmt::Write;
@@ -3470,7 +3496,17 @@ fn cascade_text(r: &vajra_cascade::CascadeResult) -> String {
     let _ = writeln!(o, "  Total events:   {}", r.total_events);
     let _ = writeln!(o, "  Total cascades: {}", r.cascades.len());
     let _ = writeln!(o, "  Cascade rate:   {:.3}", r.cascade_rate);
-    let _ = writeln!(o, "  Self-fix rate:  {:.3}", r.self_fix_rate);
+    match r.self_fix_rate {
+        Some(v) => {
+            let _ = writeln!(o, "  Self-fix rate:  {v:.3}");
+        }
+        None => {
+            let _ = writeln!(o, "  Self-fix rate:  (undefined)");
+            if let Some(note) = &r.self_fix_rate_note {
+                let _ = writeln!(o, "                  {note}");
+            }
+        }
+    }
     let _ = writeln!(o);
     if !r.hot_entities.is_empty() {
         let _ = writeln!(o, "=== Hot Entities ===");
@@ -3481,23 +3517,26 @@ fn cascade_text(r: &vajra_cascade::CascadeResult) -> String {
             .max()
             .unwrap_or(6)
             .max(6);
+        let _ = writeln!(o, "  ranked by the 95% lower bound on the ratio");
         let _ = writeln!(
             o,
-            "  {:<ew$}  {:>5}  {:>8}  {:>6}",
+            "  {:<ew$}  {:>5}  {:>8}  {:>6}  {:>9}",
             "ENTITY",
             "TOTAL",
             "CASCADES",
             "RATIO",
+            "LOWER 95%",
             ew = ew
         );
         for h in &r.hot_entities {
             let _ = writeln!(
                 o,
-                "  {:<ew$}  {:>5}  {:>8}  {:>6.3}",
+                "  {:<ew$}  {:>5}  {:>8}  {:>6.3}  {:>9.3}",
                 h.entity,
                 h.total,
                 h.cascades,
                 h.cascade_ratio,
+                h.cascade_ratio_lower_bound,
                 ew = ew
             );
         }
@@ -3531,17 +3570,28 @@ fn cascade_md(r: &vajra_cascade::CascadeResult) -> String {
     let _ = writeln!(o, "| Total events | {} |", r.total_events);
     let _ = writeln!(o, "| Total cascades | {} |", r.cascades.len());
     let _ = writeln!(o, "| Cascade rate | {:.3} |", r.cascade_rate);
-    let _ = writeln!(o, "| Self-fix rate | {:.3} |", r.self_fix_rate);
+    match r.self_fix_rate {
+        Some(v) => {
+            let _ = writeln!(o, "| Self-fix rate | {v:.3} |");
+        }
+        None => {
+            let _ = writeln!(o, "| Self-fix rate | (undefined) |");
+        }
+    }
     let _ = writeln!(o);
+    if let Some(note) = &r.self_fix_rate_note {
+        let _ = writeln!(o, "> Self-fix rate {note}\n");
+    }
     if !r.hot_entities.is_empty() {
         let _ = writeln!(o, "## Hot Entities\n");
-        let _ = writeln!(o, "| Entity | Total | Cascades | Ratio |");
-        let _ = writeln!(o, "|--------|-------|----------|-------|");
+        let _ = writeln!(o, "Ranked by the 95% lower bound on the ratio.\n");
+        let _ = writeln!(o, "| Entity | Total | Cascades | Ratio | Lower bound |");
+        let _ = writeln!(o, "|--------|-------|----------|-------|-------------|");
         for h in &r.hot_entities {
             let _ = writeln!(
                 o,
-                "| {} | {} | {} | {:.3} |",
-                h.entity, h.total, h.cascades, h.cascade_ratio
+                "| {} | {} | {} | {:.3} | {:.3} |",
+                h.entity, h.total, h.cascades, h.cascade_ratio, h.cascade_ratio_lower_bound
             );
         }
         let _ = writeln!(o);
