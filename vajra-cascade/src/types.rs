@@ -43,13 +43,30 @@ pub struct HotEntity {
     pub entity: String,
     pub total: usize,
     pub cascades: usize,
+    /// Raw `cascades / total`. Kept for inspection; not the ranking key.
     pub cascade_ratio: f64,
+    /// Wilson score lower bound on `cascade_ratio` at 95%, and the key
+    /// `hot_entities` is sorted by.
+    ///
+    /// The raw ratio cannot be ranked: an entity touched twice with one
+    /// response scores 50% and outranks one touched nineteen times with seven,
+    /// though it evidences nothing. The bound is what the support will support.
+    pub cascade_ratio_lower_bound: f64,
 }
 #[derive(Debug, Clone, Serialize)]
 pub struct CascadeResult {
     pub cascades: Vec<CascadeChain>,
+    /// Sorted by `cascade_ratio_lower_bound`, descending.
     pub hot_entities: Vec<HotEntity>,
     pub cascade_rate: f64,
-    pub self_fix_rate: f64,
+    /// Fraction of cascades whose response has the same author as the trigger.
+    ///
+    /// `None` when the entity field selects the author: cascades are then
+    /// within one author by construction and the rate is 1.0 regardless of the
+    /// data. See `self_fix_rate_note`.
+    pub self_fix_rate: Option<f64>,
+    /// Why `self_fix_rate` is absent, when it is.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub self_fix_rate_note: Option<String>,
     pub total_events: usize,
 }

@@ -40,11 +40,15 @@ The fraction of trigger events that are followed by a response event from the sa
 
 ### Self-Fix Rate
 
-The fraction of cascades where the same entity that caused the trigger also produced the response. Measures whether entities clean up their own problems.
+The fraction of cascades where the trigger's author also wrote the response. Measures whether people clean up their own problems.
+
+It is `null` when `--entity-field` selects the author (`$.author`, `$.committer`, `$.user`, `$.name`). Grouping by author makes every cascade same-author by construction, so the rate would be 1.0 for any input whatsoever. A `self_fix_rate_note` says so. To measure it, group by something the author acts *on* — `--entity-field '$.file'`.
 
 ### Hot Entities
 
-Entities that appear disproportionately in cascade chains. These are the nexus points — the authors, services, or components that most frequently participate in cause-and-effect sequences.
+Entities that appear disproportionately in cascade chains — the components that most frequently participate in cause-and-effect sequences.
+
+Ranked by `cascade_ratio_lower_bound`, the Wilson score lower bound on the ratio at 95%, **not** by the raw ratio. An entity touched twice with one response has a ratio of 0.500 and would outrank one touched nineteen times with seven (0.368), though it evidences nothing: at n=2 the ratio can only be 0, 0.5 or 1. The bound falls as evidence thins, so support is accounted for without a cutoff threshold anyone has to justify. `cascade_ratio` is still reported for inspection.
 
 ### Cascade Chains
 
@@ -117,12 +121,20 @@ vajra cascade commits.ndjson \
     }
   ],
   "hot_entities": [
-    { "entity": "a.rs", "total": 2, "cascades": 1, "cascade_ratio": 0.5 }
+    {
+      "entity": "a.rs",
+      "total": 2,
+      "cascades": 1,
+      "cascade_ratio": 0.5,
+      "cascade_ratio_lower_bound": 0.0945
+    }
   ]
 }
 ```
 
-`self_fix_rate` is the share of cascades where trigger and response share an author. A low rate means someone else is cleaning up.
+`self_fix_rate` is the share of cascades where trigger and response share an author. A low rate means someone else is cleaning up. It is `null`, with a `self_fix_rate_note`, when `--entity-field` selects the author — see [Self-Fix Rate](#self-fix-rate).
+
+`hot_entities` is sorted by `cascade_ratio_lower_bound`. Here the single cascade out of two events gives a raw ratio of 0.5 but a bound of 0.094: one observation supports very little.
 
 ---
 

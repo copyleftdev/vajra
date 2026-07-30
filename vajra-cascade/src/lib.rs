@@ -14,7 +14,8 @@ pub fn detect_cascades(
             cascades: Vec::new(),
             hot_entities: Vec::new(),
             cascade_rate: 0.0,
-            self_fix_rate: 0.0,
+            self_fix_rate: Some(0.0),
+            self_fix_rate_note: None,
             total_events: 0,
         });
     }
@@ -80,6 +81,20 @@ pub fn detect_cascades(
     let sfc = all_cascades.iter().filter(|c| c.same_author).count();
     #[allow(clippy::cast_precision_loss)]
     let sfr = if tc > 0 { sfc as f64 / tc as f64 } else { 0.0 };
+    // Grouping by the author makes every cascade same-author by construction,
+    // so the rate is 1.0 for any input and measures nothing. Report it absent
+    // rather than report a constant. See #92.
+    let (sfr, sfr_note) = if entity_selects_author(&config.entity_field) {
+        (
+            None,
+            Some(format!(
+                "undefined: --entity-field '{}' selects the author, so every cascade is same-author by construction",
+                config.entity_field
+            )),
+        )
+    } else {
+        (Some(sfr), None)
+    };
     let mut he: Vec<HotEntity> = entity_stats
         .into_iter()
         .filter(|(_, (_, c))| *c > 0)
@@ -91,12 +106,16 @@ pub fn detect_cascades(
                 total: t,
                 cascades: c,
                 cascade_ratio: r,
+                cascade_ratio_lower_bound: wilson_lower_bound(c, t),
             }
         })
         .collect();
+    // Ranked by the lower bound, not the raw ratio: at total=2 the ratio can
+    // only be 0, 0.5 or 1, so it ties with or beats every well-supported entity
+    // by construction. See #93.
     he.sort_by(|a, b| {
-        b.cascade_ratio
-            .partial_cmp(&a.cascade_ratio)
+        b.cascade_ratio_lower_bound
+            .partial_cmp(&a.cascade_ratio_lower_bound)
             .unwrap_or(std::cmp::Ordering::Equal)
             .then_with(|| a.entity.cmp(&b.entity))
     });
@@ -105,11 +124,51 @@ pub fn detect_cascades(
         hot_entities: he,
         cascade_rate: cr,
         self_fix_rate: sfr,
+        self_fix_rate_note: sfr_note,
         total_events: te,
     })
 }
+
+/// Author keys [`ea`] consults, in order.
+const AUTHOR_KEYS: [&str; 4] = ["author", "committer", "user", "name"];
+
+/// Whether the entity selector picks the same value the author lookup does.
+///
+/// Compared on the trailing key, so `$.author`, `$[*].author` and `author` all
+/// match — the document- and record-relative vocabularies both reach here.
+fn entity_selects_author(entity_field: &str) -> bool {
+    let key = entity_field
+        .rsplit('.')
+        .next()
+        .unwrap_or(entity_field)
+        .trim_end_matches("[*]");
+    AUTHOR_KEYS.contains(&key)
+}
+
+/// Wilson score interval lower bound for `successes` of `total`, at 95%.
+///
+/// Chosen over the raw ratio because it needs no tuned support threshold: the
+/// bound falls automatically as evidence thins, so 1-of-2 (0.095) ranks below
+/// 7-of-19 (0.192) without a cutoff anyone has to justify.
+#[allow(clippy::cast_precision_loss)]
+fn wilson_lower_bound(successes: usize, total: usize) -> f64 {
+    if total == 0 {
+        return 0.0;
+    }
+    // Two-sided 95% normal quantile.
+    const Z: f64 = 1.959_963_984_540_054;
+    let n = total as f64;
+    let p = successes as f64 / n;
+    let z2 = Z * Z;
+    let denominator = 1.0 + z2 / n;
+    let centre = p + z2 / (2.0 * n);
+    let margin = Z * (p * (1.0 - p) / n + z2 / (4.0 * n * n)).sqrt();
+    ((centre - margin) / denominator).max(0.0)
+}
 fn ea(r: &serde_json::Value) -> String {
-    for k in &["author", "committer", "user", "name"] {
+    // Shares AUTHOR_KEYS with entity_selects_author so the two cannot drift:
+    // a key added here but not there would silently restore the tautology.
+    for k in &AUTHOR_KEYS {
         if let Some(v) = r.get(k) {
             if let Some(s) = v.as_str() {
                 return s.to_owned();
@@ -130,10 +189,122 @@ mod tests {
             cascades: Vec::new(),
             hot_entities: Vec::new(),
             cascade_rate: 0.0,
-            self_fix_rate: 0.0,
+            self_fix_rate: Some(0.0),
+            self_fix_rate_note: None,
             total_events: 0,
         }
     }
+    /// The defect from #93: ranked by raw ratio, an entity touched twice
+    /// outranks one touched nineteen times, because 1/2 > 7/19.
+    #[test]
+    fn support_outranks_ratio() {
+        let mut recs = Vec::new();
+        // thin.rs: 1 cascade out of 2 events -> ratio 0.50
+        recs.push(json!({"file":"thin.rs","date":"2026-01-01","intent":"feat"}));
+        recs.push(json!({"file":"thin.rs","date":"2026-01-02","intent":"fix"}));
+        // thick.rs: 7 cascades out of 19 events -> ratio 0.368
+        for i in 0..7 {
+            recs.push(
+                json!({"file":"thick.rs","date":format!("2026-02-{:02}", i*2+1),"intent":"feat"}),
+            );
+            recs.push(
+                json!({"file":"thick.rs","date":format!("2026-02-{:02}", i*2+2),"intent":"fix"}),
+            );
+        }
+        for i in 0..5 {
+            recs.push(
+                json!({"file":"thick.rs","date":format!("2026-03-{:02}", i+1),"intent":"refactor"}),
+            );
+        }
+        let r = detect_cascades(&recs, &dc()).unwrap_or_else(|_| er());
+        let thick = r
+            .hot_entities
+            .iter()
+            .find(|h| h.entity == "thick.rs")
+            .expect("thick.rs");
+        let thin = r
+            .hot_entities
+            .iter()
+            .find(|h| h.entity == "thin.rs")
+            .expect("thin.rs");
+        assert_eq!((thick.total, thick.cascades), (19, 7));
+        assert_eq!((thin.total, thin.cascades), (2, 1));
+        assert!(
+            thin.cascade_ratio > thick.cascade_ratio,
+            "the raw ratio must still favour the thin entity, or the test proves nothing"
+        );
+        assert_eq!(
+            r.hot_entities[0].entity, "thick.rs",
+            "ranking must follow the lower bound, not the ratio"
+        );
+    }
+
+    #[test]
+    fn wilson_bound_is_below_the_ratio_and_grows_with_support() {
+        // Hand-computed at 95%: 1-of-2 -> 0.0945, 7-of-19 -> 0.1915.
+        assert!((wilson_lower_bound(1, 2) - 0.094_5).abs() < 1e-3);
+        assert!((wilson_lower_bound(7, 19) - 0.191_5).abs() < 1e-3);
+        // Same ratio, more evidence -> a tighter, higher bound.
+        assert!(wilson_lower_bound(50, 100) > wilson_lower_bound(5, 10));
+        assert!(wilson_lower_bound(5, 10) > wilson_lower_bound(1, 2));
+        // Never above the point estimate, never below zero.
+        assert!(wilson_lower_bound(1, 1) < 1.0);
+        assert!(wilson_lower_bound(0, 10) >= 0.0);
+        assert!((wilson_lower_bound(0, 0) - 0.0).abs() < f64::EPSILON);
+    }
+
+    /// The defect from #92: grouping by author makes every cascade
+    /// same-author by construction, so the rate is 1.0 for any input.
+    #[test]
+    fn self_fix_rate_is_absent_when_the_entity_is_the_author() {
+        let recs = vec![
+            json!({"author":"alice","file":"a.rs","date":"2026-01-01","intent":"feat"}),
+            json!({"author":"alice","file":"a.rs","date":"2026-01-02","intent":"fix"}),
+            json!({"author":"bob","file":"b.rs","date":"2026-01-03","intent":"feat"}),
+            json!({"author":"bob","file":"b.rs","date":"2026-01-04","intent":"fix"}),
+        ];
+        let by_author = CascadeConfig {
+            entity_field: "$.author".to_owned(),
+            ..CascadeConfig::default()
+        };
+        let r = detect_cascades(&recs, &by_author).unwrap_or_else(|_| er());
+        assert!(!r.cascades.is_empty(), "the fixture must produce cascades");
+        assert!(
+            r.self_fix_rate.is_none(),
+            "a rate that is 1.0 by construction must not be reported as a measurement"
+        );
+        assert!(r
+            .self_fix_rate_note
+            .as_deref()
+            .unwrap_or_default()
+            .contains("$.author"));
+
+        // The same data grouped by file yields a real number.
+        let by_file = CascadeConfig {
+            entity_field: "$.file".to_owned(),
+            ..CascadeConfig::default()
+        };
+        let r = detect_cascades(&recs, &by_file).unwrap_or_else(|_| er());
+        assert!(r.self_fix_rate.is_some());
+        assert!(r.self_fix_rate_note.is_none());
+    }
+
+    #[test]
+    fn the_author_collision_is_detected_in_both_path_vocabularies() {
+        for field in ["author", "$.author", "$[*].author", "$.committer", "$.user"] {
+            assert!(
+                entity_selects_author(field),
+                "{field} selects the author and must disable self_fix_rate"
+            );
+        }
+        for field in ["$.file", "$.entity", "$[*].path", "$.author_email"] {
+            assert!(
+                !entity_selects_author(field),
+                "{field} does not select the author"
+            );
+        }
+    }
+
     #[test]
     fn empty_input() {
         let r = detect_cascades(&[], &dc()).unwrap_or_else(|_| er());
@@ -185,7 +356,7 @@ mod tests {
         ];
         let r = detect_cascades(&recs, &dc()).unwrap_or_else(|_| er());
         assert_eq!(r.cascades.len(), 2);
-        assert!((r.self_fix_rate - 1.0).abs() < f64::EPSILON);
+        assert!((r.self_fix_rate.unwrap_or(0.0) - 1.0).abs() < f64::EPSILON);
     }
     #[test]
     fn revert_response() {
@@ -240,6 +411,7 @@ mod tests {
         use proptest::prelude::*;
         proptest! { #[test] fn rate_bounded(intents in proptest::collection::vec(prop_oneof![Just("feat"),Just("fix"),Just("refactor"),Just("revert")], 0..30), files in proptest::collection::vec(prop_oneof![Just("a.rs"),Just("b.rs")], 0..30)) {
         let len = intents.len().min(files.len()); let recs: Vec<serde_json::Value> = (0..len).map(|i| json!({"file":files[i],"date":format!("2024-01-{:02}",(i%31)+1),"intent":intents[i],"author":"x"})).collect();
-        let r = detect_cascades(&recs, &dc()).unwrap_or_else(|_| er()); prop_assert!(r.cascade_rate >= 0.0 && r.cascade_rate <= 1.0); prop_assert!(r.self_fix_rate >= 0.0 && r.self_fix_rate <= 1.0); } }
+        let r = detect_cascades(&recs, &dc()).unwrap_or_else(|_| er()); prop_assert!(r.cascade_rate >= 0.0 && r.cascade_rate <= 1.0); prop_assert!(r.self_fix_rate.is_none_or(|v| (0.0..=1.0).contains(&v)));
+        for h in &r.hot_entities { prop_assert!(h.cascade_ratio_lower_bound >= 0.0 && h.cascade_ratio_lower_bound <= h.cascade_ratio + 1e-9); } } }
     }
 }
