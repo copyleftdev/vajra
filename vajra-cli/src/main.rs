@@ -1,4 +1,5 @@
 mod batch;
+mod corpus;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -155,6 +156,12 @@ enum Command {
         /// Withhold hashes for documents with fewer than N nodes (0 = never)
         #[arg(long, default_value_t = 0)]
         min_nodes: u64,
+        /// Index a directory tree instead, reporting which shapes recur across documents
+        #[arg(long)]
+        corpus: bool,
+        /// Path components below the corpus root that identify one unit for clustering
+        #[arg(long, default_value_t = 1)]
+        corpus_group_depth: usize,
     },
     /// Generate concern-oriented essence
     Essence {
@@ -334,7 +341,18 @@ fn main() {
             time_field,
         } => cmd_stats(input, *window, time_field.as_deref(), &cli),
         Command::Anomalies { input } => cmd_anomalies(input, &cli),
-        Command::Fingerprint { input, min_nodes } => cmd_fingerprint(input, *min_nodes, &cli),
+        Command::Fingerprint {
+            input,
+            min_nodes,
+            corpus,
+            corpus_group_depth,
+        } => {
+            if *corpus {
+                cmd_fingerprint_corpus(input, *min_nodes, *corpus_group_depth, &cli)
+            } else {
+                cmd_fingerprint(input, *min_nodes, &cli)
+            }
+        }
         Command::Essence { input } => cmd_essence(input, &cli),
         Command::Drift {
             baseline,
@@ -1623,6 +1641,109 @@ fn show(value: Option<&str>) -> &str {
 
 fn hex_slice(bytes: &[u8; 32]) -> String {
     hex(bytes)
+}
+
+/// Index a directory tree, reporting which structural shapes recur.
+fn cmd_fingerprint_corpus(
+    directory: &str,
+    min_nodes: u64,
+    group_depth: usize,
+    cli: &Cli,
+) -> Result<()> {
+    let dir = Path::new(directory);
+    let (files, scanned) = corpus::collect_corpus_files(dir, &|p| is_selectable_file(p, cli))?;
+
+    if files.is_empty() {
+        anyhow::bail!(
+            "no analysable files found under {directory} ({scanned} file(s) scanned). \
+             Use --input-format source to index source files."
+        );
+    }
+
+    if !cli.quiet {
+        eprintln!("Indexing {} of {scanned} file(s)...", files.len());
+    }
+
+    let index = corpus::build_index(
+        dir,
+        &files,
+        scanned,
+        min_nodes,
+        group_depth,
+        &|p| load_document_path(p, cli),
+        &|doc| {
+            let result = FingerprintAnalyzer
+                .analyze(doc)
+                .context("fingerprint analysis failed")?;
+            Ok(hex(&result.shape))
+        },
+    );
+
+    match cli.format {
+        Format::Json => {
+            let json = serde_json::to_string_pretty(&index).context("JSON serialization failed")?;
+            println!("{json}");
+        }
+        Format::Text | Format::Markdown | Format::CompactAi => {
+            println!("=== Corpus Shape Index ===");
+            println!("  Files scanned:      {}", index.files_scanned);
+            println!("  Documents indexed:  {}", index.documents_indexed);
+            println!("  Skipped (format):   {}", index.skipped);
+            println!("  Suppressed (size):  {}", index.suppressed);
+            println!("  Distinct shapes:    {}", index.distinct_shapes);
+            println!(
+                "  Reused shapes:      {}",
+                index.shapes_in_multiple_documents
+            );
+            println!();
+
+            println!("=== Reuse Groups ===");
+            if index.reuse_groups.is_empty() {
+                println!("  (no shape occurs in more than one document)");
+            } else {
+                for g in &index.reuse_groups {
+                    println!(
+                        "  {} x{}  nodes={}",
+                        &g.shape[..16.min(g.shape.len())],
+                        g.count,
+                        g.node_count
+                    );
+                    for m in &g.members {
+                        println!("      {m}");
+                    }
+                }
+            }
+            println!();
+
+            println!("=== Clusters (linked transitively) ===");
+            if index.clusters.is_empty() {
+                println!("  (none)");
+            } else {
+                for c in &index.clusters {
+                    println!(
+                        "  {} document(s), {} shared shape(s), min nodes {}",
+                        c.size, c.shared_shapes, c.min_node_count
+                    );
+                    for m in &c.members {
+                        println!("      {m}");
+                    }
+                }
+                println!();
+                println!("  A cluster resting on one small shape is weak evidence — check");
+                println!("  min nodes, and see --min-nodes.");
+            }
+
+            if !index.errors.is_empty() {
+                println!();
+                println!("=== Errors ({}) ===", index.errors.len());
+                for e in &index.errors {
+                    println!("  {}: {}", e.file, e.error);
+                }
+            }
+        }
+    }
+
+    Ok(())
 }
 
 fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
