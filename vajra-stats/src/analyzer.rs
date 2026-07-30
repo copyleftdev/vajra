@@ -32,10 +32,12 @@ pub struct PathStats {
     /// Whether the distribution statistics are exact.
     ///
     /// False when the streaming accumulator passed its exact-tracking
-    /// threshold and fell back to sketches. `entropy`, `normalized_entropy`
-    /// and `max_rarity` are then approximations, and `cardinality` is a lower
-    /// bound — k occupied counters means at least k distinct values were seen.
-    /// The DOM path is always exact. See #102.
+    /// threshold and fell back to sketches. `cardinality` is then a
+    /// HyperLogLog estimate, accurate to about 2.3% at any magnitude (#106).
+    /// `entropy`, `normalized_entropy` and `max_rarity` are rough
+    /// approximations over the tracked top-k with no proven bound, and can be
+    /// off by a factor of two or more (#108). The DOM path is always exact.
+    /// See #102.
     pub exact: bool,
     /// Total observations at this path.
     pub total_count: u64,

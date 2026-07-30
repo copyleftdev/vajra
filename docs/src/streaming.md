@@ -161,8 +161,10 @@ Below `exact_threshold` distinct values per path (default 10,000), values are tr
 
 Past it, the path switches to sketches and its statistics carry `exact: false`:
 
-- `cardinality` becomes a **lower bound** — k occupied Space-Saving counters means at least k distinct values were seen. It is a weak one: 120,000 distinct values currently report 100, the counter budget. A distinct-count sketch would fix this and is tracked in [#106](https://github.com/copyleftdev/vajra/issues/106).
-- `entropy`, `normalized_entropy` and `max_rarity` are approximations with no proven bound, because Space-Saving admits an evicted item at `min_count + 1` rather than cleanly grouping the tail.
+- `cardinality` comes from **HyperLogLog**: 2 KB per tracked path, a standard error of 2.3% at any magnitude. On a 120,000-distinct field it estimates ~116,000, against the 100 it reported before the sketch existed. It is an estimate either side of the truth, not a bound.
+- `entropy`, `normalized_entropy` and `max_rarity` are rough approximations over the tracked top-k, with no proven bound, and can be off by a factor of two or more — a 120,000-distinct field reports `log2(100)` where the truth is 16.87. Space-Saving admits an evicted item at `min_count + 1`, so its counters over-attribute rather than cleanly grouping the tail, which is why neither a bound nor a tail-mass estimate is recoverable from them. Tracked in [#108](https://github.com/copyleftdev/vajra/issues/108).
+
+The sketch costs 2 KB per path and is allocated only when a path crosses the threshold — below it, values are counted by identity and the exact count is already known.
 
 `exact` is omitted from the output when true, so the DOM path's output is unchanged and the flag only ever appears to mark a figure that is not a measurement.
 

@@ -187,16 +187,26 @@ fn sketch_results_are_marked_inexact() {
         "a sketch figure must be flagged, not reported as a measurement: {v}"
     );
 
-    // The lower-bound property that is actually claimed: at least this many
-    // distinct values were seen.
+    // Cardinality comes from HyperLogLog, which is a two-sided estimator: it
+    // may land either side of the truth. An earlier version of this test
+    // asserted `reported <= true_card`, which passed only because this fixture
+    // happened to underestimate — a specification that a correct
+    // implementation is free to violate. The contract is the error bound.
     let dom = paths_of(&json(&["stats", &path, "--format", "json", "--quiet"]));
     let true_card = dom["$[*].v"]["cardinality"].as_u64().expect("cardinality");
     let reported = v["cardinality"].as_u64().expect("cardinality");
-    assert!(
-        reported <= true_card,
-        "cardinality must not exceed the truth: {reported} > {true_card}"
-    );
     assert!(true_card >= 10_000, "the fixture must cross the threshold");
+
+    #[allow(clippy::cast_precision_loss)]
+    let error = (reported as f64 - true_card as f64).abs() / true_card as f64;
+    assert!(
+        error < 0.10,
+        "estimated {reported} against {true_card}, relative error {error:.4}"
+    );
+    assert!(
+        reported > true_card / 2,
+        "must not collapse to the Space-Saving budget: {reported} against {true_card}"
+    );
 }
 
 /// The default path is unaffected, so nothing carries the flag by accident.

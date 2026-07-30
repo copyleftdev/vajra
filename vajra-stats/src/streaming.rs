@@ -14,6 +14,7 @@ use crate::analyzer::{PathStats, StatsResult};
 use crate::cms::CountMinSketch;
 use crate::ddsketch::DDSketch;
 use crate::entropy;
+use crate::hll::HyperLogLog;
 use crate::lz_complexity;
 use crate::renyi;
 use crate::space_saving::SpaceSaving;
@@ -74,6 +75,13 @@ struct PathAccumulator {
     numeric_sketch: Option<DDSketch>,
     /// Top-k values via Space-Saving.
     top_k: SpaceSaving,
+    /// Distinct-value estimator, allocated only once a path stops tracking
+    /// values by identity.
+    ///
+    /// Kept lazy because it costs 2 KB per path, and most paths never cross the
+    /// threshold — while it is exact, `map.len()` is the true cardinality and
+    /// no sketch is needed. See #106.
+    distinct: Option<HyperLogLog>,
     /// Config reference values (needed for transitions).
     exact_threshold: usize,
     /// CMS parameters for when we need to create one.
@@ -86,6 +94,8 @@ struct PathAccumulator {
 impl PathAccumulator {
     fn new(config: &StreamingConfig) -> Self {
         Self {
+            // Allocated at the exact-to-approximate transition, not before.
+            distinct: None,
             count: 0,
             type_counts: [0; 7],
             null_count: 0,
@@ -130,14 +140,22 @@ impl PathAccumulator {
                 // Check if we need to transition to approximate
                 if map.len() > self.exact_threshold {
                     let mut cms = CountMinSketch::new(self.cms_epsilon, self.cms_delta);
+                    // The exact map is still in hand, so both sketches start
+                    // from the whole history rather than from the switch point.
+                    let mut hll = HyperLogLog::new();
                     for (k, &v) in map.iter() {
                         cms.add(k.as_bytes(), v);
+                        hll.add(k.as_bytes());
                     }
+                    self.distinct = Some(hll);
                     self.values = ValueTracker::Approximate(cms);
                 }
             }
             ValueTracker::Approximate(cms) => {
                 cms.add(canonical.as_bytes(), 1);
+                if let Some(hll) = self.distinct.as_mut() {
+                    hll.add(canonical.as_bytes());
+                }
             }
         }
     }
@@ -242,16 +260,22 @@ impl StreamingStatsAccumulator {
                     // carries `exact: false` rather than sitting in the same
                     // fields the DOM path uses for true values. See #102.
                     //
-                    // `cardinality` is a genuine lower bound: k occupied
-                    // counters means at least k distinct values were seen.
-                    // `entropy` is only an approximation — Space-Saving admits
-                    // an evicted item at `min_count + 1`, over-attributing
-                    // rather than cleanly grouping, so no bound is claimed for
-                    // it. Recovering true cardinality needs a distinct-count
-                    // sketch the crate does not yet have (#106).
+                    // `cardinality` is a HyperLogLog estimate, accurate to
+                    // about 2.3% at any magnitude (#106). `entropy` is only an
+                    // approximation — Space-Saving admits an evicted item at
+                    // `min_count + 1`, over-attributing rather than cleanly
+                    // grouping, so no bound is claimed for it.
                     let top = acc.top_k.top_k();
                     let count_vec: Vec<u64> = top.iter().map(|(_, c)| *c).collect();
-                    let card = top.len() as u64;
+                    // HyperLogLog answers the distinct count in fixed memory;
+                    // without it this reported the Space-Saving budget, 100 for
+                    // 120,000 distinct values. It remains an estimate — within
+                    // about 2.3% — so the path stays marked inexact.
+                    let card = acc
+                        .distinct
+                        .as_ref()
+                        .map_or_else(|| top.len() as u64, HyperLogLog::estimate)
+                        .max(top.len() as u64);
                     let h = entropy::shannon_entropy_from_counts(&count_vec);
                     #[allow(clippy::cast_possible_truncation)]
                     let nh = entropy::normalized_entropy(h, card as usize);
