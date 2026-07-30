@@ -306,17 +306,61 @@ fn detect_bot(name: &str, email: &str) -> Option<Signal> {
         });
     }
 
-    // Email contains noreply or bot
-    let email_lower = email.to_lowercase();
-    if email_lower.contains("noreply") || email_lower.contains("bot") {
+    // GitHub apps commit as `<id>+<name>[bot]@users.noreply.github.com`, so the
+    // marker is `[bot]` in the local part — not the host.
+    //
+    // `users.noreply.github.com` is GitHub's *privacy* address for humans: it is
+    // the author of every web-UI commit and of every account with "keep my email
+    // private" enabled. Treating `noreply` as a bot signal reclassified 29 of 67
+    // human contributors on a real repository that has no bots at all. See #87.
+    let local = email_local_part(email);
+    if local.contains("[bot]") {
         return Some(Signal {
             role: AuthorRole::Bot,
-            confidence: InferenceConfidence::Dominant,
-            reason: "bot_email_pattern".to_string(),
+            confidence: InferenceConfidence::Definite,
+            reason: "bot_email_marker".to_string(),
         });
     }
 
+    // A local part that *is* a bot address, matched on a token boundary so
+    // human surnames containing the letters — talbot, abbott, bothwell — do not
+    // match. Weaker than the `[bot]` marker, hence Dominant rather than Definite.
+    if local == "bot"
+        || local.ends_with("-bot")
+        || local.ends_with("_bot")
+        || local.ends_with(".bot")
+        || local.starts_with("bot-")
+        || local.starts_with("bot_")
+        || local.starts_with("bot.")
+    {
+        return Some(Signal {
+            role: AuthorRole::Bot,
+            confidence: InferenceConfidence::Dominant,
+            reason: "bot_email_local_part".to_string(),
+        });
+    }
+
+    // A bot whose account carries no structural marker — a plain name and a
+    // plain address — is not detectable here, and is left to be classified by
+    // commit pattern. A missed bot costs less than a human filed as one.
     None
+}
+
+/// Lowercased local part of an email, with GitHub's `<id>+` prefix stripped.
+///
+/// Returns the whole string when there is no `@`, so a bare handle still gets
+/// matched rather than silently skipped.
+fn email_local_part(email: &str) -> String {
+    let lower = email.to_lowercase();
+    let local = lower.split('@').next().unwrap_or(&lower);
+    match local.split_once('+') {
+        Some((prefix, rest))
+            if !prefix.is_empty() && prefix.bytes().all(|b| b.is_ascii_digit()) =>
+        {
+            rest.to_owned()
+        }
+        _ => local.to_owned(),
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -787,7 +831,7 @@ mod tests {
     }
 
     #[test]
-    fn bot_email_noreply() {
+    fn bot_email_marker_in_local_part() {
         let commits = make_commits(&[(
             "github-actions",
             "41898282+github-actions[bot]@users.noreply.github.com",
@@ -796,6 +840,76 @@ mod tests {
         let r = unwrap_result(detect_core_team(&commits));
         assert_eq!(r.bots.len(), 1);
         assert_eq!(r.bots[0].name, "github-actions");
+        assert_eq!(r.bots[0].confidence, InferenceConfidence::Definite);
+        assert_eq!(r.bots[0].reason, "bot_email_marker");
+    }
+
+    /// `users.noreply.github.com` is GitHub's privacy address for humans. On a
+    /// real 67-author repository with zero bots, the old `contains("noreply")`
+    /// rule filed 29 contributors as bots. See #87.
+    #[test]
+    fn github_privacy_addresses_are_humans() {
+        let commits = make_commits(&[
+            (
+                "Lakshya Sharma",
+                "169168095+Lakshya77089@users.noreply.github.com",
+                "2024-01-01",
+            ),
+            (
+                "Aly Dhedhi",
+                "91044156+dhedhialy@users.noreply.github.com",
+                "2024-01-02",
+            ),
+            ("Alice", "alice@example.com", "2024-01-03"),
+        ]);
+        let r = unwrap_result(detect_core_team(&commits));
+        assert!(
+            r.bots.is_empty(),
+            "no contributor here is a bot, got {:?}",
+            r.bots.iter().map(|b| &b.name).collect::<Vec<_>>()
+        );
+    }
+
+    /// The old rule was an unanchored substring match, so it hit surnames.
+    #[test]
+    fn surnames_containing_bot_are_not_bots() {
+        for email in [
+            "talbot@example.com",
+            "abbott@example.com",
+            "bothwell@example.com",
+            "elliot.botham@example.com",
+        ] {
+            let commits = make_commits(&[("Human", email, "2024-01-01")]);
+            let r = unwrap_result(detect_core_team(&commits));
+            assert!(r.bots.is_empty(), "{email} must not classify as a bot");
+        }
+    }
+
+    #[test]
+    fn bot_local_parts_are_matched_on_a_token_boundary() {
+        for email in [
+            "bot@example.com",
+            "renovate-bot@example.com",
+            "ci_bot@example.com",
+            "bot-runner@example.com",
+        ] {
+            let commits = make_commits(&[("Automation", email, "2024-01-01")]);
+            let r = unwrap_result(detect_core_team(&commits));
+            assert_eq!(r.bots.len(), 1, "{email} must classify as a bot");
+            assert_eq!(r.bots[0].reason, "bot_email_local_part");
+        }
+    }
+
+    #[test]
+    fn numeric_github_prefix_is_stripped_before_matching() {
+        assert_eq!(
+            email_local_part("49699333+dependabot[bot]@users.noreply.github.com"),
+            "dependabot[bot]"
+        );
+        // A non-numeric prefix is not GitHub's id form and must survive intact.
+        assert_eq!(email_local_part("first+last@example.com"), "first+last");
+        assert_eq!(email_local_part("PLAIN@Example.COM"), "plain");
+        assert_eq!(email_local_part("bare-handle"), "bare-handle");
     }
 
     #[test]
