@@ -250,10 +250,24 @@ When the input is a directory containing a `.git/` subdirectory, Vajra reads the
 
 ```bash
 vajra stats ./my-repo
-vajra cascade ./my-repo --entity-field '$.author' --time-field '$.date' --event-field '$.type' --response-values 'fix,revert'
+vajra governance ./my-repo
+vajra score ./my-repo
 ```
 
-Each commit becomes a JSON record with fields like `author`, `date`, `message`, `files_changed`, and `insertions`/`deletions`.
+Each commit becomes a JSON record with exactly these fields:
+
+| Field | Description |
+|---|---|
+| `hash` | Abbreviated commit hash |
+| `author_name` | Author name as recorded by git |
+| `author_email` | Author email as recorded by git |
+| `date` | Commit date, ISO 8601 |
+| `subject` | First line of the commit message |
+
+`governance`, `score` and `compare` resolve `--author-field` and `--message-field`
+against the fields the records actually carry, so git input needs no flags —
+they select `$.author_name` and `$.subject` automatically and say so on stderr.
+Pass the flag explicitly to override; an explicit selector is never second-guessed.
 
 **Flags:**
 

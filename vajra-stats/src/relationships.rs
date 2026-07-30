@@ -253,7 +253,9 @@ pub fn discover_relationships_binned(
 
     // Rank paths by total observation count and keep top_k.
     let mut ranked: Vec<(WildcardPath, Vec<String>)> = path_values.into_iter().collect();
-    ranked.sort_by(|a, b| b.1.len().cmp(&a.1.len()));
+    // Stable sort over a BTreeMap ordering, so equal-count paths stay in
+    // lexicographic path order and the top_k cut is deterministic.
+    ranked.sort_by_key(|(_, values)| std::cmp::Reverse(values.len()));
     ranked.truncate(top_k);
 
     if ranked.len() < 2 {
