@@ -113,7 +113,7 @@ impl Default for BinStrategy {
 /// fits in `n` buckets. That last guard matters: binning a field with fewer
 /// distinct values than buckets can only merge categories that were already
 /// separable, losing resolution for nothing.
-fn bin_values(values: &[String], strategy: BinStrategy) -> Option<Vec<String>> {
+pub(crate) fn bin_values(values: &[String], strategy: BinStrategy) -> Option<Vec<String>> {
     let (n, equal_width) = match strategy {
         BinStrategy::None => return None,
         BinStrategy::Quantile(n) => (n, false),
@@ -397,7 +397,7 @@ pub fn discover_relationships_binned(
 /// - If the value is an array of objects, each element is a record.
 /// - If the value is a single object, treat it as one record.
 /// - Otherwise (bare scalar, array of scalars) return an empty vec.
-fn extract_records(value: &serde_json::Value) -> Vec<&serde_json::Value> {
+pub(crate) fn extract_records(value: &serde_json::Value) -> Vec<&serde_json::Value> {
     match value {
         serde_json::Value::Array(arr) => {
             let obj_records: Vec<&serde_json::Value> =
@@ -436,7 +436,7 @@ fn find_deepest_object_array(value: &serde_json::Value) -> Option<Vec<&serde_jso
 }
 
 /// Collect all scalar (leaf) values in a JSON value, keyed by wildcard path.
-fn collect_scalars(
+pub(crate) fn collect_scalars(
     value: &serde_json::Value,
     path: &WildcardPath,
     out: &mut BTreeMap<WildcardPath, String>,

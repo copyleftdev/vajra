@@ -23,6 +23,7 @@ pub mod mad;
 pub mod numeric;
 pub mod relationships;
 pub mod renyi;
+pub mod separation;
 pub mod space_saving;
 pub mod streaming;
 pub mod temporal;
@@ -58,6 +59,10 @@ pub use relationships::{
     FieldRelationship,
 };
 pub use renyi::{normalized_renyi_spectrum, renyi_entropy, renyi_spectrum, RenyiSpectrum};
+pub use separation::{
+    cliffs_delta, separation_analysis, FeatureSeparation, FieldKind, OperatingPoint,
+    SeparationError, SeparationReport,
+};
 pub use space_saving::SpaceSaving;
 pub use streaming::{StreamingConfig, StreamingStatsAccumulator};
 pub use temporal::{

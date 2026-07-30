@@ -15,6 +15,7 @@
   - [drift](./cmd-drift.md)
   - [cluster](./cmd-cluster.md)
   - [invariants](./cmd-invariants.md)
+  - [separation](./cmd-separation.md)
   - [query](./cmd-query.md)
   - [batch](./cmd-batch.md)
   - [cascade](./cmd-cascade.md)
