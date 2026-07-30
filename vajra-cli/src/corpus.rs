@@ -13,7 +13,7 @@
 //! - **clusters**: documents linked transitively through *any* shared shape,
 //!   because related documents typically share several files rather than one.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
@@ -120,35 +120,75 @@ pub struct CorpusError {
     pub error: String,
 }
 
+/// What a corpus walk found.
+pub struct Walk {
+    /// Files the selector accepted, sorted.
+    pub selected: Vec<PathBuf>,
+    /// Every file encountered, whether selected or not.
+    pub scanned: usize,
+    /// Directories and entries that could not be read — reported rather than
+    /// dropped silently or made fatal.
+    pub errors: Vec<CorpusError>,
+}
+
 /// Recursively collect files under `dir`, partitioned by `accept`.
 ///
 /// Unlike `batch` and `cluster`, this walk **recurses**: a corpus is normally a
 /// tree of extracted packages or checkouts, so the interesting files are nested.
 ///
+/// An unreadable subdirectory or entry is recorded in [`Walk::errors`] and the
+/// walk continues. Aborting a scan of thousands of files because one directory
+/// denied permission is the wrong trade, and would be inconsistent with the
+/// per-file error model `build_index` already uses.
+///
 /// # Errors
 ///
-/// Returns an error if `dir` is not a directory or cannot be read.
-pub fn collect_corpus_files(
-    dir: &Path,
-    accept: &dyn Fn(&Path) -> bool,
-) -> Result<(Vec<PathBuf>, usize)> {
+/// Returns an error only if `dir` itself is not a directory.
+pub fn collect_corpus_files(dir: &Path, accept: &dyn Fn(&Path) -> bool) -> Result<Walk> {
     if !dir.is_dir() {
         anyhow::bail!("{} is not a directory", dir.display());
     }
-    let mut selected = Vec::new();
-    let mut scanned = 0usize;
+    let mut walk = Walk {
+        selected: Vec::new(),
+        scanned: 0,
+        errors: Vec::new(),
+    };
     let mut stack = vec![dir.to_path_buf()];
 
     while let Some(current) = stack.pop() {
-        let entries = std::fs::read_dir(&current)
-            .with_context(|| format!("failed to read directory {}", current.display()))?;
+        let entries = match std::fs::read_dir(&current) {
+            Ok(entries) => entries,
+            Err(e) => {
+                walk.errors.push(CorpusError {
+                    file: current.display().to_string(),
+                    error: format!("failed to read directory: {e}"),
+                });
+                continue;
+            }
+        };
         let mut dirs = Vec::new();
         for entry in entries {
-            let Ok(entry) = entry else { continue };
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(e) => {
+                    walk.errors.push(CorpusError {
+                        file: current.display().to_string(),
+                        error: format!("failed to read directory entry: {e}"),
+                    });
+                    continue;
+                }
+            };
             let path = entry.path();
             // Do not follow symlinks: a cycle would hang the walk.
-            let Ok(meta) = entry.file_type() else {
-                continue;
+            let meta = match entry.file_type() {
+                Ok(meta) => meta,
+                Err(e) => {
+                    walk.errors.push(CorpusError {
+                        file: path.display().to_string(),
+                        error: format!("failed to stat: {e}"),
+                    });
+                    continue;
+                }
             };
             if meta.is_symlink() {
                 continue;
@@ -156,9 +196,9 @@ pub fn collect_corpus_files(
             if meta.is_dir() {
                 dirs.push(path);
             } else if meta.is_file() {
-                scanned += 1;
+                walk.scanned += 1;
                 if accept(&path) {
-                    selected.push(path);
+                    walk.selected.push(path);
                 }
             }
         }
@@ -168,8 +208,9 @@ pub fn collect_corpus_files(
         stack.extend(dirs);
     }
 
-    selected.sort();
-    Ok((selected, scanned))
+    walk.selected.sort();
+    walk.errors.sort_by(|a, b| a.file.cmp(&b.file));
+    Ok(walk)
 }
 
 /// Build the shape-reuse index over `files`.
@@ -181,13 +222,13 @@ pub fn collect_corpus_files(
 /// indexing it.
 pub fn build_index(
     root: &Path,
-    files: &[PathBuf],
-    scanned: usize,
+    walk: &Walk,
     min_nodes: u64,
     group_depth: usize,
     load: &(dyn Fn(&Path) -> Result<Document> + Send + Sync),
     shape_of: &(dyn Fn(&Document) -> Result<String> + Send + Sync),
 ) -> CorpusIndex {
+    let files = &walk.selected;
     let outcomes: Vec<(PathBuf, Result<Option<Indexed>>)> = files
         .par_iter()
         .map(|path| {
@@ -211,7 +252,16 @@ pub fn build_index(
         .collect();
 
     let mut indexed = Vec::new();
-    let mut errors = Vec::new();
+    // Walk-level failures (unreadable directories) belong in the same list as
+    // parse failures: both are files the caller asked about and did not get.
+    let mut errors: Vec<CorpusError> = walk
+        .errors
+        .iter()
+        .map(|e| CorpusError {
+            file: e.file.clone(),
+            error: e.error.clone(),
+        })
+        .collect();
     let mut suppressed = 0usize;
     for (path, outcome) in outcomes {
         match outcome {
@@ -253,21 +303,24 @@ pub fn build_index(
 
     // Clustering links *groups*, not files: shape -> the distinct groups
     // carrying it. A shape confined to one group links nothing.
-    let mut shape_to_groups: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    //
+    // A BTreeSet rather than Vec + `contains`: the whole point of this feature
+    // is shapes carried by many groups, so a linear membership scan per entry
+    // would degrade toward O(n^2) exactly on the path that matters.
+    let mut shape_to_groups: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
     for entry in &indexed {
-        let slot = shape_to_groups.entry(&entry.shape).or_default();
-        if !slot.contains(&entry.group.as_str()) {
-            slot.push(&entry.group);
-        }
+        shape_to_groups
+            .entry(&entry.shape)
+            .or_default()
+            .insert(&entry.group);
     }
     let cross_group: Vec<(&str, Vec<&str>, u64)> = shape_to_groups
         .iter()
         .filter(|(_, groups)| groups.len() > 1)
         .map(|(shape, groups)| {
             let nodes = by_shape.get(*shape).map_or(0, |(n, _)| *n);
-            let mut g = groups.clone();
-            g.sort_unstable();
-            (*shape, g, nodes)
+            // BTreeSet iterates in sorted order already.
+            (*shape, groups.iter().copied().collect(), nodes)
         })
         .collect();
 
@@ -280,10 +333,10 @@ pub fn build_index(
     let clusters = build_clusters(&cross_group);
 
     CorpusIndex {
-        files_scanned: scanned,
+        files_scanned: walk.scanned,
         documents_indexed: indexed.len(),
         groups_indexed,
-        skipped: scanned.saturating_sub(files.len()),
+        skipped: walk.scanned.saturating_sub(files.len()),
         suppressed,
         distinct_shapes,
         shapes_in_multiple_documents,
@@ -473,10 +526,11 @@ mod tests {
         std::fs::write(dir.path().join("readme.txt"), "x")?;
 
         let json_only = |p: &Path| p.extension().is_some_and(|e| e == "json");
-        let (files, scanned) = collect_corpus_files(dir.path(), &json_only)?;
-        assert_eq!(files.len(), 3, "walk must recurse");
-        assert_eq!(scanned, 4, "scanned counts every file seen");
-        assert!(files.windows(2).all(|w| w[0] <= w[1]), "sorted");
+        let walk = collect_corpus_files(dir.path(), &json_only)?;
+        assert_eq!(walk.selected.len(), 3, "walk must recurse");
+        assert_eq!(walk.scanned, 4, "scanned counts every file seen");
+        assert!(walk.errors.is_empty());
+        assert!(walk.selected.windows(2).all(|w| w[0] <= w[1]), "sorted");
         Ok(())
     }
 

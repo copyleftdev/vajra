@@ -1651,23 +1651,27 @@ fn cmd_fingerprint_corpus(
     cli: &Cli,
 ) -> Result<()> {
     let dir = Path::new(directory);
-    let (files, scanned) = corpus::collect_corpus_files(dir, &|p| is_selectable_file(p, cli))?;
+    let walk = corpus::collect_corpus_files(dir, &|p| is_selectable_file(p, cli))?;
 
-    if files.is_empty() {
+    if walk.selected.is_empty() {
         anyhow::bail!(
-            "no analysable files found under {directory} ({scanned} file(s) scanned). \
-             Use --input-format source to index source files."
+            "no analysable files found under {directory} ({} file(s) scanned). \
+             Use --input-format source to index source files.",
+            walk.scanned
         );
     }
 
     if !cli.quiet {
-        eprintln!("Indexing {} of {scanned} file(s)...", files.len());
+        eprintln!(
+            "Indexing {} of {} file(s)...",
+            walk.selected.len(),
+            walk.scanned
+        );
     }
 
     let index = corpus::build_index(
         dir,
-        &files,
-        scanned,
+        &walk,
         min_nodes,
         group_depth,
         &|p| load_document_path(p, cli),
@@ -1721,7 +1725,7 @@ fn cmd_fingerprint_corpus(
             } else {
                 for c in &index.clusters {
                     println!(
-                        "  {} document(s), {} shared shape(s), min nodes {}",
+                        "  {} group(s), {} shared shape(s), min nodes {}",
                         c.size, c.shared_shapes, c.min_node_count
                     );
                     for m in &c.members {
