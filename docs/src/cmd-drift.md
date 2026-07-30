@@ -29,6 +29,7 @@ vajra drift <baseline> <candidate> [flags]
 | `--redact` | Apply built-in redaction before output | off |
 | `--quiet` | Suppress progress output | off |
 | `--group-by <path>` | JSONPath for population-level comparison (e.g., `'$.author_type'`) | off |
+| `--tree` | Compare two directory trees structurally, file by file | off |
 
 ---
 
@@ -277,3 +278,51 @@ The auditor profile flags the removed `taxonomy` path as high severity because s
 - [`inspect`](./cmd-inspect.md) — understand each document's structure before comparing
 - [`anomalies`](./cmd-anomalies.md) — drift detects changes between versions; anomalies detect deviations within a version
 - [`essence`](./cmd-essence.md) — drift observations feed into essence generation when a baseline is provided
+
+---
+
+## Comparing Two Releases: `--tree`
+
+`drift` compares two documents. `--tree` answers a different question: **what structurally changed between two releases of the same thing?**
+
+```bash
+vajra drift ./pkg-1.0.0 ./pkg-1.0.1 --tree \
+  --input-format source --lang javascript --format json --quiet
+```
+
+```json
+{
+  "baseline_files": 61,
+  "candidate_files": 61,
+  "summary": { "added": 0, "removed": 0, "changed": 59, "unchanged": 2 },
+  "total_node_delta": -391898,
+  "files": [
+    { "path": "package/lib/log.js", "change": "changed",
+      "baseline_nodes": 6714, "candidate_nodes": 789, "node_delta": -5925 }
+  ],
+  "errors": []
+}
+```
+
+Files are matched on their path **relative to each root**, so the differently-named extraction directories of two tarballs line up rather than reporting every file as both added and removed. Comparison is by structural shape, so **reformatting and identifier renaming do not register** — but an added branch, a new call, or an injected payload does.
+
+### Why change, not state
+
+Every signal that reads an artifact's *presentation* — does it declare a repository, does it have a description, does it look mature — is blind to a compromised **established** package, because a hijacked real package presents perfectly. What distinguishes it is not its state but its change: version N looked one way, version N+1 grew a payload.
+
+Measured on two adjacent releases of a real npm package flagged as malicious, against a normal patch release of a legitimate one:
+
+| | legitimate patch | flagged release |
+|---|---|---|
+| files changed | 2 of 6 (33%) | **59 of 61 (97%)** |
+| net node delta | **+153** | **−391,898** |
+
+Three orders of magnitude apart. A patch release that rewrites the structure of 97% of its files is not a normal patch, whichever direction the change runs — in that case the earlier version was obfuscated and the later one was not, which is equally worth knowing.
+
+Read both columns together: `summary` says how much of the release moved, `total_node_delta` says in which direction and by how much. A large positive delta concentrated in one or two files is the signature of an injected payload; a large delta spread across nearly every file is a build-pipeline change, such as minification or obfuscation being switched on or off.
+
+### Limits
+
+- **Only files the format selector accepts are compared** — `.json` by default, source files under `--input-format source`. A payload dropped in a `.sh` or a binary is invisible here.
+- **Parse failures are reported, not hidden.** Deeply nested obfuscated code can exceed the tree-sitter recursion limit; such files land in `errors` and are counted as `changed` rather than silently treated as unchanged.
+- **Shape equality is not semantic equality.** Two files with the same shape can behave differently — a changed string literal is a value change, and this compares structure. Pair with `--format json` on the individual files when a shape match needs confirming.
