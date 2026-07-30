@@ -367,8 +367,12 @@ enum Command {
 const RENDERS_MARKDOWN: &[&str] = &[
     "anomalies",
     "cascade",
+    "cluster",
+    "compare",
     "essence",
     "fingerprint",
+    "governance",
+    "inspect",
     "invariants",
     "separation",
     "stats",
@@ -379,7 +383,7 @@ const RENDERS_MARKDOWN: &[&str] = &[
 /// `cascade` and `score` predate the shared renderer and hand-roll their own;
 /// they are listed because they genuinely produce distinct output, verified
 /// empirically by `format_honesty.rs` rather than by reading the match arms.
-const RENDERS_COMPACT_AI: &[&str] = &["cascade", "essence", "score"];
+const RENDERS_COMPACT_AI: &[&str] = &["cascade", "compare", "essence", "score"];
 
 /// Warn when the requested format is not actually implemented for this command.
 fn warn_unimplemented_format(cli: &Cli) {
@@ -1339,73 +1343,86 @@ fn cmd_inspect(input: &str, cli: &Cli) -> Result<()> {
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("=== Document Metadata ===");
-            println!("  Total nodes:    {}", output.metadata.total_nodes);
-            println!("  Max depth:      {}", output.metadata.max_depth);
-            println!("  Distinct paths: {}", output.metadata.distinct_paths);
-            println!("  Raw size:       {} bytes", output.metadata.raw_size_bytes);
-            println!();
+            let mut report = render::Report::new();
 
-            println!("=== Wildcard Paths ===");
-            // Compute column widths
-            let max_path = output.paths.iter().map(|p| p.path.len()).max().unwrap_or(4);
-            let max_type = output
-                .paths
-                .iter()
-                .map(|p| p.dominant_type.len())
-                .max()
-                .unwrap_or(4);
+            report.heading("Document Metadata");
+            report.fields(vec![
+                (
+                    "Total nodes".to_owned(),
+                    output.metadata.total_nodes.to_string(),
+                ),
+                (
+                    "Max depth".to_owned(),
+                    output.metadata.max_depth.to_string(),
+                ),
+                (
+                    "Distinct paths".to_owned(),
+                    output.metadata.distinct_paths.to_string(),
+                ),
+                (
+                    "Raw size".to_owned(),
+                    format!("{} bytes", output.metadata.raw_size_bytes),
+                ),
+            ]);
 
-            println!(
-                "  {:<path_w$}  {:<type_w$}  {:>6}  {:>12}  {:>10}",
-                "PATH",
-                "TYPE",
-                "COUNT",
-                "INSTABILITY",
-                "NULL_RATE",
-                path_w = max_path,
-                type_w = max_type,
+            report.heading("Wildcard Paths");
+            let mut paths = render::Table::new(
+                &["PATH", "TYPE", "COUNT", "INSTABILITY", "NULL_RATE"],
+                "no paths",
             );
             for p in &output.paths {
-                println!(
-                    "  {:<path_w$}  {:<type_w$}  {:>6}  {:>12.4}  {:>10.4}",
-                    p.path,
-                    p.dominant_type,
-                    p.count,
-                    p.type_instability,
-                    p.null_rate,
-                    path_w = max_path,
-                    type_w = max_type,
-                );
+                paths.push(vec![
+                    p.path.clone(),
+                    p.dominant_type.clone(),
+                    p.count.to_string(),
+                    format!("{:.4}", p.type_instability),
+                    format!("{:.4}", p.null_rate),
+                ]);
             }
-            println!();
+            report.table(paths);
 
-            println!("=== Fingerprints ===");
-            println!("  Path set:    {}", output.fingerprints.path_set);
-            println!("  Typed path:  {}", output.fingerprints.typed_path);
-            println!("  Shape:       {}", output.fingerprints.shape);
+            report.heading("Fingerprints");
+            report.fields(vec![
+                ("Path set".to_owned(), output.fingerprints.path_set.clone()),
+                (
+                    "Typed path".to_owned(),
+                    output.fingerprints.typed_path.clone(),
+                ),
+                ("Shape".to_owned(), output.fingerprints.shape.clone()),
+            ]);
 
             if !output.domain_hints.is_empty() {
-                println!();
-                println!("=== Domain Type Recognition ===");
+                report.heading("Domain Type Recognition");
+                let mut t = render::Table::new(&["PATH", "VALUE", "RECOGNIZED AS"], "none");
                 for hint in &output.domain_hints {
-                    println!(
-                        "  {} : \"{}\" -> {}",
-                        hint.path, hint.value, hint.recognized_type
-                    );
+                    t.push(vec![
+                        hint.path.clone(),
+                        hint.value.clone(),
+                        hint.recognized_type.clone(),
+                    ]);
                 }
+                report.table(t);
             }
 
             if !output.structural_findings.is_empty() {
-                println!();
-                println!("=== Structural Findings ===");
+                report.heading("Structural Findings");
+                let mut t = render::Table::new(&["SEVERITY", "PATH", "DETAIL"], "none");
                 for f in &output.structural_findings {
-                    println!("  [{:<8}] {:<32} {}", f.severity, f.path, f.detail);
+                    t.push(vec![f.severity.clone(), f.path.clone(), f.detail.clone()]);
                 }
-                println!();
-                println!("  `concern` marks structure that carries known risk, such as code");
-                println!("  that runs at install time. It is not a verdict on the package.");
+                report.table(t);
+                report.note(
+                    "`concern` marks structure that carries known risk, such as code that\nruns at install time. It is not a verdict on the package.",
+                );
             }
+
+            print!(
+                "{}",
+                match cli.format {
+                    Format::Markdown => report.to_markdown(),
+                    _ => report.to_text(),
+                }
+            );
         }
     }
 
@@ -2741,17 +2758,47 @@ fn cmd_cluster(inputs: &[String], similarity_threshold: f64, cli: &Cli) -> Resul
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("=== Clustering {} documents ===", docs.len());
-            println!("Similarity threshold: {:.2}", result.similarity_threshold);
-            println!("Clusters found: {}", result.clusters.len());
-            println!();
+            let mut report = render::Report::new();
+            report.heading("Clustering");
+            report.fields(vec![
+                ("Documents".to_owned(), docs.len().to_string()),
+                (
+                    "Similarity threshold".to_owned(),
+                    format!("{:.2}", result.similarity_threshold),
+                ),
+                (
+                    "Clusters found".to_owned(),
+                    result.clusters.len().to_string(),
+                ),
+            ]);
 
-            for (i, members) in result.clusters.iter().enumerate() {
-                println!("Cluster {} ({} members):", i, members.len());
-                for &idx in members {
-                    println!("  {}", names[idx]);
-                }
+            report.nested(
+                result
+                    .clusters
+                    .iter()
+                    .enumerate()
+                    .map(|(i, members)| {
+                        (
+                            format!("Cluster {i} ({} members)", members.len()),
+                            members.iter().map(|&idx| names[idx].clone()).collect(),
+                        )
+                    })
+                    .collect(),
+            );
+
+            if result.clusters.len() == 1 && docs.len() > 1 {
+                report.note(
+                    "Everything landed in one cluster. Source files of the same language share\ngeneric AST paths, so try a higher --similarity-threshold (0.9-0.95).",
+                );
             }
+
+            print!(
+                "{}",
+                match cli.format {
+                    Format::Markdown => report.to_markdown(),
+                    _ => report.to_text(),
+                }
+            );
         }
     }
 

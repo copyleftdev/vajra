@@ -9,10 +9,10 @@ Each command does one thing. They compose.
 
 | format | commands with a real renderer |
 |---|---|
-| `markdown` | `anomalies`, `cascade`, `essence`, `fingerprint`, `invariants`, `separation`, `stats` |
-| `compact-ai` | `cascade`, `essence`, `score` |
+| `markdown` | `anomalies`, `cascade`, `cluster`, `compare`, `essence`, `fingerprint`, `governance`, `inspect`, `invariants`, `separation`, `stats` |
+| `compact-ai` | `cascade`, `compare`, `essence`, `score` |
 
-For every other command those formats produce the text output verbatim. Commands are being migrated onto a shared renderer, and a command only joins the table above once it genuinely renders that format — so the notice below can never claim more than is true.
+For every other command those formats produce the text output verbatim. Commands are being migrated onto a shared renderer. Membership of the table above is verified by measurement, not by inspection: tests assert that every listed pair produces output differing from that command's text form, **and** that every unlisted pair genuinely does fall through. So the table can neither over- nor under-claim.
 
 Rather than accept the flag and quietly ignore it, those commands now say so on stderr:
 
