@@ -62,9 +62,10 @@ Every command accepts these flags:
 --profile <name>                           Concern profile (default: engineer)
 --config <path>                            Path to TOML config with custom profiles
 --budget <N>                               Token budget for essence output
---streaming                                Force streaming mode (bounded memory)
+--streaming                                Select the sketch accumulators (NOT yet bounded — #102)
 --input-format <format>                    Override input format auto-detection
 --redact                                   Apply built-in redaction patterns
+--provenance                               Record the build and schema version in the output
 --quiet                                    Suppress progress output
 --explain                                  Include score decomposition in output
 ```
@@ -177,3 +178,34 @@ All commands emit to stdout. All commands support `--format json` for machine-re
 The `--explain` flag adds score decomposition to essence and anomaly output — showing exactly which dimensions contributed to each observation's ranking.
 
 The `--redact` flag applies built-in pattern redaction (SSN, email, phone, credit card) before any output is rendered. The essence never sees unredacted values.
+
+## `--provenance`
+
+Records which build produced a result, so a stored artifact can be traced back to it. Off by default: attaching it unconditionally would change every consumer's output shape, and would break the byte-identical guarantee across builds — the property it exists to make checkable.
+
+JSON output is wrapped uniformly, whether the command emits an object or an array:
+
+```json
+{
+  "_vajra": {
+    "version": "0.5.0",
+    "build": "10422c6",
+    "commit_date": "2026-07-30",
+    "schema": 1,
+    "command": "stats"
+  },
+  "data": { "paths": [ ... ] }
+}
+```
+
+Text and Markdown gain a trailing line instead:
+
+```
+vajra 0.5.0 (10422c6 2026-07-30), output schema 1
+```
+
+`schema` is the version of the output contract, bumped when the shape or meaning of emitted fields changes. It is deliberately separate from the crate version, which is a release artefact: eight output changes shipped under an unchanged `0.5.0`, and an integer is something to branch on without parsing semver.
+
+`build` carries the commit the binary was built from, with a `-dirty` suffix when the working tree had uncommitted changes. It uses the **commit** date, never the build time — a build timestamp would make the binary itself non-reproducible. Outside a git checkout it reads `unknown`, and `VAJRA_BUILD_COMMIT` overrides it for packagers building from a tarball.
+
+Redaction runs before provenance, so `--redact --provenance` composes.

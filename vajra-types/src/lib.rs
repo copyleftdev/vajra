@@ -13,6 +13,16 @@ pub mod scoring;
 pub mod traits;
 pub mod trie;
 
+/// Version of the JSON output contract, bumped when the shape or meaning of
+/// emitted fields changes.
+///
+/// Separate from the crate version, which is a release artefact. Eight output
+/// changes shipped under an unchanged `0.5.0` — a nullable `self_fix_rate`, a
+/// changed `hot_entities` sort key, `bus_factor.value` switching from bits to a
+/// share — with nothing in the output letting a consumer detect any of them.
+/// A single integer is something to branch on without parsing semver. See #104.
+pub const OUTPUT_SCHEMA_VERSION: u32 = 1;
+
 pub use document::{Document, DocumentMetadata};
 pub use error::VajraError;
 pub use features::FeatureStore;

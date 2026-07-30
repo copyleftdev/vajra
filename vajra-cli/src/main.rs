@@ -37,10 +37,24 @@ use vajra_types::{Analyzer, Document};
 // CLI argument definitions
 // ---------------------------------------------------------------------------
 
+/// Version string identifying the exact build, not just the crate release.
+///
+/// The crate version alone stayed `0.5.0` across 36 commits and eight output
+/// schema changes, so it could not distinguish two binaries that produce
+/// different results. See #104.
+const BUILD_VERSION: &str = concat!(
+    env!("CARGO_PKG_VERSION"),
+    " (",
+    env!("VAJRA_BUILD_COMMIT"),
+    " ",
+    env!("VAJRA_BUILD_DATE"),
+    ")"
+);
+
 #[derive(Parser)]
 #[command(
     name = "vajra",
-    version,
+    version = BUILD_VERSION,
     about = "Structural analysis toolkit for JSON data"
 )]
 struct Cli {
@@ -78,6 +92,11 @@ struct Cli {
     /// Use the sketch-based accumulators (NOT yet bounded memory — see #102)
     #[arg(long, global = true)]
     streaming: bool,
+
+    /// Record the build and schema version in the output, so a stored result
+    /// can be traced to what produced it
+    #[arg(long, global = true)]
+    provenance: bool,
 
     /// Force input format instead of auto-detecting (json, ndjson, yaml, csv, tsv, markdown, pdf, cpuprofile, strace, source)
     #[arg(long, global = true)]
@@ -933,6 +952,69 @@ fn load_custom_profiles(cli: &Cli) -> Result<Vec<CustomProfile>> {
 }
 
 /// Apply redaction to rendered output if --redact flag is set.
+/// The single exit point for user-facing output: redaction, then provenance.
+///
+/// Every command's last act goes through here. Funnelling output to one place
+/// is what let `--redact` be fixed once rather than per command (#71), and is
+/// what lets `--provenance` attach without touching every serialisation site.
+fn finish_output(output: &str, cli: &Cli) -> String {
+    let redacted = maybe_redact(output, cli);
+    maybe_provenance(redacted, cli)
+}
+
+/// Attach build provenance when `--provenance` is set.
+///
+/// Opt-in, and off by default, because attaching it unconditionally would
+/// change every consumer's output shape and break the byte-identical guarantee
+/// across builds — the very property it exists to make checkable. See #104.
+///
+/// JSON output is wrapped uniformly as `{"_vajra": {...}, "data": <original>}`
+/// rather than having a key injected, so the shape does not depend on whether
+/// a command happens to emit an object or an array.
+fn maybe_provenance(output: String, cli: &Cli) -> String {
+    if !cli.provenance {
+        return output;
+    }
+    let record = serde_json::json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        "build": env!("VAJRA_BUILD_COMMIT"),
+        "commit_date": env!("VAJRA_BUILD_DATE"),
+        "schema": vajra_types::OUTPUT_SCHEMA_VERSION,
+        "command": command_name(&cli.command),
+    });
+
+    match cli.format {
+        Format::Json | Format::CompactAi => {
+            let Ok(data) = serde_json::from_str::<serde_json::Value>(&output) else {
+                // Not JSON despite the format flag: leave it alone rather than
+                // corrupt it. The text footer below still identifies the build.
+                return format!("{}\n{}\n", output.trim_end(), provenance_line());
+            };
+            let wrapped = serde_json::json!({ "_vajra": record, "data": data });
+            let rendered = if matches!(cli.format, Format::Json) {
+                serde_json::to_string_pretty(&wrapped)
+            } else {
+                serde_json::to_string(&wrapped)
+            };
+            rendered.map_or(output, |s| format!("{s}\n"))
+        }
+        Format::Text | Format::Markdown => {
+            format!("{}\n\n{}\n", output.trim_end(), provenance_line())
+        }
+    }
+}
+
+/// One-line build identification for text and Markdown output.
+fn provenance_line() -> String {
+    format!(
+        "vajra {} ({} {}), output schema {}",
+        env!("CARGO_PKG_VERSION"),
+        env!("VAJRA_BUILD_COMMIT"),
+        env!("VAJRA_BUILD_DATE"),
+        vajra_types::OUTPUT_SCHEMA_VERSION,
+    )
+}
+
 fn maybe_redact(output: &str, cli: &Cli) -> String {
     if cli.redact {
         let redactor = vajra_core::redact::Redactor::with_builtins();
@@ -996,7 +1078,7 @@ fn cmd_score(
             Format::Json => {
                 let j = score_to_json(s);
                 let out = serde_json::to_string_pretty(&j).context("JSON serialization failed")?;
-                let out = maybe_redact(&out, cli);
+                let out = finish_output(&out, cli);
                 println!("{out}");
             }
             Format::Text | Format::Markdown => {
@@ -1005,12 +1087,12 @@ fn cmd_score(
                     Format::Markdown => report.to_markdown(),
                     _ => report.to_text(),
                 };
-                print!("{}", maybe_redact(&t, cli));
+                print!("{}", finish_output(&t, cli));
             }
             Format::CompactAi => {
                 let j = score_to_json(s);
                 let out = serde_json::to_string(&j).context("JSON serialization failed")?;
-                let out = maybe_redact(&out, cli);
+                let out = finish_output(&out, cli);
                 println!("{out}");
             }
         },
@@ -1257,7 +1339,7 @@ fn cmd_profiles(cli: &Cli) -> Result<()> {
                 Format::Markdown => out.to_markdown(),
                 _ => out.to_text(),
             };
-            print!("{}", maybe_redact(&text, cli));
+            print!("{}", finish_output(&text, cli));
         }
         Format::Json => {
             let mut profiles_json: Vec<serde_json::Value> = builtin_profiles
@@ -1281,7 +1363,7 @@ fn cmd_profiles(cli: &Cli) -> Result<()> {
 
             let json = serde_json::to_string_pretty(&profiles_json)
                 .context("JSON serialization failed")?;
-            println!("{json}");
+            println!("{}", finish_output(&json, cli));
         }
     }
 
@@ -1575,7 +1657,7 @@ fn cmd_inspect(input: &str, cli: &Cli) -> Result<()> {
         Format::Json => {
             let json =
                 serde_json::to_string_pretty(&output).context("JSON serialization failed")?;
-            let json = maybe_redact(&json, cli);
+            let json = finish_output(&json, cli);
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
@@ -1656,7 +1738,7 @@ fn cmd_inspect(input: &str, cli: &Cli) -> Result<()> {
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            print!("{}", maybe_redact(&rendered, cli));
+            print!("{}", finish_output(&rendered, cli));
         }
     }
 
@@ -1768,7 +1850,7 @@ fn cmd_stats(
         Format::Json => {
             let json =
                 serde_json::to_string_pretty(&output).context("JSON serialization failed")?;
-            let json = maybe_redact(&json, cli);
+            let json = finish_output(&json, cli);
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
@@ -1851,7 +1933,7 @@ fn cmd_stats(
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            let text = maybe_redact(&text, cli);
+            let text = finish_output(&text, cli);
             print!("{text}");
         }
     }
@@ -1916,18 +1998,18 @@ fn cmd_stats_windowed(
         Format::Json => {
             let json =
                 serde_json::to_string_pretty(&result).context("JSON serialization failed")?;
-            let json = maybe_redact(&json, cli);
+            let json = finish_output(&json, cli);
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            print_windowed_text(&result);
+            print_windowed_text(&result, cli);
         }
     }
 
     Ok(())
 }
 
-fn print_windowed_text(result: &vajra_stats::temporal::WindowedAnalysisResult) {
+fn print_windowed_text(result: &vajra_stats::temporal::WindowedAnalysisResult, cli: &Cli) {
     use std::fmt::Write;
 
     let mut text = String::new();
@@ -1958,7 +2040,7 @@ fn print_windowed_text(result: &vajra_stats::temporal::WindowedAnalysisResult) {
         }
     }
 
-    print!("{text}");
+    print!("{}", finish_output(&text, cli));
 }
 
 // ---------------------------------------------------------------------------
@@ -2043,7 +2125,7 @@ fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
         Format::Json => {
             let json =
                 serde_json::to_string_pretty(&output).context("JSON serialization failed")?;
-            let json = maybe_redact(&json, cli);
+            let json = finish_output(&json, cli);
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
@@ -2131,7 +2213,7 @@ fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            let text = maybe_redact(&text, cli);
+            let text = finish_output(&text, cli);
             print!("{text}");
         }
     }
@@ -2351,7 +2433,7 @@ fn cmd_fingerprint_corpus(
     match cli.format {
         Format::Json => {
             let json = serde_json::to_string_pretty(&index).context("JSON serialization failed")?;
-            println!("{json}");
+            println!("{}", finish_output(&json, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let report = corpus_index_report(&index);
@@ -2359,7 +2441,7 @@ fn cmd_fingerprint_corpus(
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            print!("{}", maybe_redact(&text, cli));
+            print!("{}", finish_output(&text, cli));
         }
     }
 
@@ -2389,7 +2471,7 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
                 });
                 let json =
                     serde_json::to_string_pretty(&json).context("JSON serialization failed")?;
-                println!("{json}");
+                println!("{}", finish_output(&json, cli));
             }
             Format::Text | Format::Markdown | Format::CompactAi => {
                 let mut report = render::Report::new();
@@ -2416,7 +2498,7 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
                     Format::Markdown => report.to_markdown(),
                     _ => report.to_text(),
                 };
-                print!("{}", maybe_redact(&rendered, cli));
+                print!("{}", finish_output(&rendered, cli));
             }
         }
     } else {
@@ -2430,7 +2512,7 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
             Format::Json => {
                 let json =
                     serde_json::to_string_pretty(&output).context("JSON serialization failed")?;
-                println!("{json}");
+                println!("{}", finish_output(&json, cli));
             }
             Format::Text | Format::Markdown | Format::CompactAi => {
                 let mut report = render::Report::new();
@@ -2473,7 +2555,7 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
                     Format::Markdown => report.to_markdown(),
                     _ => report.to_text(),
                 };
-                print!("{}", maybe_redact(&rendered, cli));
+                print!("{}", finish_output(&rendered, cli));
             }
         }
     }
@@ -2553,7 +2635,7 @@ fn cmd_essence(input: &str, cli: &Cli) -> Result<()> {
         .render(&essence, output_format)
         .context("essence rendering failed")?;
 
-    let rendered = maybe_redact(&rendered, cli);
+    let rendered = finish_output(&rendered, cli);
 
     println!("{rendered}");
     Ok(())
@@ -2624,7 +2706,7 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
             );
             let json_str =
                 serde_json::to_string_pretty(&json).context("JSON serialization failed")?;
-            println!("{json_str}");
+            println!("{}", finish_output(&json_str, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let mut out = render::Report::new();
@@ -2682,7 +2764,7 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
                 Format::Markdown => out.to_markdown(),
                 _ => out.to_text(),
             };
-            print!("{}", maybe_redact(&txt, cli));
+            print!("{}", finish_output(&txt, cli));
         }
     }
 
@@ -2754,7 +2836,7 @@ fn cmd_tree_diff(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
     match cli.format {
         Format::Json => {
             let json = serde_json::to_string_pretty(&diff).context("JSON serialization failed")?;
-            println!("{json}");
+            println!("{}", finish_output(&json, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let mut out = render::Report::new();
@@ -2809,7 +2891,7 @@ fn cmd_tree_diff(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
                 Format::Markdown => out.to_markdown(),
                 _ => out.to_text(),
             };
-            print!("{}", maybe_redact(&text, cli));
+            print!("{}", finish_output(&text, cli));
         }
     }
 
@@ -2902,7 +2984,7 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
             let json_output = serde_json::json!({"groups": group_names, "group_sizes": group_sizes, "pairwise_drift": pairwise_drift.iter().map(|(a, b, report)| drift_pair_to_json(a, b, report)).collect::<Vec<_>>()});
             let json_str =
                 serde_json::to_string_pretty(&json_output).context("JSON serialization failed")?;
-            println!("{json_str}");
+            println!("{}", finish_output(&json_str, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let mut out = render::Report::new();
@@ -2991,7 +3073,7 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
                 Format::Markdown => out.to_markdown(),
                 _ => out.to_text(),
             };
-            print!("{}", maybe_redact(&text, cli));
+            print!("{}", finish_output(&text, cli));
         }
     }
     Ok(())
@@ -3083,7 +3165,7 @@ fn cmd_cluster(inputs: &[String], similarity_threshold: f64, cli: &Cli) -> Resul
                 "clusters": clusters_json,
             }))
             .context("JSON serialization failed")?;
-            println!("{json}");
+            println!("{}", finish_output(&json, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let mut report = render::Report::new();
@@ -3124,7 +3206,7 @@ fn cmd_cluster(inputs: &[String], similarity_threshold: f64, cli: &Cli) -> Resul
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            print!("{}", maybe_redact(&rendered, cli));
+            print!("{}", finish_output(&rendered, cli));
         }
     }
 
@@ -3218,7 +3300,7 @@ fn cmd_separation(
                 "features": features,
             }))
             .context("JSON serialization failed")?;
-            println!("{json}");
+            println!("{}", finish_output(&json, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let mut out = render::Report::new();
@@ -3307,7 +3389,7 @@ fn cmd_separation(
                 Format::Markdown => out.to_markdown(),
                 _ => out.to_text(),
             };
-            print!("{}", maybe_redact(&rendered, cli));
+            print!("{}", finish_output(&rendered, cli));
         }
     }
 
@@ -3373,7 +3455,7 @@ fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()>
                 }))
             }
             .context("JSON serialization failed")?;
-            println!("{json}");
+            println!("{}", finish_output(&json, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let mut report = render::Report::new();
@@ -3433,7 +3515,7 @@ fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()>
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            print!("{}", maybe_redact(&text, cli));
+            print!("{}", finish_output(&text, cli));
         }
     }
 
@@ -3563,7 +3645,7 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
                 "skipped": skipped_names,
             }))
             .context("JSON serialization failed")?;
-            println!("{json}");
+            println!("{}", finish_output(&json, cli));
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
             let mut out = render::Report::new();
@@ -3651,7 +3733,7 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
                 Format::Markdown => out.to_markdown(),
                 _ => out.to_text(),
             };
-            print!("{}", maybe_redact(&txt, cli));
+            print!("{}", finish_output(&txt, cli));
         }
     }
 
@@ -3711,23 +3793,23 @@ fn cmd_cascade(
         Format::Json => {
             let j = cascade_json(&result);
             let s = serde_json::to_string_pretty(&j).context("JSON serialization failed")?;
-            let s = maybe_redact(&s, cli);
+            let s = finish_output(&s, cli);
             println!("{s}");
         }
         Format::Text => {
             let t = cascade_text(&result);
-            let t = maybe_redact(&t, cli);
+            let t = finish_output(&t, cli);
             print!("{t}");
         }
         Format::Markdown => {
             let m = cascade_md(&result);
-            let m = maybe_redact(&m, cli);
+            let m = finish_output(&m, cli);
             print!("{m}");
         }
         Format::CompactAi => {
             let j = cascade_json(&result);
             let s = serde_json::to_string(&j).context("JSON serialization failed")?;
-            let s = maybe_redact(&s, cli);
+            let s = finish_output(&s, cli);
             println!("{s}");
         }
     }
@@ -3929,17 +4011,17 @@ fn cmd_governance(
     match cli.format {
         Format::Json => {
             let out = serde_json::to_string_pretty(&report).context("JSON serialization failed")?;
-            let out = maybe_redact(&out, cli);
+            let out = finish_output(&out, cli);
             println!("{out}");
         }
         Format::Markdown => {
             let md = render_governance_markdown(&report);
-            let md = maybe_redact(&md, cli);
+            let md = finish_output(&md, cli);
             print!("{md}");
         }
         Format::Text | Format::CompactAi => {
             let txt = render_governance_text(&report);
-            let txt = maybe_redact(&txt, cli);
+            let txt = finish_output(&txt, cli);
             print!("{txt}");
         }
     }
@@ -3988,7 +4070,7 @@ fn cmd_ingest_github(
             } else {
                 serde_json::to_string(&summary).context("JSON serialization failed")?
             };
-            println!("{out}");
+            println!("{}", finish_output(&out, cli));
         }
         Format::Text | Format::Markdown => {
             let mut out = render::Report::new();
@@ -4008,7 +4090,7 @@ fn cmd_ingest_github(
                 Format::Markdown => out.to_markdown(),
                 _ => out.to_text(),
             };
-            print!("{}", maybe_redact(&text, cli));
+            print!("{}", finish_output(&text, cli));
         }
     }
 
@@ -4058,7 +4140,7 @@ fn cmd_core_team(input: &str, resolve_identities: bool, cli: &Cli) -> Result<()>
             } else {
                 serde_json::to_string(&result).context("JSON serialization failed")?
             };
-            let out = maybe_redact(&out, cli);
+            let out = finish_output(&out, cli);
             println!("{out}");
         }
         Format::Text | Format::Markdown => {
@@ -4092,7 +4174,7 @@ fn cmd_core_team(input: &str, resolve_identities: bool, cli: &Cli) -> Result<()>
                 Format::Markdown => report.to_markdown(),
                 _ => report.to_text(),
             };
-            print!("{}", maybe_redact(&txt, cli));
+            print!("{}", finish_output(&txt, cli));
         }
     }
 
@@ -4329,22 +4411,22 @@ fn cmd_compare(
     match cli.format {
         Format::Json => {
             let out = serde_json::to_string_pretty(&result).context("JSON serialization failed")?;
-            let out = maybe_redact(&out, cli);
+            let out = finish_output(&out, cli);
             println!("{out}");
         }
         Format::CompactAi => {
             let out = serde_json::to_string(&result).context("JSON serialization failed")?;
-            let out = maybe_redact(&out, cli);
+            let out = finish_output(&out, cli);
             println!("{out}");
         }
         Format::Markdown => {
             let md = compare_markdown(&result);
-            let md = maybe_redact(&md, cli);
+            let md = finish_output(&md, cli);
             print!("{md}");
         }
         Format::Text => {
             let txt = compare_text(&result);
-            let txt = maybe_redact(&txt, cli);
+            let txt = finish_output(&txt, cli);
             print!("{txt}");
         }
     }
