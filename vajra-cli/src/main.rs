@@ -1,5 +1,6 @@
 mod batch;
 mod corpus;
+mod fields;
 mod hints;
 mod render;
 mod treediff;
@@ -250,15 +251,15 @@ enum Command {
     Score {
         /// Path to JSON file, or `-` for stdin
         input: String,
-        /// JSONPath to the author/contributor field (e.g. '$.author')
-        #[arg(long, default_value = "$.author")]
-        author_field: String,
+        /// JSONPath to the author/contributor field (default: '$.author', or '$.author_name' for git input)
+        #[arg(long)]
+        author_field: Option<String>,
         /// JSONPath to the timestamp field (e.g. '$.date')
         #[arg(long, default_value = "$.date")]
         time_field: String,
-        /// JSONPath to the commit message field (e.g. '$.message')
-        #[arg(long, default_value = "$.message")]
-        message_field: String,
+        /// JSONPath to the commit message field (default: '$.message', or '$.subject' for git input)
+        #[arg(long)]
+        message_field: Option<String>,
         /// JSONPath to the issue comments count field (e.g. '$.comments')
         #[arg(long)]
         comments_field: Option<String>,
@@ -269,9 +270,9 @@ enum Command {
     Governance {
         /// Path to JSON file, or `-` for stdin
         input: String,
-        /// JSONPath to the author field (e.g. '$.author')
-        #[arg(long, default_value = "$.author")]
-        author_field: String,
+        /// JSONPath to the author field (default: '$.author', or '$.author_name' for git input)
+        #[arg(long)]
+        author_field: Option<String>,
         /// JSONPath to the timestamp field (e.g. '$.date')
         #[arg(long, default_value = "$.date")]
         time_field: String,
@@ -320,15 +321,15 @@ enum Command {
         /// Comma-separated labels for each dataset (default: filenames)
         #[arg(long)]
         labels: Option<String>,
-        /// JSONPath to the author field (e.g. '$.author')
-        #[arg(long, default_value = "$.author")]
-        author_field: String,
+        /// JSONPath to the author field (default: '$.author', or '$.author_name' for git input)
+        #[arg(long)]
+        author_field: Option<String>,
         /// JSONPath to the timestamp field (e.g. '$.date')
         #[arg(long, default_value = "$.date")]
         time_field: String,
-        /// JSONPath to the commit message field (e.g. '$.subject')
-        #[arg(long, default_value = "$.subject")]
-        message_field: String,
+        /// JSONPath to the commit message field (default: '$.message', or '$.subject' for git input)
+        #[arg(long)]
+        message_field: Option<String>,
     },
     /// One-command audit: ingest, analyze, and generate an HTML report for a GitHub repo
     Audit {
@@ -395,6 +396,38 @@ const RENDERS_MARKDOWN: &[&str] = &[
 const RENDERS_COMPACT_AI: &[&str] = &["cascade", "compare", "essence", "score"];
 
 /// Warn when the requested format is not actually implemented for this command.
+/// Flag hint appended to a governance field-resolution failure, so the message
+/// says what to pass rather than only what was missing.
+fn field_hint(err: &vajra_stats::GovernanceError) -> String {
+    let flag = match err {
+        vajra_stats::GovernanceError::AuthorFieldMissing { .. } => fields::AUTHOR.flag,
+        vajra_stats::GovernanceError::TimeFieldMissing { .. } => "--time-field",
+        vajra_stats::GovernanceError::EmptyInput => return String::new(),
+    };
+    format!("\n  hint: pass {flag} '$.<field>' with one of the fields listed above")
+}
+
+/// Resolve a field selector against the records, reporting the choice when it
+/// falls back to a non-primary candidate.
+///
+/// Centralised so `governance`, `score` and `compare` cannot drift apart, and
+/// so the reader vocabularies stay in one place — the git reader's `author_name`
+/// / `subject` used to make `governance` fail on its own output.
+fn resolve_field(
+    explicit: Option<&str>,
+    candidates: &fields::Candidates,
+    records: &[serde_json::Value],
+    cli: &Cli,
+) -> String {
+    let resolved = fields::resolve(explicit, candidates, records);
+    if let Some(note) = &resolved.note {
+        if !cli.quiet {
+            eprintln!("vajra: {note}");
+        }
+    }
+    resolved.selector
+}
+
 fn warn_unimplemented_format(cli: &Cli) {
     if cli.quiet {
         return;
@@ -535,9 +568,9 @@ fn main() {
             comments_field,
         } => cmd_score(
             input,
-            author_field,
+            author_field.as_deref(),
             time_field,
-            message_field,
+            message_field.as_deref(),
             comments_field.as_deref(),
             &cli,
         ),
@@ -546,7 +579,7 @@ fn main() {
             input,
             author_field,
             time_field,
-        } => cmd_governance(input, author_field, time_field, &cli),
+        } => cmd_governance(input, author_field.as_deref(), time_field, &cli),
         Command::IngestGithub {
             repo,
             output,
@@ -570,9 +603,9 @@ fn main() {
         } => cmd_compare(
             inputs,
             labels.as_deref(),
-            author_field,
+            author_field.as_deref(),
             time_field,
-            message_field,
+            message_field.as_deref(),
             &cli,
         ),
         Command::Audit {
@@ -749,9 +782,9 @@ fn maybe_redact(output: &str, cli: &Cli) -> String {
 
 fn cmd_score(
     input: &str,
-    author_field: &str,
+    author_field: Option<&str>,
     time_field: &str,
-    message_field: &str,
+    message_field: Option<&str>,
     comments_field: Option<&str>,
     cli: &Cli,
 ) -> Result<()> {
@@ -769,11 +802,13 @@ fn cmd_score(
         anyhow::bail!("score command received an empty array — no records to score");
     }
 
+    let author_field = resolve_field(author_field, &fields::AUTHOR, &records, cli);
+    let message_field = resolve_field(message_field, &fields::MESSAGE, &records, cli);
     let metrics = extract_health_metrics(
         &records,
-        author_field,
+        &author_field,
         time_field,
-        message_field,
+        &message_field,
         comments_field,
     );
     let weights = HealthWeights::default();
@@ -3518,7 +3553,12 @@ fn cascade_md(r: &vajra_cascade::CascadeResult) -> String {
 // governance command
 // ---------------------------------------------------------------------------
 
-fn cmd_governance(input: &str, author_field: &str, time_field: &str, cli: &Cli) -> Result<()> {
+fn cmd_governance(
+    input: &str,
+    author_field: Option<&str>,
+    time_field: &str,
+    cli: &Cli,
+) -> Result<()> {
     let doc = load_document(input, cli)?;
     let records = match doc.value().as_array() {
         Some(arr) => arr.clone(),
@@ -3533,8 +3573,9 @@ fn cmd_governance(input: &str, author_field: &str, time_field: &str, cli: &Cli) 
         anyhow::bail!("governance command received an empty array — no records to analyze");
     }
 
-    let report = governance_analysis(&records, author_field, time_field)
-        .map_err(|e| anyhow::anyhow!("{e}"))?;
+    let author_field = resolve_field(author_field, &fields::AUTHOR, &records, cli);
+    let report = governance_analysis(&records, &author_field, time_field)
+        .map_err(|e| anyhow::anyhow!("{e}{}", field_hint(&e)))?;
 
     match cli.format {
         Format::Json => {
@@ -3829,9 +3870,9 @@ fn cmd_report(
 fn cmd_compare(
     inputs: &[String],
     labels: Option<&str>,
-    author_field: &str,
+    author_field: Option<&str>,
     _time_field: &str,
-    message_field: &str,
+    message_field: Option<&str>,
     cli: &Cli,
 ) -> Result<()> {
     if inputs.len() < 2 {
@@ -3875,7 +3916,12 @@ fn cmd_compare(
         .iter()
         .zip(labels.iter())
         .map(|(records, label)| {
-            compute_dataset_metrics(records, label, author_field, message_field)
+            // Resolved per dataset: comparing a git repository against a GitHub
+            // ingest means the two carry different field names, and a single
+            // selector cannot read both.
+            let author = resolve_field(author_field, &fields::AUTHOR, records, cli);
+            let message = resolve_field(message_field, &fields::MESSAGE, records, cli);
+            compute_dataset_metrics(records, label, &author, &message)
         })
         .collect();
 

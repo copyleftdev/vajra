@@ -79,10 +79,48 @@ pub struct GovernanceReport {
 pub enum GovernanceError {
     #[error("no items provided")]
     EmptyInput,
-    #[error("author field not found in record")]
-    AuthorFieldMissing,
-    #[error("time field not found in record")]
-    TimeFieldMissing,
+    #[error(
+        "author field '{field}' not found in record; available: {}",
+        render_available(available)
+    )]
+    AuthorFieldMissing {
+        field: String,
+        available: Vec<String>,
+    },
+    #[error(
+        "time field '{field}' not found in record; available: {}",
+        render_available(available)
+    )]
+    TimeFieldMissing {
+        field: String,
+        available: Vec<String>,
+    },
+}
+
+/// Render the candidate field list for a "field not found" message.
+fn render_available(available: &[String]) -> String {
+    if available.is_empty() {
+        "(record has no scalar fields)".to_owned()
+    } else {
+        available.join(", ")
+    }
+}
+
+/// Top-level scalar fields of a record, as `$.name` selectors, sorted for
+/// determinism. Used only to make a missing-field error actionable.
+fn scalar_fields(record: &serde_json::Value) -> Vec<String> {
+    let Some(map) = record.as_object() else {
+        return Vec::new();
+    };
+    // Sorted explicitly: serde_json::Map iterates in insertion order when the
+    // preserve_order feature is enabled, and error text must be deterministic.
+    let mut fields: Vec<String> = map
+        .iter()
+        .filter(|(_, v)| !v.is_object() && !v.is_array())
+        .map(|(k, _)| format!("$.{k}"))
+        .collect();
+    fields.sort();
+    fields
 }
 
 // ---------------------------------------------------------------------------
@@ -103,15 +141,24 @@ fn extract_items(
 ) -> Result<Vec<AuthoredItem>, GovernanceError> {
     let mut items = Vec::with_capacity(records.len());
     for record in records {
-        let author_val = crate::temporal::extract_json_path(record, author_field)
-            .ok_or(GovernanceError::AuthorFieldMissing)?;
+        let author_val =
+            crate::temporal::extract_json_path(record, author_field).ok_or_else(|| {
+                GovernanceError::AuthorFieldMissing {
+                    field: author_field.to_owned(),
+                    available: scalar_fields(record),
+                }
+            })?;
         let author = match author_val.as_str() {
             Some(s) => s.to_owned(),
             None => author_val.to_string(),
         };
 
-        let time_val = crate::temporal::extract_json_path(record, time_field)
-            .ok_or(GovernanceError::TimeFieldMissing)?;
+        let time_val = crate::temporal::extract_json_path(record, time_field).ok_or_else(|| {
+            GovernanceError::TimeFieldMissing {
+                field: time_field.to_owned(),
+                available: scalar_fields(record),
+            }
+        })?;
         let epoch = value_to_epoch(time_val).or_else(|| {
             // Fallback: try string representation
             time_val.as_str().and_then(parse_iso8601)
