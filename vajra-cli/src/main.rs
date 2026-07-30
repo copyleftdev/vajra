@@ -1,6 +1,7 @@
 mod batch;
 mod corpus;
 mod hints;
+mod render;
 mod treediff;
 
 use std::collections::BTreeMap;
@@ -352,33 +353,36 @@ enum Command {
 // Entry point
 // ---------------------------------------------------------------------------
 
-/// Commands with a real renderer for every advertised format.
+/// Which commands genuinely render which formats.
 ///
-/// Every other command renders `markdown` and `compact-ai` identically to
-/// `text`. Silently accepting a format and ignoring it is the same failure as
-/// reporting `errors: []` over a partial batch: the caller cannot distinguish
-/// "rendered as Markdown" from "fell back to text". Until the renderer gap is
-/// closed, say so on stderr rather than pretend.
-const FULLY_RENDERED: &[&str] = &["essence"];
+/// Every command implements `text` and `json`. `markdown` and `compact-ai`
+/// need a real renderer, and most commands do not yet have one — for those,
+/// output is the text format verbatim.
+///
+/// Migrating a command onto [`render::Report`] is what moves it into this
+/// table, so the notice below can never claim more than is true. Silently
+/// accepting a format and ignoring it is the same failure as reporting
+/// `errors: []` over a partial batch: the caller cannot distinguish "rendered
+/// as Markdown" from "fell back to text".
+const RENDERS_MARKDOWN: &[&str] = &["essence", "anomalies"];
+
+/// Commands with a bespoke compact-AI view.
+const RENDERS_COMPACT_AI: &[&str] = &["essence"];
 
 /// Warn when the requested format is not actually implemented for this command.
 fn warn_unimplemented_format(cli: &Cli) {
     if cli.quiet {
         return;
     }
-    let needs_renderer = matches!(cli.format, Format::Markdown | Format::CompactAi);
-    if !needs_renderer {
-        return;
-    }
     let name = command_name(&cli.command);
-    if FULLY_RENDERED.contains(&name) {
+    let (requested, implemented) = match cli.format {
+        Format::Markdown => ("markdown", RENDERS_MARKDOWN),
+        Format::CompactAi => ("compact-ai", RENDERS_COMPACT_AI),
+        Format::Text | Format::Json => return,
+    };
+    if implemented.contains(&name) {
         return;
     }
-    let requested = match cli.format {
-        Format::Markdown => "markdown",
-        Format::CompactAi => "compact-ai",
-        _ => return,
-    };
     eprintln!(
         "vajra: `{name}` has no {requested} renderer; output is the text format. \
          Use --format json for a machine-readable form."
@@ -1738,55 +1742,90 @@ fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            let mut text = String::new();
-            use std::fmt::Write;
+            let mut report = render::Report::new();
 
-            let _ = writeln!(text, "=== Type Instabilities ===");
+            report.heading("Anomaly Summary");
+            report.fields(vec![
+                (
+                    "Type instabilities".to_owned(),
+                    output.type_instabilities.len().to_string(),
+                ),
+                (
+                    "Numeric outliers".to_owned(),
+                    output.numeric_outliers.len().to_string(),
+                ),
+                (
+                    "Rare values".to_owned(),
+                    output.rare_values.len().to_string(),
+                ),
+            ]);
+
+            report.heading("Type Instabilities");
             if output.type_instabilities.is_empty() {
-                let _ = writeln!(text, "  (none detected)");
+                report.table(render::Table::new(&["PATH"], "none detected"));
             } else {
-                for ti in &output.type_instabilities {
-                    let _ = writeln!(
-                        text,
-                        "  {}: instability={:.4}, dominant={}",
-                        ti.path, ti.instability, ti.dominant_type
-                    );
-                    let dist: Vec<String> = ti
-                        .type_distribution
+                report.nested(
+                    output
+                        .type_instabilities
                         .iter()
-                        .map(|(t, c)| format!("{t}={c}"))
-                        .collect();
-                    let _ = writeln!(text, "    types: {}", dist.join(", "));
-                }
+                        .map(|ti| {
+                            let dist: Vec<String> = ti
+                                .type_distribution
+                                .iter()
+                                .map(|(t, c)| format!("{t}={c}"))
+                                .collect();
+                            (
+                                format!(
+                                    "{}: instability={:.4}, dominant={}",
+                                    ti.path, ti.instability, ti.dominant_type
+                                ),
+                                vec![format!("types: {}", dist.join(", "))],
+                            )
+                        })
+                        .collect(),
+                );
             }
-            text.push('\n');
 
-            let _ = writeln!(text, "=== Numeric Outliers ===");
-            if output.numeric_outliers.is_empty() {
-                let _ = writeln!(text, "  (none detected)");
-            } else {
-                for no in &output.numeric_outliers {
-                    let _ = writeln!(
-                        text,
-                        "  {}: value={}, z_mad={:.4}, median={:.4}, mad={:.4}",
-                        no.path, no.value, no.z_mad, no.median, no.mad
-                    );
-                }
+            report.heading("Numeric Outliers");
+            let mut outliers = render::Table::new(
+                &["PATH", "VALUE", "Z_MAD", "MEDIAN", "MAD"],
+                "none detected",
+            );
+            for no in &output.numeric_outliers {
+                outliers.push(vec![
+                    no.path.clone(),
+                    no.value.to_string(),
+                    format!("{:.4}", no.z_mad),
+                    format!("{:.4}", no.median),
+                    format!("{:.4}", no.mad),
+                ]);
             }
-            text.push('\n');
+            report.table(outliers);
+            if !output.numeric_outliers.is_empty() {
+                report.note(
+                    "Z_MAD is deviation from the median in MAD units, so it is robust to the\noutliers it is detecting.",
+                );
+            }
 
-            let _ = writeln!(text, "=== Rare Values ===");
-            if output.rare_values.is_empty() {
-                let _ = writeln!(text, "  (none detected)");
-            } else {
-                for rv in &output.rare_values {
-                    let _ = writeln!(
-                        text,
-                        "  {} \"{}\": count={}, rarity={:.4} bits",
-                        rv.path, rv.value, rv.count, rv.rarity_bits
-                    );
-                }
+            report.heading("Rare Values");
+            let mut rare = render::Table::new(
+                &["PATH", "VALUE", "COUNT", "RARITY (bits)"],
+                "none detected",
+            );
+            for rv in &output.rare_values {
+                rare.push(vec![
+                    rv.path.clone(),
+                    rv.value.clone(),
+                    rv.count.to_string(),
+                    format!("{:.4}", rv.rarity_bits),
+                ]);
             }
+            report.table(rare);
+
+            let text = match cli.format {
+                Format::Markdown => report.to_markdown(),
+                _ => report.to_text(),
+            };
             let text = maybe_redact(&text, cli);
             print!("{text}");
         }
