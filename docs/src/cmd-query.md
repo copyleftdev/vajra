@@ -144,7 +144,7 @@ vajra query claim.json 'entropy($.claims[*].status)' --format json
 `query` emits the bare result, not an envelope. An analysis function returns a number; a path expression returns the selected value or array. That makes it directly composable:
 
 ```bash
-if (( $(echo "$(vajra query data.json 'entropy($[*].author)') < 3" | bc -l) )); then
+if (( $(echo "$(vajra query data.json 'entropy($[*].author)' --format json --quiet) < 3" | bc -l) )); then
   echo "contributor diversity below threshold"
 fi
 ```
