@@ -152,6 +152,9 @@ enum Command {
     Fingerprint {
         /// Path to JSON file, or `-` for stdin
         input: String,
+        /// Withhold hashes for documents with fewer than N nodes (0 = never)
+        #[arg(long, default_value_t = 0)]
+        min_nodes: u64,
     },
     /// Generate concern-oriented essence
     Essence {
@@ -331,7 +334,7 @@ fn main() {
             time_field,
         } => cmd_stats(input, *window, time_field.as_deref(), &cli),
         Command::Anomalies { input } => cmd_anomalies(input, &cli),
-        Command::Fingerprint { input } => cmd_fingerprint(input, &cli),
+        Command::Fingerprint { input, min_nodes } => cmd_fingerprint(input, *min_nodes, &cli),
         Command::Essence { input } => cmd_essence(input, &cli),
         Command::Drift {
             baseline,
@@ -1549,9 +1552,19 @@ fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
 
 #[derive(Serialize)]
 struct FingerprintOutput {
-    path_set: String,
-    typed_path: String,
-    shape: String,
+    /// Nodes in the parsed tree — the complexity of what was hashed.
+    node_count: u64,
+    /// The `--min-nodes` floor in effect, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    min_nodes: Option<u64>,
+    /// True when `node_count` fell below the floor, so the hashes are withheld.
+    suppressed: bool,
+    /// `None` when suppressed.
+    path_set: Option<String>,
+    /// `None` when suppressed.
+    typed_path: Option<String>,
+    /// `None` when suppressed.
+    shape: Option<String>,
     repeated_motifs: Vec<MotifView>,
 }
 
@@ -1561,45 +1574,76 @@ struct MotifView {
     count: u64,
 }
 
-fn build_fingerprint_output(result: &FingerprintResult) -> FingerprintOutput {
-    let mut repeated_motifs: Vec<MotifView> = result
-        .subtree_frequencies
-        .iter()
-        .filter(|(_, &count)| count > 1)
-        .map(|(h, &count)| MotifView {
-            hash: hex(h),
-            count,
-        })
-        .collect();
-    // Sort by count descending for readability
-    repeated_motifs.sort_by(|a, b| b.count.cmp(&a.count));
+/// Build the fingerprint view, withholding hashes below the complexity floor.
+///
+/// Structural hashes are only discriminating above some complexity: trivial
+/// documents are *supposed* to look alike, so identical hashes below the floor
+/// say nothing about whether the documents are related. Rather than emit a
+/// hash that will collide across unrelated inputs, report the node count and
+/// mark the result suppressed so callers can skip indexing it.
+fn build_fingerprint_output(
+    result: &FingerprintResult,
+    node_count: u64,
+    min_nodes: u64,
+) -> FingerprintOutput {
+    let suppressed = node_count < min_nodes;
+
+    let mut repeated_motifs: Vec<MotifView> = if suppressed {
+        Vec::new()
+    } else {
+        result
+            .subtree_frequencies
+            .iter()
+            .filter(|(_, &count)| count > 1)
+            .map(|(h, &count)| MotifView {
+                hash: hex(h),
+                count,
+            })
+            .collect()
+    };
+    // Sort by count descending, breaking ties on the hash so the ordering is
+    // fully specified rather than dependent on map iteration.
+    repeated_motifs.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.hash.cmp(&b.hash)));
 
     FingerprintOutput {
-        path_set: hex(&result.path_set),
-        typed_path: hex(&result.typed_path),
-        shape: hex(&result.shape),
+        node_count,
+        min_nodes: (min_nodes > 0).then_some(min_nodes),
+        suppressed,
+        path_set: (!suppressed).then(|| hex(&result.path_set)),
+        typed_path: (!suppressed).then(|| hex(&result.typed_path)),
+        shape: (!suppressed).then(|| hex(&result.shape)),
         repeated_motifs,
     }
+}
+
+/// Render an optional hash for text output.
+fn show(value: Option<&str>) -> &str {
+    value.unwrap_or("(suppressed)")
 }
 
 fn hex_slice(bytes: &[u8; 32]) -> String {
     hex(bytes)
 }
 
-fn cmd_fingerprint(input: &str, cli: &Cli) -> Result<()> {
+fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
     if cli.streaming {
         let doc = load_document(input, cli)?;
         let events = vajra_core::emit_events(doc.value());
         let mut acc = StreamingFingerprintAccumulator::new();
         acc.process_events(&events);
         let result = acc.finalize();
+        let node_count = doc.metadata().total_nodes;
+        let suppressed = node_count < min_nodes;
 
         match cli.format {
             Format::Json => {
                 let json = serde_json::json!({
-                    "path_set": hex_slice(&result.path_set),
-                    "typed_path": hex_slice(&result.typed_path),
-                    "shape": "(not available in streaming mode)",
+                    "node_count": node_count,
+                    "min_nodes": (min_nodes > 0).then_some(min_nodes),
+                    "suppressed": suppressed,
+                    "path_set": (!suppressed).then(|| hex_slice(&result.path_set)),
+                    "typed_path": (!suppressed).then(|| hex_slice(&result.typed_path)),
+                    "shape": serde_json::Value::Null,
                     "repeated_motifs": []
                 });
                 let json =
@@ -1608,8 +1652,13 @@ fn cmd_fingerprint(input: &str, cli: &Cli) -> Result<()> {
             }
             Format::Text | Format::Markdown | Format::CompactAi => {
                 println!("=== Structural Fingerprints (streaming) ===");
-                println!("  Path set:    {}", hex_slice(&result.path_set));
-                println!("  Typed path:  {}", hex_slice(&result.typed_path));
+                println!("  Nodes:       {node_count}");
+                if suppressed {
+                    println!("  Suppressed:  node count below --min-nodes {min_nodes}");
+                } else {
+                    println!("  Path set:    {}", hex_slice(&result.path_set));
+                    println!("  Typed path:  {}", hex_slice(&result.typed_path));
+                }
                 println!("  Shape:       (not available in streaming mode)");
             }
         }
@@ -1618,7 +1667,7 @@ fn cmd_fingerprint(input: &str, cli: &Cli) -> Result<()> {
         let result = FingerprintAnalyzer
             .analyze(&doc)
             .context("fingerprint analysis failed")?;
-        let output = build_fingerprint_output(&result);
+        let output = build_fingerprint_output(&result, doc.metadata().total_nodes, min_nodes);
 
         match cli.format {
             Format::Json => {
@@ -1628,18 +1677,26 @@ fn cmd_fingerprint(input: &str, cli: &Cli) -> Result<()> {
             }
             Format::Text | Format::Markdown | Format::CompactAi => {
                 println!("=== Structural Fingerprints ===");
-                println!("  Path set:    {}", output.path_set);
-                println!("  Typed path:  {}", output.typed_path);
-                println!("  Shape:       {}", output.shape);
-                println!();
-
-                println!("=== Repeated Motifs ===");
-                if output.repeated_motifs.is_empty() {
-                    println!("  (no repeated subtree shapes found)");
+                println!("  Nodes:       {}", output.node_count);
+                if output.suppressed {
+                    println!("  Suppressed:  node count below --min-nodes {}", min_nodes);
+                    println!(
+                        "               structural hashes are not discriminating at this size"
+                    );
                 } else {
-                    println!("  {:<66}  {:>5}", "HASH", "COUNT");
-                    for m in &output.repeated_motifs {
-                        println!("  {:<66}  {:>5}", m.hash, m.count);
+                    println!("  Path set:    {}", show(output.path_set.as_deref()));
+                    println!("  Typed path:  {}", show(output.typed_path.as_deref()));
+                    println!("  Shape:       {}", show(output.shape.as_deref()));
+                    println!();
+
+                    println!("=== Repeated Motifs ===");
+                    if output.repeated_motifs.is_empty() {
+                        println!("  (no repeated subtree shapes found)");
+                    } else {
+                        println!("  {:<66}  {:>5}", "HASH", "COUNT");
+                        for m in &output.repeated_motifs {
+                            println!("  {:<66}  {:>5}", m.hash, m.count);
+                        }
                     }
                 }
             }
