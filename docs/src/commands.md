@@ -5,10 +5,18 @@ Each command does one thing. They compose.
 
 ## A note on `--format`
 
-`json` and `text` are implemented everywhere. `markdown` and `compact-ai` need a real renderer, and coverage is partial:
+`text`, `json` and `markdown` are implemented for every command. **`compact-ai` has a real renderer only in `cascade`, `compare`, `essence` and `score`** — for the rest it produces the text output verbatim, and says so:
 
-| format | commands with a real renderer |
-|---|---|
+```console
+$ vajra stats data.json --format compact-ai
+vajra: `stats` has no compact-ai renderer; output is the text format. Use --format json for a machine-readable form.
+```
+
+`--quiet` suppresses the notice, and stdout is unaffected either way.
+
+Coverage is verified by measurement, not inspection: tests assert that every command/format pair claimed as renderer-backed produces output differing from that command's text form, **and** that unclaimed pairs genuinely do fall back. So the claim can neither over- nor under-claim.
+
+---|---|
 | `markdown` | `anomalies`, `cascade`, `cluster`, `compare`, `essence`, `fingerprint`, `governance`, `inspect`, `invariants`, `separation`, `stats` |
 | `compact-ai` | `cascade`, `compare`, `essence`, `score` |
 
