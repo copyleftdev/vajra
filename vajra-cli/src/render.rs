@@ -132,9 +132,13 @@ impl Report {
                     let _ = writeln!(out, "=== {h} ===");
                 }
                 Block::Fields(pairs) => {
-                    let w = pairs.iter().map(|(k, _)| k.len()).max().unwrap_or(0);
+                    // A trailing colon on the label, matching the convention the
+                    // hand-written output used, so anything grepping text output
+                    // keeps working.
+                    let w = pairs.iter().map(|(k, _)| k.len() + 1).max().unwrap_or(0);
                     for (k, v) in pairs {
-                        let _ = writeln!(out, "  {k:<w$}  {v}", w = w);
+                        let label = format!("{k}:");
+                        let _ = writeln!(out, "  {label:<w$}  {v}", w = w);
                     }
                 }
                 Block::Table(t) => {
@@ -275,7 +279,7 @@ mod tests {
     fn text_render_is_aligned_and_complete() {
         let out = sample().to_text();
         assert!(out.contains("=== Summary ==="));
-        assert!(out.contains("Records"));
+        assert!(out.contains("Records:"), "labels keep their colon:\n{out}");
         assert!(out.contains("$.a"));
         assert!(out.contains("Ranked by entropy."));
     }
