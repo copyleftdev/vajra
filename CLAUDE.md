@@ -216,7 +216,7 @@ Agent(isolation: worktree) → vajra-anomaly
 - No `unsafe` blocks.
 - No `HashMap` where output order matters. Use `BTreeMap`.
 - No `f64` equality. Use relative tolerance.
-- No `println!` for output. All user-facing output through the rendering system.
+- No `println!` for building output. Text and Markdown are built as a `render::Report` and written once; `println!` appears at most once per format branch, to emit the finished string. Building output line by line duplicates format handling per command, which is how `--format markdown` silently fell through to text in several of them.
 - No `#[allow(clippy::...)]` without a comment explaining why the lint is wrong here.
 - No dependencies without checking: maintained? reasonable dep tree? `no_std` compatible where needed?
 - No `unwrap()`, `expect()`, or `panic!()`. Ever. The clippy deny lints enforce this.
