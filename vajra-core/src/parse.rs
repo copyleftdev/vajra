@@ -23,13 +23,31 @@ pub fn parse_str(input: &str) -> Result<Document, VajraError> {
         message: e.to_string(),
         source_path: None,
     })?;
+    parse_value(value, input.len() as u64)
+}
 
+/// Build a [`Document`] from a JSON value that is already in memory.
+///
+/// For callers that construct the value themselves rather than parsing text.
+/// Going through [`parse_str`] would mean serialising the value and parsing it
+/// back, which costs a full copy and — worse — makes any failure report a byte
+/// offset into that intermediate string. Attributed to the caller's input, such
+/// an offset can land past its end: a 50 KB source file once reported a parse
+/// error at byte 202923. See #90.
+///
+/// `raw_size_bytes` is the size of the caller's own input, since only the caller
+/// knows what the value was built from.
+///
+/// # Errors
+///
+/// Returns [`VajraError::LimitExceeded`] if nesting depth exceeds 256.
+pub fn parse_value(value: serde_json::Value, raw_size_bytes: u64) -> Result<Document, VajraError> {
     let mut trie = PathTrie::new();
     let mut metadata = DocumentMetadata {
         total_nodes: 0,
         max_depth: 0,
         distinct_paths: 0,
-        raw_size_bytes: input.len() as u64,
+        raw_size_bytes,
     };
 
     let root_path = WildcardPath::root();

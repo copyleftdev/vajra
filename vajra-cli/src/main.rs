@@ -757,6 +757,19 @@ fn load_document(input: &str, cli: &Cli) -> Result<Document> {
 
 /// `load_document` for callers that already hold a `Path` (directory walks).
 fn load_document_path(path: &Path, cli: &Cli) -> Result<Document> {
+    // In a directory walk `--lang` is a *fallback*, not an override. A corpus
+    // crosses languages, and forcing one grammar onto every file mis-parses the
+    // rest: `--corpus --lang javascript` over a mixed tree parsed .py files as
+    // JavaScript and dropped them. A recognised extension wins. See #90.
+    #[cfg(feature = "source")]
+    if cli.lang.is_some() && vajra_source::detect_language(path).is_some() {
+        let config = vajra_source::SourceConfig {
+            language: None,
+            semantic_paths: cli.semantic_paths,
+            ..vajra_source::SourceConfig::default()
+        };
+        return vajra_source::parse_source_file(path, &config).map_err(|e| anyhow::anyhow!("{e}"));
+    }
     load_document(&path.display().to_string(), cli)
 }
 
