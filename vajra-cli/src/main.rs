@@ -1,5 +1,6 @@
 mod batch;
 mod corpus;
+mod hints;
 mod treediff;
 
 use std::collections::BTreeMap;
@@ -1073,6 +1074,31 @@ fn collect_recognizers() -> Vec<Box<dyn vajra_types::traits::TypeRecognizer>> {
     }
 
     recognizers
+}
+
+/// Collect relationship hints from enabled domain plugins.
+fn collect_hints() -> Vec<vajra_types::traits::RelationshipHint> {
+    let mut hints: Vec<vajra_types::traits::RelationshipHint> = Vec::new();
+    macro_rules! add {
+        ($plugin:expr) => {
+            hints.extend(vajra_types::traits::VajraPlugin::relationship_hints(
+                &$plugin,
+            ));
+        };
+    }
+    #[cfg(feature = "medical")]
+    add!(vajra_domain_med::MedicalPlugin);
+    #[cfg(feature = "security")]
+    add!(vajra_domain_sec::SecurityPlugin);
+    #[cfg(feature = "devops")]
+    add!(vajra_domain_devops::DevOpsPlugin);
+    #[cfg(feature = "source")]
+    add!(vajra_domain_source::SourcePlugin);
+    #[cfg(feature = "github")]
+    add!(vajra_domain_github::GitHubPlugin);
+    #[cfg(feature = "encoding")]
+    add!(vajra_domain_encoding::EncodingPlugin);
+    hints
 }
 
 /// Collect structural detectors from enabled domain plugins.
@@ -2728,6 +2754,31 @@ fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()>
     let relationships =
         vajra_stats::relationships::discover_relationships_binned(&doc, top_k, bins);
 
+    // Domain hints declare relationships a domain expects. Matching them against
+    // what was discovered surfaces both confirmation and, more usefully,
+    // expected relationships that are absent. Hints never weight the
+    // information theory — they are context laid alongside it.
+    let hint_outcomes = {
+        let all = collect_hints();
+        if all.is_empty() {
+            Vec::new()
+        } else {
+            let document_paths: std::collections::BTreeSet<String> =
+                doc.trie().all_paths().iter().map(|p| p.as_str()).collect();
+            let pairs: Vec<(String, String, f64)> = relationships
+                .iter()
+                .map(|r| {
+                    (
+                        r.field_x.as_str(),
+                        r.field_y.as_str(),
+                        r.relationship_strength,
+                    )
+                })
+                .collect();
+            hints::evaluate_hints(&all, &document_paths, &pairs, 0.25)
+        }
+    };
+
     match cli.format {
         Format::Json => {
             let rels_json: Vec<serde_json::Value> = relationships
@@ -2745,8 +2796,17 @@ fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()>
                     })
                 })
                 .collect();
-            let json =
-                serde_json::to_string_pretty(&rels_json).context("JSON serialization failed")?;
+            let json = if hint_outcomes.is_empty() {
+                // Preserve the documented flat-array contract when no domain
+                // hint applies, which is the common case.
+                serde_json::to_string_pretty(&rels_json)
+            } else {
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "relationships": rels_json,
+                    "domain_hints": hint_outcomes,
+                }))
+            }
+            .context("JSON serialization failed")?;
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
@@ -2786,6 +2846,24 @@ fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()>
                 {
                     println!("  [b] = numeric field discretised before analysis (see --bin).");
                 }
+            }
+
+            if !hint_outcomes.is_empty() {
+                println!();
+                println!("=== Domain Expectations ===");
+                for h in &hint_outcomes {
+                    println!(
+                        "  {:<10} {:<28} {:<20} max strength {:.4}",
+                        if h.observed { "observed" } else { "MISSING" },
+                        h.name,
+                        h.relationship,
+                        h.max_strength
+                    );
+                }
+                println!();
+                println!("  MISSING means the domain expects these fields to relate and this");
+                println!("  document's data does not show it. Hints are context only — they");
+                println!("  never weight the entropy measures above.");
             }
         }
     }
