@@ -18,6 +18,7 @@ pub mod ddsketch;
 pub mod entropy;
 pub mod frequency;
 pub mod governance;
+pub mod identity;
 pub mod lz_complexity;
 pub mod mad;
 pub mod numeric;
@@ -48,6 +49,7 @@ pub use governance::{
     render_text as render_governance_text, ChurnMetrics, GovernanceError, GovernanceMetrics,
     GovernanceReport, MonthChurn,
 };
+pub use identity::{normalise_email, resolve_identities, Identity, IdentityResolution};
 pub use lz_complexity::{
     classify_entropy_complexity, lz76_complexity, lz76_phrase_count, lz_analyze,
     lz_complexity_for_values, LzResult,

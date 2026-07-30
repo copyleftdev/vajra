@@ -263,6 +263,12 @@ enum Command {
         /// JSONPath to the issue comments count field (e.g. '$.comments')
         #[arg(long)]
         comments_field: Option<String>,
+        /// Merge contributor aliases that share a name or an email before analysing
+        #[arg(long)]
+        resolve_identities: bool,
+        /// JSONPath to the author email field, used only with --resolve-identities
+        #[arg(long)]
+        email_field: Option<String>,
     },
     /// List all available profiles (built-in and custom)
     Profiles,
@@ -276,6 +282,12 @@ enum Command {
         /// JSONPath to the timestamp field (e.g. '$.date')
         #[arg(long, default_value = "$.date")]
         time_field: String,
+        /// Merge contributor aliases that share a name or an email before analysing
+        #[arg(long)]
+        resolve_identities: bool,
+        /// JSONPath to the author email field, used only with --resolve-identities
+        #[arg(long)]
+        email_field: Option<String>,
     },
     /// Ingest GitHub repository data (PRs, issues, commits, releases) via gh CLI
     IngestGithub {
@@ -298,6 +310,9 @@ enum Command {
     CoreTeam {
         /// Path to JSON file containing commit data, or `-` for stdin
         input: String,
+        /// Merge contributor aliases that share a name or an email before analysing
+        #[arg(long)]
+        resolve_identities: bool,
     },
     /// Generate an HTML analysis report from pre-computed JSON files
     Report {
@@ -396,6 +411,95 @@ const RENDERS_MARKDOWN: &[&str] = &[
 const RENDERS_COMPACT_AI: &[&str] = &["cascade", "compare", "essence", "score"];
 
 /// Warn when the requested format is not actually implemented for this command.
+/// Email selectors tried when `--email-field` is absent.
+const EMAIL_CANDIDATES: fields::Candidates = fields::Candidates {
+    flag: "--email-field",
+    options: &["$.author_email", "$.email"],
+};
+
+/// Rewrite each record's author to its canonical identity.
+///
+/// Git records a `(name, email)` pair chosen per commit, so one person appears
+/// under several. Keying on a single field counts them separately, which moves
+/// every concentration metric — deduplicating one real repository took
+/// `bus_factor_50` from 3 to 1. Applied here, before analysis, so every
+/// governance command gets the same treatment from one implementation.
+///
+/// Reports what it merged: name-or-email unification is aggressive enough that
+/// folding two people together silently would be worse than not doing it.
+/// See #88.
+fn apply_identity_resolution(
+    records: &mut [serde_json::Value],
+    author_field: &str,
+    email_field: Option<&str>,
+    cli: &Cli,
+) {
+    let email_field = resolve_field(email_field, &EMAIL_CANDIDATES, records, cli);
+    let observations: Vec<(String, String)> = records
+        .iter()
+        .map(|r| {
+            let name = extract_json_path(r, author_field)
+                .and_then(|v| v.as_str().map(str::to_owned))
+                .unwrap_or_default();
+            let email = extract_json_path(r, &email_field)
+                .and_then(|v| v.as_str().map(str::to_owned))
+                .unwrap_or_default();
+            (name, email)
+        })
+        .collect();
+
+    let resolution =
+        vajra_stats::resolve_identities(observations.iter().map(|(n, e)| (n.as_str(), e.as_str())));
+
+    if let Some(key) = author_field.strip_prefix("$.") {
+        for record in records.iter_mut() {
+            let Some(name) = record.get(key).and_then(|v| v.as_str()).map(str::to_owned) else {
+                continue;
+            };
+            let canonical = resolution.canonical(&name).to_owned();
+            if canonical != name {
+                if let Some(map) = record.as_object_mut() {
+                    map.insert(key.to_owned(), serde_json::Value::String(canonical));
+                }
+            }
+        }
+    }
+
+    report_identity_merges(&resolution, cli);
+}
+
+/// Say what identity resolution merged.
+///
+/// Name-or-email unification is aggressive — two distinct people sharing a name
+/// merge — so every fold is reported rather than applied silently.
+fn report_identity_merges(resolution: &vajra_stats::IdentityResolution, cli: &Cli) {
+    if cli.quiet {
+        return;
+    }
+    if resolution.merged.is_empty() {
+        eprintln!(
+            "vajra: identity resolution merged nothing ({} contributors)",
+            resolution.identity_count
+        );
+        return;
+    }
+    eprintln!(
+        "vajra: identity resolution merged {} name(s) into {} contributor(s), from {}:",
+        resolution.names_merged(),
+        resolution.identity_count,
+        resolution.observed_names
+    );
+    for identity in &resolution.merged {
+        eprintln!(
+            "vajra:   {} <- {} ({} commits, {} address(es))",
+            identity.canonical,
+            identity.names.join(", "),
+            identity.occurrences,
+            identity.emails.len()
+        );
+    }
+}
+
 /// Flag hint appended to a governance field-resolution failure, so the message
 /// says what to pass rather than only what was missing.
 fn field_hint(err: &vajra_stats::GovernanceError) -> String {
@@ -584,12 +688,16 @@ fn main() {
             time_field,
             message_field,
             comments_field,
+            resolve_identities,
+            email_field,
         } => cmd_score(
             input,
             author_field.as_deref(),
             time_field,
             message_field.as_deref(),
             comments_field.as_deref(),
+            *resolve_identities,
+            email_field.as_deref(),
             &cli,
         ),
         Command::Profiles => cmd_profiles(&cli),
@@ -597,7 +705,16 @@ fn main() {
             input,
             author_field,
             time_field,
-        } => cmd_governance(input, author_field.as_deref(), time_field, &cli),
+            resolve_identities,
+            email_field,
+        } => cmd_governance(
+            input,
+            author_field.as_deref(),
+            time_field,
+            *resolve_identities,
+            email_field.as_deref(),
+            &cli,
+        ),
         Command::IngestGithub {
             repo,
             output,
@@ -605,7 +722,10 @@ fn main() {
             issue_limit,
             commit_limit,
         } => cmd_ingest_github(repo, output, *pr_limit, *issue_limit, *commit_limit, &cli),
-        Command::CoreTeam { input } => cmd_core_team(input, &cli),
+        Command::CoreTeam {
+            input,
+            resolve_identities,
+        } => cmd_core_team(input, *resolve_identities, &cli),
         Command::Report {
             input,
             title,
@@ -811,12 +931,15 @@ fn maybe_redact(output: &str, cli: &Cli) -> String {
 // score command
 // ---------------------------------------------------------------------------
 
+#[allow(clippy::too_many_arguments)]
 fn cmd_score(
     input: &str,
     author_field: Option<&str>,
     time_field: &str,
     message_field: Option<&str>,
     comments_field: Option<&str>,
+    resolve_identities: bool,
+    email_field: Option<&str>,
     cli: &Cli,
 ) -> Result<()> {
     let doc = load_document(input, cli)?;
@@ -835,6 +958,10 @@ fn cmd_score(
 
     let author_field = resolve_field(author_field, &fields::AUTHOR, &records, cli);
     let message_field = resolve_field(message_field, &fields::MESSAGE, &records, cli);
+    let mut records = records;
+    if resolve_identities {
+        apply_identity_resolution(&mut records, &author_field, email_field, cli);
+    }
     let metrics = extract_health_metrics(
         &records,
         &author_field,
@@ -3651,6 +3778,8 @@ fn cmd_governance(
     input: &str,
     author_field: Option<&str>,
     time_field: &str,
+    resolve_identities: bool,
+    email_field: Option<&str>,
     cli: &Cli,
 ) -> Result<()> {
     let doc = load_document(input, cli)?;
@@ -3668,6 +3797,10 @@ fn cmd_governance(
     }
 
     let author_field = resolve_field(author_field, &fields::AUTHOR, &records, cli);
+    let mut records = records;
+    if resolve_identities {
+        apply_identity_resolution(&mut records, &author_field, email_field, cli);
+    }
     let report = governance_analysis(&records, &author_field, time_field)
         .map_err(|e| anyhow::anyhow!("{e}{}", field_hint(&e)))?;
 
@@ -3753,14 +3886,34 @@ fn cmd_ingest_github(
 // core-team command
 // ---------------------------------------------------------------------------
 
-fn cmd_core_team(input: &str, cli: &Cli) -> Result<()> {
+fn cmd_core_team(input: &str, resolve_identities: bool, cli: &Cli) -> Result<()> {
     let doc = load_document(input, cli)?;
-    let records = commit_records_from_json(doc.value());
+    let mut records = commit_records_from_json(doc.value());
 
     if records.is_empty() {
         anyhow::bail!(
             "core-team command received no valid commit records — expected JSON array with author_name, author_email, date fields"
         );
+    }
+
+    // CommitRecord already carries both halves of the identity, so resolution
+    // needs no extra selector here.
+    if resolve_identities {
+        let resolution = vajra_stats::resolve_identities(
+            records
+                .iter()
+                .map(|r| (r.author_name.as_str(), r.author_email.as_str())),
+        );
+        for record in &mut records {
+            // Both halves: detect_core_team keys on (name, email), so unifying
+            // only the name leaves one person counted once per address.
+            if let Some(email) = resolution.email_for(&record.author_name) {
+                record.author_email = email.to_owned();
+            }
+            let canonical = resolution.canonical(&record.author_name).to_owned();
+            record.author_name = canonical;
+        }
+        report_identity_merges(&resolution, cli);
     }
 
     let result = detect_core_team(&records).map_err(|e| anyhow::anyhow!("{e}"))?;
