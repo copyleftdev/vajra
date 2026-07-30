@@ -8,7 +8,9 @@ Vajra is a deterministic semantic reduction and anomaly analysis engine for JSON
 
 ## The Rules
 
-1. **Every algorithm must work at any scale.** 1KB, 1GB, 100GB. If it doesn't stream, it doesn't ship.
+1. **Every algorithm must work at any scale.** 1KB, 1GB, 100GB. Design accumulators to bounded memory: sketches over exact collections, one pass where one pass suffices, a documented accuracy bound where it does not.
+
+   This is the target, and the codebase does not meet it yet — there is no incremental parser, so every analysis materialises the corpus first (#102). Stating the rule as "if it doesn't stream, it doesn't ship" made it unfalsifiable: two commands were flagged for violating it while nothing in the tool actually streamed. A new analysis should say what its memory scales with, and `separation`'s docs are the example to follow.
 2. **Determinism is sacred.** Same input + same config = same output. Always. Use `BTreeMap` for any externally-visible ordering. Seed all randomized algorithms. Fixed traversal order everywhere.
 3. **Strong primitives only.** No speculative ML, no O(n^2) algorithms, no techniques requiring tuning. Published, peer-reviewed, deployed at scale — or it doesn't belong.
 4. **Honest inference.** Every heuristic is labeled. Every score is decomposable. Never silently assert a guess as truth.
@@ -216,7 +218,7 @@ Agent(isolation: worktree) → vajra-anomaly
 - No `unsafe` blocks.
 - No `HashMap` where output order matters. Use `BTreeMap`.
 - No `f64` equality. Use relative tolerance.
-- No `println!` for output. All user-facing output through the rendering system.
+- No `println!` for building output. Text and Markdown are built as a `render::Report` and written once; `println!` appears at most once per format branch, to emit the finished string. Building output line by line duplicates format handling per command, which is how `--format markdown` silently fell through to text in several of them.
 - No `#[allow(clippy::...)]` without a comment explaining why the lint is wrong here.
 - No dependencies without checking: maintained? reasonable dep tree? `no_std` compatible where needed?
 - No `unwrap()`, `expect()`, or `panic!()`. Ever. The clippy deny lints enforce this.

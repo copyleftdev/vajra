@@ -1,6 +1,25 @@
 # Streaming
 
-Vajra handles JSON of any size. A 50 KB medical claim and a 10 GB event log enter the same pipeline. The streaming engine is what makes this possible.
+> **Status: this page describes the intended design, not the current implementation.**
+>
+> There is no SAX parser yet. `load_adaptive`'s large-input branch reads the
+> whole file, parses a full DOM, and then materialises a `Vec<JsonEvent>`
+> alongside it — so `--streaming` currently uses *more* memory than the default
+> path, not less. Measured on a 15 MB, 120,000-record input:
+>
+> | mode | peak RSS |
+> |---|---|
+> | default (DOM) | 233 MB |
+> | `--streaming` | 402 MB |
+>
+> The flag selects the sketch-based accumulators, which are real and tested;
+> what is missing is an incremental parser to feed them. Passing `--streaming`
+> prints a warning saying so. Tracked in
+> [#102](https://github.com/copyleftdev/vajra/issues/102). The memory budget
+> below is the target the accumulators were designed against, and holds once a
+> record iterator exists that never materialises the corpus.
+
+Vajra aims to handle JSON of any size: a 50 KB medical claim and a 10 GB event log entering the same pipeline. The streaming engine is what would make this possible.
 
 ---
 
@@ -16,7 +35,7 @@ For documents that fit in memory. The parser builds a full in-memory tree with r
 
 ### Streaming Mode
 
-For documents that exceed available memory. SAX-style event parsing with bounded memory. The parser emits events (start-object, key, value, end-object, start-array, end-array) and the analyzers update their accumulators incrementally.
+*Intended:* for documents that exceed available memory, SAX-style event parsing with bounded memory. *Today:* the events are produced by walking a fully parsed DOM, so this mode costs more memory than the DOM mode it is meant to replace (#102). The parser emits events (start-object, key, value, end-object, start-array, end-array) and the analyzers update their accumulators incrementally.
 
 **Memory:** O(p + s) where p = distinct paths and s = sum of sketch sizes. For typical JSON with < 1,000 distinct paths: < 10 MB regardless of document size.  
 **Activates:** Automatically when document size exceeds the streaming threshold. Force with `--streaming`.
@@ -119,7 +138,7 @@ Fingerprint:         ~10 KB
 Total:               ~5.2 MB
 ```
 
-This budget holds regardless of whether the document is 100 MB or 100 GB. The streaming guarantee: **bounded memory independent of input size**.
+This budget is what the accumulators were designed to hold to, regardless of whether the document is 100 MB or 100 GB. It is not yet achieved: the accumulators are fed from a fully materialised event vector, so today's memory scales with input size. See the status note at the top of this page and [#102](https://github.com/copyleftdev/vajra/issues/102).
 
 ---
 

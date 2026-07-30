@@ -390,3 +390,127 @@ fn redact_applies_to_text_output() -> Result<()> {
     );
     Ok(())
 }
+
+/// Sub-modes are a separate rendering path and drifted unnoticed.
+///
+/// `all_migrated_commands_emit_real_markdown` runs each command against a
+/// single JSON file, so it never reached `fingerprint --corpus`,
+/// `drift --group-by`, `drift --tree` or `profiles`. All four fell through to
+/// the text branch while `fingerprint` and `drift` were listed as rendering
+/// Markdown — the claim held for the path under test and not for the others.
+#[test]
+fn command_sub_modes_emit_real_markdown() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+
+    // A corpus: two structurally distinct JSON documents in a tree.
+    let corpus = dir.path().join("corpus");
+    std::fs::create_dir_all(corpus.join("a"))?;
+    std::fs::create_dir_all(corpus.join("b"))?;
+    std::fs::write(corpus.join("a/one.json"), r#"{"x":1,"y":[1,2,3]}"#)?;
+    std::fs::write(corpus.join("b/two.json"), r#"{"p":{"q":"z"},"r":false}"#)?;
+
+    // A second tree, for --tree.
+    let other = dir.path().join("other");
+    std::fs::create_dir_all(other.join("a"))?;
+    std::fs::write(other.join("a/one.json"), r#"{"x":1,"y":[1,2,3],"z":9}"#)?;
+
+    // Grouped records, for --group-by.
+    let grouped = dir.path().join("grouped.json");
+    std::fs::write(
+        &grouped,
+        r#"[{"team":"red","score":1},{"team":"red","score":2},
+            {"team":"blue","score":80},{"team":"blue","extra":true}]"#,
+    )?;
+
+    let corpus_s = corpus.to_str().ok_or_else(|| anyhow!("bad path"))?;
+    let other_s = other.to_str().ok_or_else(|| anyhow!("bad path"))?;
+    let grouped_s = grouped.to_str().ok_or_else(|| anyhow!("bad path"))?;
+
+    let modes: Vec<(&str, Vec<&str>)> = vec![
+        (
+            "fingerprint --corpus",
+            vec!["fingerprint", corpus_s, "--corpus"],
+        ),
+        ("drift --tree", vec!["drift", corpus_s, other_s, "--tree"]),
+        (
+            "drift --group-by",
+            vec!["drift", grouped_s, "--group-by", "$.team"],
+        ),
+        ("profiles", vec!["profiles"]),
+    ];
+
+    for (label, base) in modes {
+        let mut md_args = base.clone();
+        md_args.extend_from_slice(&["--format", "markdown", "--quiet"]);
+        let mut text_args = base.clone();
+        text_args.extend_from_slice(&["--format", "text", "--quiet"]);
+
+        let md = Command::new(vajra_bin()).args(&md_args).output()?;
+        let text = Command::new(vajra_bin()).args(&text_args).output()?;
+        assert!(
+            md.status.success(),
+            "`{label}` markdown failed: {}",
+            String::from_utf8_lossy(&md.stderr)
+        );
+        assert!(text.status.success(), "`{label}` text failed");
+
+        let md_out = String::from_utf8_lossy(&md.stdout).into_owned();
+        let text_out = String::from_utf8_lossy(&text.stdout).into_owned();
+
+        // Checked without --quiet, which would suppress the very warning this
+        // is asserting is absent. `profiles` emitted `## Built-in Profiles`
+        // while warning it had no markdown renderer — the inverse false claim,
+        // and invisible while this ran with --quiet.
+        let loud = Command::new(vajra_bin())
+            .args(&base)
+            .args(["--format", "markdown"])
+            .output()?;
+        let loud_err = String::from_utf8_lossy(&loud.stderr).into_owned();
+        assert!(
+            !loud_err.contains("no markdown renderer"),
+            "`{label}` renders markdown but claims it does not: {loud_err}"
+        );
+        assert_ne!(
+            md_out, text_out,
+            "`{label}` markdown is byte-identical to text — it fell through"
+        );
+        assert!(
+            md_out.contains("## "),
+            "`{label}` should emit Markdown headings:\n{md_out}"
+        );
+        assert!(
+            !text_out.contains("## "),
+            "`{label}` text must not contain Markdown headings:\n{text_out}"
+        );
+    }
+    Ok(())
+}
+
+/// `--streaming` advertised "bounded memory". It selects the sketch-based
+/// accumulators, but reaching them parses the whole document and then
+/// materialises a `Vec<JsonEvent>` beside it — measured at 402 MB against the
+/// DOM path's 233 MB on a 15 MB input. A flag that is accepted and does the
+/// opposite of what it says is the same defect as `--redact` doing nothing.
+/// See #102.
+#[test]
+fn streaming_says_it_is_not_yet_bounded() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let f = dir.path().join("d.json");
+    std::fs::write(&f, FIXTURE)?;
+
+    let (_, stderr) = run(&f, &["stats", "--streaming", "--format", "json"])?;
+    assert!(
+        stderr.contains("does not yet bound memory"),
+        "--streaming must not claim bounded memory silently: {stderr:?}"
+    );
+
+    let (_, quiet) = run(&f, &["stats", "--streaming", "--format", "json", "--quiet"])?;
+    assert!(quiet.is_empty(), "--quiet must silence it: {quiet:?}");
+
+    let (_, without) = run(&f, &["stats", "--format", "json"])?;
+    assert!(
+        !without.contains("bound memory"),
+        "the warning must not fire without the flag: {without:?}"
+    );
+    Ok(())
+}

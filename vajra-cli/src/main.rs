@@ -75,7 +75,7 @@ struct Cli {
     #[arg(long, global = true)]
     budget: Option<usize>,
 
-    /// Use streaming analysis pipeline (bounded memory, sketch-based stats)
+    /// Use the sketch-based accumulators (NOT yet bounded memory — see #102)
     #[arg(long, global = true)]
     streaming: bool,
 
@@ -398,6 +398,7 @@ const RENDERS_MARKDOWN: &[&str] = &[
     "governance",
     "inspect",
     "invariants",
+    "profiles",
     "score",
     "separation",
     "stats",
@@ -550,6 +551,23 @@ fn resolve_field_labelled(
     resolved.selector
 }
 
+/// Say that `--streaming` does not yet bound memory.
+///
+/// The flag selects the sketch-based accumulators, but reaching them still
+/// parses the whole document and then materialises a `Vec<JsonEvent>` beside
+/// it: measured at 402 MB against the DOM path's 233 MB on a 15 MB input. A
+/// user passing it to survive a large file gets the opposite of what the name
+/// promises, so it says so rather than accepting the flag quietly. See #102.
+fn warn_streaming_not_bounded(cli: &Cli) {
+    if cli.quiet || !cli.streaming {
+        return;
+    }
+    eprintln!(
+        "vajra: --streaming selects the sketch-based accumulators but does not yet bound \
+         memory — it currently uses more than the default path (see issue #102)"
+    );
+}
+
 fn warn_unimplemented_format(cli: &Cli) {
     if cli.quiet {
         return;
@@ -599,6 +617,7 @@ fn main() {
     let cli = Cli::parse();
 
     warn_unimplemented_format(&cli);
+    warn_streaming_not_bounded(&cli);
 
     let result = match &cli.command {
         Command::Inspect { input } => cmd_inspect(input, &cli),
@@ -1217,18 +1236,28 @@ fn cmd_profiles(cli: &Cli) -> Result<()> {
 
     match cli.format {
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("=== Built-in Profiles ===");
+            let mut out = render::Report::new();
+            out.heading("Built-in Profiles");
+            let mut builtin = render::Table::new(&["PROFILE", "DESCRIPTION"], "(none)");
             for (name, desc) in &builtin_profiles {
-                println!("  {:<12} {}", name, desc);
+                builtin.push(vec![(*name).to_owned(), (*desc).to_owned()]);
             }
+            out.table(builtin);
 
             if !custom_profiles.is_empty() {
-                println!();
-                println!("=== Custom Profiles ===");
+                out.heading("Custom Profiles");
+                let mut custom = render::Table::new(&["PROFILE", "DESCRIPTION"], "(none)");
                 for p in &custom_profiles {
-                    println!("  {:<12} {}", p.name(), p.description());
+                    custom.push(vec![p.name().to_owned(), p.description().to_owned()]);
                 }
+                out.table(custom);
             }
+
+            let text = match cli.format {
+                Format::Markdown => out.to_markdown(),
+                _ => out.to_text(),
+            };
+            print!("{}", maybe_redact(&text, cli));
         }
         Format::Json => {
             let mut profiles_json: Vec<serde_json::Value> = builtin_profiles
@@ -2110,6 +2139,96 @@ fn cmd_anomalies(input: &str, cli: &Cli) -> Result<()> {
     Ok(())
 }
 
+/// Render a corpus shape index.
+fn corpus_index_report(index: &corpus::CorpusIndex) -> render::Report {
+    let mut report = render::Report::new();
+    report.heading("Corpus Shape Index");
+    report.fields(vec![
+        ("Files scanned".to_owned(), index.files_scanned.to_string()),
+        (
+            "Documents indexed".to_owned(),
+            index.documents_indexed.to_string(),
+        ),
+        ("Skipped (format)".to_owned(), index.skipped.to_string()),
+        ("Suppressed (size)".to_owned(), index.suppressed.to_string()),
+        (
+            "Groups indexed".to_owned(),
+            index.groups_indexed.to_string(),
+        ),
+        (
+            "Distinct shapes".to_owned(),
+            index.distinct_shapes.to_string(),
+        ),
+        (
+            "Reused across documents".to_owned(),
+            index.shapes_in_multiple_documents.to_string(),
+        ),
+        (
+            "Reused across groups".to_owned(),
+            index.shapes_in_multiple_groups.to_string(),
+        ),
+    ]);
+
+    report.heading("Reuse Groups");
+    if index.reuse_groups.is_empty() {
+        report.note("no shape occurs in more than one document");
+    } else {
+        report.nested(
+            index
+                .reuse_groups
+                .iter()
+                .map(|g| {
+                    (
+                        format!(
+                            "{} x{}  nodes={}",
+                            &g.shape[..16.min(g.shape.len())],
+                            g.count,
+                            g.node_count
+                        ),
+                        g.members.clone(),
+                    )
+                })
+                .collect(),
+        );
+    }
+
+    report.heading("Clusters (linked transitively)");
+    if index.clusters.is_empty() {
+        report.note("none");
+    } else {
+        report.nested(
+            index
+                .clusters
+                .iter()
+                .map(|c| {
+                    (
+                        format!(
+                            "{} group(s), {} shared shape(s), min nodes {}",
+                            c.size, c.shared_shapes, c.min_node_count
+                        ),
+                        c.members.clone(),
+                    )
+                })
+                .collect(),
+        );
+        report.note(
+            "A cluster resting on one small shape is weak evidence — check min nodes, \
+             and see --min-nodes.",
+        );
+    }
+
+    if !index.errors.is_empty() {
+        report.heading(format!("Errors ({})", index.errors.len()));
+        let mut table = render::Table::new(&["FILE", "ERROR"], "(none)");
+        for e in &index.errors {
+            table.push(vec![e.file.clone(), e.error.clone()]);
+        }
+        report.table(table);
+    }
+
+    report
+}
+
 // ---------------------------------------------------------------------------
 // fingerprint
 // ---------------------------------------------------------------------------
@@ -2235,61 +2354,12 @@ fn cmd_fingerprint_corpus(
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("=== Corpus Shape Index ===");
-            println!("  Files scanned:      {}", index.files_scanned);
-            println!("  Documents indexed:  {}", index.documents_indexed);
-            println!("  Skipped (format):   {}", index.skipped);
-            println!("  Suppressed (size):  {}", index.suppressed);
-            println!("  Distinct shapes:    {}", index.distinct_shapes);
-            println!(
-                "  Reused shapes:      {}",
-                index.shapes_in_multiple_documents
-            );
-            println!();
-
-            println!("=== Reuse Groups ===");
-            if index.reuse_groups.is_empty() {
-                println!("  (no shape occurs in more than one document)");
-            } else {
-                for g in &index.reuse_groups {
-                    println!(
-                        "  {} x{}  nodes={}",
-                        &g.shape[..16.min(g.shape.len())],
-                        g.count,
-                        g.node_count
-                    );
-                    for m in &g.members {
-                        println!("      {m}");
-                    }
-                }
-            }
-            println!();
-
-            println!("=== Clusters (linked transitively) ===");
-            if index.clusters.is_empty() {
-                println!("  (none)");
-            } else {
-                for c in &index.clusters {
-                    println!(
-                        "  {} group(s), {} shared shape(s), min nodes {}",
-                        c.size, c.shared_shapes, c.min_node_count
-                    );
-                    for m in &c.members {
-                        println!("      {m}");
-                    }
-                }
-                println!();
-                println!("  A cluster resting on one small shape is weak evidence — check");
-                println!("  min nodes, and see --min-nodes.");
-            }
-
-            if !index.errors.is_empty() {
-                println!();
-                println!("=== Errors ({}) ===", index.errors.len());
-                for e in &index.errors {
-                    println!("  {}: {}", e.file, e.error);
-                }
-            }
+            let report = corpus_index_report(&index);
+            let text = match cli.format {
+                Format::Markdown => report.to_markdown(),
+                _ => report.to_text(),
+            };
+            print!("{}", maybe_redact(&text, cli));
         }
     }
 
@@ -2687,46 +2757,59 @@ fn cmd_tree_diff(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("=== Structural Tree Diff ===");
-            println!("  Baseline files:  {}", diff.baseline_files);
-            println!("  Candidate files: {}", diff.candidate_files);
+            let mut out = render::Report::new();
+            out.heading("Structural Tree Diff");
+            let mut summary = vec![
+                ("Baseline files".to_owned(), diff.baseline_files.to_string()),
+                (
+                    "Candidate files".to_owned(),
+                    diff.candidate_files.to_string(),
+                ),
+            ];
             for kind in ["added", "removed", "changed", "unchanged"] {
-                println!(
-                    "  {:<10} {}",
-                    format!("{kind}:"),
-                    diff.summary.get(kind).copied().unwrap_or(0)
-                );
+                summary.push((
+                    kind.to_owned(),
+                    diff.summary.get(kind).copied().unwrap_or(0).to_string(),
+                ));
             }
-            println!("  Net node delta:  {:+}", diff.total_node_delta);
-            println!();
+            summary.push((
+                "Net node delta".to_owned(),
+                format!("{:+}", diff.total_node_delta),
+            ));
+            out.fields(summary);
 
-            if diff.files.is_empty() {
-                println!("  (no structural differences)");
-            } else {
-                println!("  {:<10}  {:>10}  PATH", "CHANGE", "NODES");
-                for f in &diff.files {
-                    let delta = f
-                        .node_delta
-                        .map_or_else(|| "        --".to_owned(), |d| format!("{d:>+10}"));
-                    println!(
-                        "  {:<10}  {}  {}",
-                        format!("{:?}", f.change).to_lowercase(),
-                        delta,
-                        f.path
-                    );
-                }
-                println!();
-                println!("  Comparison is by structural shape, so reformatting and renaming do");
-                println!("  not register. A file whose shape changed grew or lost structure.");
+            let mut table =
+                render::Table::new(&["CHANGE", "NODES", "PATH"], "(no structural differences)");
+            for f in &diff.files {
+                table.push(vec![
+                    format!("{:?}", f.change).to_lowercase(),
+                    f.node_delta
+                        .map_or_else(|| "--".to_owned(), |d| format!("{d:+}")),
+                    f.path.clone(),
+                ]);
+            }
+            out.table(table);
+            if !diff.files.is_empty() {
+                out.note(
+                    "Comparison is by structural shape, so reformatting and renaming do not \
+                     register. A file whose shape changed grew or lost structure.",
+                );
             }
 
             if !diff.errors.is_empty() {
-                println!();
-                println!("=== Errors ({}) ===", diff.errors.len());
+                out.heading(format!("Errors ({})", diff.errors.len()));
+                let mut errors = render::Table::new(&["PATH", "ERROR"], "(none)");
                 for e in &diff.errors {
-                    println!("  {}: {}", e.path, e.error);
+                    errors.push(vec![e.path.clone(), e.error.clone()]);
                 }
+                out.table(errors);
             }
+
+            let text = match cli.format {
+                Format::Markdown => out.to_markdown(),
+                _ => out.to_text(),
+            };
+            print!("{}", maybe_redact(&text, cli));
         }
     }
 
@@ -2822,54 +2905,93 @@ fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
             println!("{json_str}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("Population Drift Report");
-            println!("Group-by: {group_by}");
-            println!("Groups: {group_count} ({pair_count} pairwise comparisons)");
-            println!();
-            println!("Group sizes:");
+            let mut out = render::Report::new();
+            out.heading("Population Drift Report");
+            out.fields(vec![
+                ("Group-by".to_owned(), group_by.to_owned()),
+                (
+                    "Groups".to_owned(),
+                    format!("{group_count} ({pair_count} pairwise comparisons)"),
+                ),
+            ]);
+            let mut sizes = render::Table::new(&["GROUP", "RECORDS"], "(none)");
             for (name, size) in &group_sizes {
-                println!("  {name}: {size} records");
+                sizes.push(vec![name.clone(), size.to_string()]);
             }
-            println!();
+            out.table(sizes);
+
             for (name_a, name_b, report) in &pairwise_drift {
-                println!("--- {name_a} vs {name_b} ---");
-                println!(
-                    "  Structural similarity: {:.4} (Jaccard)",
-                    report.structural_similarity
-                );
-                println!("  Severity: {:?}", report.severity);
+                out.heading(format!("{name_a} vs {name_b}"));
+                out.fields(vec![
+                    (
+                        "Structural similarity".to_owned(),
+                        format!("{:.4} (Jaccard)", report.structural_similarity),
+                    ),
+                    ("Severity".to_owned(), format!("{:?}", report.severity)),
+                ]);
+                let mut changes = Vec::new();
                 if !report.path_diff.added.is_empty() {
-                    println!("  Added paths ({}):", report.path_diff.added.len());
-                    for p in &report.path_diff.added {
-                        println!("    + {p}");
-                    }
+                    changes.push((
+                        format!("Added paths ({})", report.path_diff.added.len()),
+                        report
+                            .path_diff
+                            .added
+                            .iter()
+                            .map(|p| format!("+ {p}"))
+                            .collect(),
+                    ));
                 }
                 if !report.path_diff.removed.is_empty() {
-                    println!("  Removed paths ({}):", report.path_diff.removed.len());
-                    for p in &report.path_diff.removed {
-                        println!("    - {p}");
-                    }
+                    changes.push((
+                        format!("Removed paths ({})", report.path_diff.removed.len()),
+                        report
+                            .path_diff
+                            .removed
+                            .iter()
+                            .map(|p| format!("- {p}"))
+                            .collect(),
+                    ));
                 }
                 if !report.type_changes.is_empty() {
-                    println!("  Type changes ({}):", report.type_changes.len());
-                    for tc in &report.type_changes {
-                        println!("    {} : {} -> {}", tc.path, tc.from, tc.to);
-                    }
+                    changes.push((
+                        format!("Type changes ({})", report.type_changes.len()),
+                        report
+                            .type_changes
+                            .iter()
+                            .map(|tc| format!("{} : {} -> {}", tc.path, tc.from, tc.to))
+                            .collect(),
+                    ));
                 }
                 if !report.distributional_drifts.is_empty() {
-                    println!(
-                        "  Distribution shifts ({}):",
-                        report.distributional_drifts.len()
-                    );
-                    for dd in &report.distributional_drifts {
-                        println!(
-                            "    {} : {:?} = {:.4}  (effect {:.4})",
-                            dd.path, dd.metric, dd.value, dd.effect_size
-                        );
-                    }
+                    changes.push((
+                        format!(
+                            "Distribution shifts ({})",
+                            report.distributional_drifts.len()
+                        ),
+                        report
+                            .distributional_drifts
+                            .iter()
+                            .map(|dd| {
+                                format!(
+                                    "{} : {:?} = {:.4}  (effect {:.4})",
+                                    dd.path, dd.metric, dd.value, dd.effect_size
+                                )
+                            })
+                            .collect(),
+                    ));
                 }
-                println!();
+                if changes.is_empty() {
+                    out.note("no structural or distributional differences");
+                } else {
+                    out.nested(changes);
+                }
             }
+
+            let text = match cli.format {
+                Format::Markdown => out.to_markdown(),
+                _ => out.to_text(),
+            };
+            print!("{}", maybe_redact(&text, cli));
         }
     }
     Ok(())
@@ -3869,13 +3991,24 @@ fn cmd_ingest_github(
             println!("{out}");
         }
         Format::Text | Format::Markdown => {
-            println!("=== GitHub Ingestion Summary ===");
-            println!("  Repository:     {repo}");
-            println!("  Output dir:     {}", result.output_dir.display());
-            println!("  Commits:        {}", result.commits);
-            println!("  Pull requests:  {}", result.pull_requests);
-            println!("  Issues:         {}", result.issues);
-            println!("  Releases:       {}", result.releases);
+            let mut out = render::Report::new();
+            out.heading("GitHub Ingestion Summary");
+            out.fields(vec![
+                ("Repository".to_owned(), repo.to_owned()),
+                (
+                    "Output dir".to_owned(),
+                    result.output_dir.display().to_string(),
+                ),
+                ("Commits".to_owned(), result.commits.to_string()),
+                ("Pull requests".to_owned(), result.pull_requests.to_string()),
+                ("Issues".to_owned(), result.issues.to_string()),
+                ("Releases".to_owned(), result.releases.to_string()),
+            ]);
+            let text = match cli.format {
+                Format::Markdown => out.to_markdown(),
+                _ => out.to_text(),
+            };
+            print!("{}", maybe_redact(&text, cli));
         }
     }
 

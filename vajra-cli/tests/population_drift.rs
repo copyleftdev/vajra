@@ -171,9 +171,15 @@ fn text_output_works() -> Result<(), Box<dyn std::error::Error>> {
         String::from_utf8_lossy(&output.stderr)
     );
     let text = String::from_utf8_lossy(&output.stdout);
+    // Field labels are padded to a common width by the renderer, so assert on
+    // the content rather than on a particular run of spaces.
+    let squeezed = text.split_whitespace().collect::<Vec<_>>().join(" ");
     assert!(text.contains("Population Drift Report"), "missing header");
     assert!(text.contains("fastapi vs gin"), "missing pair");
-    assert!(text.contains("Group-by: repo"), "missing group-by");
+    assert!(
+        squeezed.contains("Group-by: repo"),
+        "missing group-by:\n{text}"
+    );
     Ok(())
 }
 
