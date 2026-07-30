@@ -364,7 +364,14 @@ enum Command {
 /// accepting a format and ignoring it is the same failure as reporting
 /// `errors: []` over a partial batch: the caller cannot distinguish "rendered
 /// as Markdown" from "fell back to text".
-const RENDERS_MARKDOWN: &[&str] = &["essence", "anomalies", "stats", "invariants"];
+const RENDERS_MARKDOWN: &[&str] = &[
+    "essence",
+    "anomalies",
+    "stats",
+    "invariants",
+    "fingerprint",
+    "separation",
+];
 
 /// Commands with a bespoke compact-AI view.
 const RENDERS_COMPACT_AI: &[&str] = &["essence"];
@@ -2088,15 +2095,33 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
                 println!("{json}");
             }
             Format::Text | Format::Markdown | Format::CompactAi => {
-                println!("=== Structural Fingerprints (streaming) ===");
-                println!("  Nodes:       {node_count}");
+                let mut report = render::Report::new();
+                report.heading("Structural Fingerprints (streaming)");
+                let mut fields = vec![("Nodes".to_owned(), node_count.to_string())];
                 if suppressed {
-                    println!("  Suppressed:  node count below --min-nodes {min_nodes}");
+                    fields.push((
+                        "Suppressed".to_owned(),
+                        format!("node count below --min-nodes {min_nodes}"),
+                    ));
                 } else {
-                    println!("  Path set:    {}", hex_slice(&result.path_set));
-                    println!("  Typed path:  {}", hex_slice(&result.typed_path));
+                    fields.push(("Path set".to_owned(), hex_slice(&result.path_set)));
+                    fields.push(("Typed path".to_owned(), hex_slice(&result.typed_path)));
                 }
-                println!("  Shape:       (not available in streaming mode)");
+                fields.push((
+                    "Shape".to_owned(),
+                    "(not available in streaming mode)".to_owned(),
+                ));
+                report.fields(fields);
+                report.note(
+                    "Streaming mode cannot produce the Merkle shape hash, which needs the\nwhole tree in memory.",
+                );
+                print!(
+                    "{}",
+                    match cli.format {
+                        Format::Markdown => report.to_markdown(),
+                        _ => report.to_text(),
+                    }
+                );
             }
         }
     } else {
@@ -2113,29 +2138,49 @@ fn cmd_fingerprint(input: &str, min_nodes: u64, cli: &Cli) -> Result<()> {
                 println!("{json}");
             }
             Format::Text | Format::Markdown | Format::CompactAi => {
-                println!("=== Structural Fingerprints ===");
-                println!("  Nodes:       {}", output.node_count);
+                let mut report = render::Report::new();
+                report.heading("Structural Fingerprints");
+
+                let mut fields = vec![("Nodes".to_owned(), output.node_count.to_string())];
                 if output.suppressed {
-                    println!("  Suppressed:  node count below --min-nodes {}", min_nodes);
-                    println!(
-                        "               structural hashes are not discriminating at this size"
+                    fields.push((
+                        "Suppressed".to_owned(),
+                        format!("node count below --min-nodes {min_nodes}"),
+                    ));
+                } else {
+                    fields.push((
+                        "Path set".to_owned(),
+                        show(output.path_set.as_deref()).to_owned(),
+                    ));
+                    fields.push((
+                        "Typed path".to_owned(),
+                        show(output.typed_path.as_deref()).to_owned(),
+                    ));
+                    fields.push(("Shape".to_owned(), show(output.shape.as_deref()).to_owned()));
+                }
+                report.fields(fields);
+
+                if output.suppressed {
+                    report.note(
+                        "Structural hashes are not discriminating at this size: the space of\ndistinct small shapes is tiny, so trivial documents collide.",
                     );
                 } else {
-                    println!("  Path set:    {}", show(output.path_set.as_deref()));
-                    println!("  Typed path:  {}", show(output.typed_path.as_deref()));
-                    println!("  Shape:       {}", show(output.shape.as_deref()));
-                    println!();
-
-                    println!("=== Repeated Motifs ===");
-                    if output.repeated_motifs.is_empty() {
-                        println!("  (no repeated subtree shapes found)");
-                    } else {
-                        println!("  {:<66}  {:>5}", "HASH", "COUNT");
-                        for m in &output.repeated_motifs {
-                            println!("  {:<66}  {:>5}", m.hash, m.count);
-                        }
+                    report.heading("Repeated Motifs");
+                    let mut t =
+                        render::Table::new(&["HASH", "COUNT"], "no repeated subtree shapes found");
+                    for m in &output.repeated_motifs {
+                        t.push(vec![m.hash.clone(), m.count.to_string()]);
                     }
+                    report.table(t);
                 }
+
+                print!(
+                    "{}",
+                    match cli.format {
+                        Format::Markdown => report.to_markdown(),
+                        _ => report.to_text(),
+                    }
+                );
             }
         }
     }
@@ -2798,96 +2843,99 @@ fn cmd_separation(
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("=== Separation: {} ===", report.label_field);
-            println!("  Labelled records:  {}", report.labelled_records);
-            for (class, count) in &report.classes {
-                println!("    {class}: {count}");
-            }
-            println!("  Baseline entropy:  {:.4} bits", report.baseline_entropy);
-            if let Some(pos) = &report.positive_class {
-                println!("  Positive class:    {pos}");
-            } else {
-                println!(
-                    "  Positive class:    (none — {} classes, so AUC is undefined)",
-                    report.classes.len()
-                );
-            }
-            if let Some(rate) = report.base_rate {
-                println!("  Assumed prevalence: {rate}");
-            }
-            println!();
+            let mut out = render::Report::new();
 
-            println!(
-                "  {:<44}  {:>4}  {:>8}  {:>8}  {:>7}",
-                "FEATURE", "KIND", "MI(bits)", "STRENGTH", "SEP"
+            out.heading(format!("Separation: {}", report.label_field));
+            let mut fields = vec![(
+                "Labelled records".to_owned(),
+                report.labelled_records.to_string(),
+            )];
+            for (class, count) in &report.classes {
+                fields.push((format!("  class {class}"), count.to_string()));
+            }
+            fields.push((
+                "Baseline entropy".to_owned(),
+                format!("{:.4} bits", report.baseline_entropy),
+            ));
+            fields.push((
+                "Positive class".to_owned(),
+                report.positive_class.clone().unwrap_or_else(|| {
+                    format!(
+                        "(none — {} classes, so AUC is undefined)",
+                        report.classes.len()
+                    )
+                }),
+            ));
+            if let Some(rate) = report.base_rate {
+                fields.push(("Assumed prevalence".to_owned(), rate.to_string()));
+            }
+            out.fields(fields);
+
+            out.heading("Feature Separation");
+            let mut t = render::Table::new(
+                &["FEATURE", "KIND", "MI(bits)", "STRENGTH", "SEP"],
+                "no features to evaluate",
             );
             for f in &shown {
-                let sep = f
-                    .separation
-                    .map_or_else(|| "   --  ".to_owned(), |s| format!("{s:>7.4}"));
-                println!(
-                    "  {:<44}  {:>4}  {:>8.4}  {:>8.4}  {}",
-                    f.path,
+                t.push(vec![
+                    f.path.clone(),
                     if f.kind == vajra_stats::FieldKind::Numeric {
                         "num"
                     } else {
                         "cat"
-                    },
-                    f.mutual_information,
-                    f.relationship_strength,
-                    sep,
-                );
+                    }
+                    .to_owned(),
+                    format!("{:.4}", f.mutual_information),
+                    format!("{:.4}", f.relationship_strength),
+                    f.separation
+                        .map_or_else(|| "--".to_owned(), |s| format!("{s:.4}")),
+                ]);
             }
-            println!();
-            println!("  Ranked by MI (symmetric, bits) — the only column comparable across");
-            println!("  field types. SEP is |2*AUC-1| and is reported for ordered fields only.");
+            out.table(t);
+            out.note(
+                "Ranked by MI (symmetric, bits) — the only column comparable across field\ntypes. SEP is |2*AUC-1| and is reported for ordered fields only.",
+            );
 
             if report.base_rate.is_some() && !report.binary {
-                println!();
-                println!(
-                    "  --base-rate is only meaningful for a two-class label; this one has {}",
+                out.note(format!(
+                    "--base-rate is only meaningful for a two-class label; this one has {} classes, so no single decision rule is defined.",
                     report.classes.len()
-                );
-                println!("  classes, so no single decision rule is defined.");
+                ));
             } else if report.base_rate.is_some() {
-                println!();
-                println!("=== Best single rule, priced at the assumed prevalence ===");
-                println!(
-                    "  {:<30}  {:>7}  {:>7}  {:>9}  RULE",
-                    "FEATURE", "TPR", "FPR", "PRECISION"
+                out.heading("Best single rule, priced at the assumed prevalence");
+                let mut r = render::Table::new(
+                    &["FEATURE", "TPR", "FPR", "PRECISION", "RULE"],
+                    "no operating point available",
                 );
                 for f in &shown {
                     if let Some(op) = &f.operating_point {
-                        let precision = op
-                            .precision_at_base_rate
-                            .map_or_else(|| "   --  ".to_owned(), |p| format!("{p:>9.5}"));
-                        println!(
-                            "  {:<30}  {:>7.4}  {:>7.4}  {}  {}",
-                            truncate_path(&f.path, 30),
-                            op.tpr,
-                            op.fpr,
-                            precision,
-                            op.rule
-                        );
+                        r.push(vec![
+                            f.path.clone(),
+                            format!("{:.4}", op.tpr),
+                            format!("{:.4}", op.fpr),
+                            op.precision_at_base_rate
+                                .map_or_else(|| "--".to_owned(), |p| format!("{p:.5}")),
+                            op.rule.clone(),
+                        ]);
                     }
                 }
-                println!();
-                println!("  Precision here is what the rule would deliver in a population with");
-                println!("  the assumed prevalence — usually far below its corpus precision.");
+                out.table(r);
+                out.note(
+                    "Precision here is what the rule would deliver in a population with the\nassumed prevalence — usually far below its corpus precision.",
+                );
             }
+
+            print!(
+                "{}",
+                match cli.format {
+                    Format::Markdown => out.to_markdown(),
+                    _ => out.to_text(),
+                }
+            );
         }
     }
 
     Ok(())
-}
-
-/// Trim a long JSONPath for fixed-width output.
-fn truncate_path(path: &str, width: usize) -> String {
-    if path.len() <= width {
-        return path.to_owned();
-    }
-    let tail = path.len() - (width - 3);
-    format!("...{}", &path[tail..])
 }
 
 fn cmd_invariants(input: &str, top_k: usize, bin: &str, cli: &Cli) -> Result<()> {

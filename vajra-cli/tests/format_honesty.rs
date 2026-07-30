@@ -45,13 +45,13 @@ fn unimplemented_format_is_announced() -> Result<()> {
     let f = dir.path().join("d.json");
     std::fs::write(&f, FIXTURE)?;
 
-    // `fingerprint` is not yet migrated onto the renderer, so it must still
+    // `cluster` is not yet migrated onto the renderer, so it must still
     // announce both unimplemented formats. Repoint when it is migrated.
     for format in ["markdown", "compact-ai"] {
-        let (_, stderr) = run(&f, &["fingerprint", "--format", format])?;
+        let (_, stderr) = run(&f, &["cluster", "--format", format])?;
         assert!(
             stderr.contains("no ") && stderr.contains("renderer"),
-            "`fingerprint --format {format}` must say it has no renderer, got: {stderr:?}"
+            "`cluster --format {format}` must say it has no renderer, got: {stderr:?}"
         );
         assert!(
             stderr.contains("--format json"),
@@ -127,7 +127,7 @@ fn text_and_json_never_warn() -> Result<()> {
     std::fs::write(&f, FIXTURE)?;
 
     for format in ["text", "json"] {
-        let (_, stderr) = run(&f, &["fingerprint", "--format", format])?;
+        let (_, stderr) = run(&f, &["cluster", "--format", format])?;
         assert!(stderr.is_empty(), "{format} should not warn: {stderr:?}");
     }
     Ok(())
@@ -151,7 +151,7 @@ fn quiet_suppresses_the_warning() -> Result<()> {
 /// For an *unmigrated* command the notice is diagnostics only, so stdout must
 /// stay byte-identical to the text output.
 ///
-/// This is a deliberate tripwire: it will fail when `fingerprint` is migrated
+/// This is a deliberate tripwire: it will fail when `cluster` is migrated
 /// onto the renderer, which is the intended signal rather than a regression.
 /// Point it at another unmigrated command then, or delete it once every command
 /// renders every format.
@@ -161,8 +161,8 @@ fn unmigrated_command_stdout_is_unchanged() -> Result<()> {
     let f = dir.path().join("d.json");
     std::fs::write(&f, FIXTURE)?;
 
-    let (markdown, _) = run(&f, &["fingerprint", "--format", "markdown", "--quiet"])?;
-    let (text, _) = run(&f, &["fingerprint", "--format", "text", "--quiet"])?;
+    let (markdown, _) = run(&f, &["cluster", "--format", "markdown", "--quiet"])?;
+    let (text, _) = run(&f, &["cluster", "--format", "text", "--quiet"])?;
     assert_eq!(
         markdown, text,
         "behaviour is unchanged; only the diagnostic is new"
@@ -177,7 +177,7 @@ fn all_migrated_commands_emit_real_markdown() -> Result<()> {
     let f = dir.path().join("d.json");
     std::fs::write(&f, FIXTURE)?;
 
-    for command in ["anomalies", "stats", "invariants"] {
+    for command in ["anomalies", "stats", "invariants", "fingerprint"] {
         let (md, err) = run(&f, &[command, "--format", "markdown", "--quiet"])?;
         let (text, _) = run(&f, &[command, "--format", "text", "--quiet"])?;
         assert!(
