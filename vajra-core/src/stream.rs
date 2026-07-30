@@ -23,6 +23,30 @@ pub fn emit_events(value: &serde_json::Value) -> Vec<JsonEvent> {
     events
 }
 
+/// Emit events for one record of a top-level array, into a reused buffer.
+///
+/// The root decides the prefix: an element of a top-level sequence is rooted at
+/// `$[*]`, a whole document at `$`. This is what makes paths match a
+/// whole-document walk — rooting a single top-level object at `$[*]` made
+/// streaming report `$[*].a` where the DOM path reports `$.a`, the same input
+/// answered two ways depending on a flag.
+///
+/// The caller owns `events` so the allocation is reused across records rather
+/// than one buffer per record — the point of streaming is that nothing grows
+/// with the record count. See #102.
+pub fn emit_record_events(
+    value: &serde_json::Value,
+    root: crate::records::RecordRoot,
+    events: &mut Vec<JsonEvent>,
+) {
+    events.clear();
+    let base = match root {
+        crate::records::RecordRoot::Document => WildcardPath::root(),
+        crate::records::RecordRoot::Element => WildcardPath::root().push_array_wildcard(),
+    };
+    walk(value, &base, events);
+}
+
 /// Recursively walk the JSON value tree and append events.
 fn walk(value: &serde_json::Value, path: &WildcardPath, events: &mut Vec<JsonEvent>) {
     match value {
@@ -326,6 +350,67 @@ mod tests {
     fn compute_max_depth_correct() -> Result<(), Box<dyn std::error::Error>> {
         let value = parse_value(r#"{"a": {"b": {"c": 1}}}"#)?;
         assert_eq!(compute_max_depth(&value, 0), 3);
+        Ok(())
+    }
+
+    /// The crux of streaming correctness: feeding records one at a time must
+    /// produce the same `Value` events, with the same paths, as walking the
+    /// whole array. If it did not, `--streaming` would silently answer a
+    /// different question from the default path. See #102.
+    #[test]
+    fn per_record_events_match_a_whole_document_walk() -> Result<(), Box<dyn std::error::Error>> {
+        let doc = parse_value(
+            r#"[{"a":1,"nested":{"b":"x"},"list":[1,2]},
+                {"a":2,"nested":{"b":"y"},"list":[3]},
+                {"a":3,"nested":{"b":"z"},"list":[]}]"#,
+        )?;
+
+        // Compared as debug strings rather than by deriving PartialEq:
+        // ScalarValue carries floats, and a derived PartialEq would be exactly
+        // the f64 equality the hard constraints forbid. These values come from
+        // the same walk, so identical formatting is the right check here.
+        let whole: Vec<String> = emit_events(&doc)
+            .into_iter()
+            .filter(|e| matches!(e, JsonEvent::Value { .. }))
+            .map(|e| format!("{e:?}"))
+            .collect();
+
+        let records = doc.as_array().ok_or("expected an array")?;
+        let mut buf = Vec::new();
+        let mut streamed: Vec<String> = Vec::new();
+        for record in records {
+            emit_record_events(record, crate::records::RecordRoot::Element, &mut buf);
+            streamed.extend(
+                buf.iter()
+                    .filter(|e| matches!(e, JsonEvent::Value { .. }))
+                    .map(|e| format!("{e:?}")),
+            );
+        }
+
+        assert_eq!(
+            streamed, whole,
+            "streaming record-by-record must yield identical value events"
+        );
+        assert!(!whole.is_empty(), "the fixture must produce events");
+        Ok(())
+    }
+
+    /// The buffer is reused, so it must not accumulate across records.
+    #[test]
+    fn the_event_buffer_does_not_grow_with_record_count() -> Result<(), Box<dyn std::error::Error>>
+    {
+        let record = parse_value(r#"{"a":1,"b":2}"#)?;
+        let mut buf = Vec::new();
+        emit_record_events(&record, crate::records::RecordRoot::Element, &mut buf);
+        let first = buf.len();
+        for _ in 0..1000 {
+            emit_record_events(&record, crate::records::RecordRoot::Element, &mut buf);
+        }
+        assert_eq!(
+            buf.len(),
+            first,
+            "each call must replace the buffer contents, not append"
+        );
         Ok(())
     }
 }

@@ -62,7 +62,8 @@ Every command accepts these flags:
 --profile <name>                           Concern profile (default: engineer)
 --config <path>                            Path to TOML config with custom profiles
 --budget <N>                               Token budget for essence output
---streaming                                Select the sketch accumulators (NOT yet bounded — #102)
+--streaming                                Bounded memory for `stats` on JSON/NDJSON files; other
+                                           commands and inputs load whole and say so
 --input-format <format>                    Override input format auto-detection
 --redact                                   Apply built-in redaction patterns
 --provenance                               Record the build and schema version in the output

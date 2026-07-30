@@ -89,7 +89,8 @@ struct Cli {
     #[arg(long, global = true)]
     budget: Option<usize>,
 
-    /// Use the sketch-based accumulators (NOT yet bounded memory — see #102)
+    /// Stream records one at a time with bounded memory, using sketch-based
+    /// statistics; results past the exact-tracking threshold are marked inexact
     #[arg(long, global = true)]
     streaming: bool,
 
@@ -570,23 +571,6 @@ fn resolve_field_labelled(
     resolved.selector
 }
 
-/// Say that `--streaming` does not yet bound memory.
-///
-/// The flag selects the sketch-based accumulators, but reaching them still
-/// parses the whole document and then materialises a `Vec<JsonEvent>` beside
-/// it: measured at 402 MB against the DOM path's 233 MB on a 15 MB input. A
-/// user passing it to survive a large file gets the opposite of what the name
-/// promises, so it says so rather than accepting the flag quietly. See #102.
-fn warn_streaming_not_bounded(cli: &Cli) {
-    if cli.quiet || !cli.streaming {
-        return;
-    }
-    eprintln!(
-        "vajra: --streaming selects the sketch-based accumulators but does not yet bound \
-         memory — it currently uses more than the default path (see issue #102)"
-    );
-}
-
 fn warn_unimplemented_format(cli: &Cli) {
     if cli.quiet {
         return;
@@ -636,7 +620,6 @@ fn main() {
     let cli = Cli::parse();
 
     warn_unimplemented_format(&cli);
-    warn_streaming_not_bounded(&cli);
 
     let result = match &cli.command {
         Command::Inspect { input } => cmd_inspect(input, &cli),
@@ -931,6 +914,12 @@ fn load_document_path(path: &Path, cli: &Cli) -> Result<Document> {
     load_document(&path.display().to_string(), cli)
 }
 
+/// Serde predicate: skip a `bool` field when it is true.
+#[allow(clippy::trivially_copy_pass_by_ref)]
+const fn is_true(b: &bool) -> bool {
+    *b
+}
+
 fn hex(bytes: &[u8; 32]) -> String {
     use std::fmt::Write;
     bytes.iter().fold(String::with_capacity(64), |mut s, b| {
@@ -952,6 +941,56 @@ fn load_custom_profiles(cli: &Cli) -> Result<Vec<CustomProfile>> {
 }
 
 /// Apply redaction to rendered output if --redact flag is set.
+/// Feed a file's top-level records to `visit`, one at a time.
+///
+/// Falls back to loading the document when the input is not a streamable file —
+/// stdin, a URL, a git repository, or any non-JSON format — because those go
+/// through readers that produce a whole document by construction. The fallback
+/// is reported rather than silent: a caller who passed `--streaming` to survive
+/// a large input needs to know it did not apply.
+///
+/// The event buffer is allocated once and reused, so nothing here grows with
+/// the record count. See #102.
+fn stream_records_into<F>(input: &str, cli: &Cli, mut visit: F) -> Result<()>
+where
+    F: FnMut(&serde_json::Value, vajra_core::RecordRoot, &mut Vec<vajra_core::JsonEvent>),
+{
+    let path = Path::new(input);
+    let streamable = input != "-"
+        && !vajra_core::is_url(input)
+        && path.is_file()
+        && !is_git_input(input, cli)
+        && matches!(
+            cli.input_format,
+            None | Some(InputFormatArg::Json) | Some(InputFormatArg::Ndjson)
+        );
+
+    if streamable {
+        let shape = vajra_core::records::detect_shape(path).map_err(|e| anyhow::anyhow!("{e}"))?;
+        let mut events = Vec::new();
+        vajra_core::records::for_each_record(path, shape, |record, root| {
+            visit(record, root, &mut events);
+        })
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
+        return Ok(());
+    }
+
+    if !cli.quiet {
+        eprintln!("vajra: --streaming needs a JSON or NDJSON file; this input is loaded whole");
+    }
+    let doc = load_document(input, cli)?;
+    let mut events = Vec::new();
+    match doc.value().as_array() {
+        Some(records) => {
+            for record in records {
+                visit(record, vajra_core::RecordRoot::Element, &mut events);
+            }
+        }
+        None => visit(doc.value(), vajra_core::RecordRoot::Document, &mut events),
+    }
+    Ok(())
+}
+
 /// The single exit point for user-facing output: redaction, then provenance.
 ///
 /// Every command's last act goes through here. Funnelling output to one place
@@ -1762,6 +1801,12 @@ struct StatsPathView {
     cardinality: u64,
     total_count: u64,
     max_rarity: f64,
+    /// Present and false only when the figures above are lower bounds rather
+    /// than measurements, which happens once a streaming path passes its
+    /// exact-tracking threshold. Omitted when exact, so the default DOM output
+    /// is unchanged.
+    #[serde(skip_serializing_if = "is_true")]
+    exact: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     numeric: Option<NumericView>,
     top_values: Vec<TopValueView>,
@@ -1810,6 +1855,7 @@ fn build_stats_output(result: &StatsResult) -> StatsOutput {
             .collect();
         paths.push(StatsPathView {
             path: wp.to_string(),
+            exact: stats.exact,
             entropy: stats.entropy,
             normalized_entropy: stats.normalized_entropy,
             cardinality: stats.cardinality,
@@ -1833,10 +1879,11 @@ fn cmd_stats(
     }
 
     let result = if cli.streaming {
-        let doc = load_document(input, cli)?;
-        let events = vajra_core::emit_events(doc.value());
         let mut acc = StreamingStatsAccumulator::default();
-        acc.process_events(&events);
+        stream_records_into(input, cli, |record, root, events| {
+            vajra_core::emit_record_events(record, root, events);
+            acc.process_events(events);
+        })?;
         acc.finalize()
     } else {
         let doc = load_document(input, cli)?;
@@ -1857,21 +1904,48 @@ fn cmd_stats(
             let mut report = render::Report::new();
 
             report.heading("Per-Path Statistics");
-            let mut summary = render::Table::new(
-                &["PATH", "ENTROPY", "NORM", "CARD", "COUNT", "MAX RARITY"],
-                "no scalar or array paths in this document",
-            );
+            // The BASIS column exists only when something is approximate:
+            // adding it unconditionally would put "exact" beside every row of
+            // ordinary output, and omitting it entirely would leave a reader of
+            // text output unable to tell a sketch figure from a measurement —
+            // which the JSON has said since #102.
+            let any_inexact = output.paths.iter().any(|sp| !sp.exact);
+            let headers: &[&str] = if any_inexact {
+                &[
+                    "PATH",
+                    "ENTROPY",
+                    "NORM",
+                    "CARD",
+                    "COUNT",
+                    "MAX RARITY",
+                    "BASIS",
+                ]
+            } else {
+                &["PATH", "ENTROPY", "NORM", "CARD", "COUNT", "MAX RARITY"]
+            };
+            let mut summary =
+                render::Table::new(headers, "no scalar or array paths in this document");
             for sp in &output.paths {
-                summary.push(vec![
+                let mut row = vec![
                     sp.path.clone(),
                     format!("{:.4}", sp.entropy),
                     format!("{:.4}", sp.normalized_entropy),
                     sp.cardinality.to_string(),
                     sp.total_count.to_string(),
                     format!("{:.4}", sp.max_rarity),
-                ]);
+                ];
+                if any_inexact {
+                    row.push(if sp.exact { "exact" } else { "approx" }.to_owned());
+                }
+                summary.push(row);
             }
             report.table(summary);
+            if any_inexact {
+                report.note(
+                    "approx: past the exact-tracking threshold, so cardinality is a lower \
+                     bound and entropy is a sketch estimate, not a measurement",
+                );
+            }
 
             // Numeric quantiles only exist for numeric paths, so they get their
             // own table rather than empty columns in the summary above.

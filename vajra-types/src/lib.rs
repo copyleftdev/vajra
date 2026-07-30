@@ -21,7 +21,12 @@ pub mod trie;
 /// changed `hot_entities` sort key, `bus_factor.value` switching from bits to a
 /// share — with nothing in the output letting a consumer detect any of them.
 /// A single integer is something to branch on without parsing semver. See #104.
-pub const OUTPUT_SCHEMA_VERSION: u32 = 1;
+///
+/// History:
+/// - 2: `stats` paths gained `exact`, omitted when true, marking figures that
+///   are sketch output rather than measurements (#102).
+/// - 1: initial.
+pub const OUTPUT_SCHEMA_VERSION: u32 = 2;
 
 pub use document::{Document, DocumentMetadata};
 pub use error::VajraError;
