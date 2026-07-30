@@ -1,5 +1,6 @@
 mod batch;
 mod corpus;
+mod treediff;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -177,6 +178,9 @@ enum Command {
         /// JSONPath field to partition records by for population-level drift
         #[arg(long)]
         group_by: Option<String>,
+        /// Compare two directory trees structurally, file by file
+        #[arg(long)]
+        tree: bool,
     },
     /// Cluster similar documents in a batch
     Cluster {
@@ -375,8 +379,17 @@ fn main() {
             baseline,
             candidate,
             group_by,
+            tree,
         } => {
-            if let Some(field) = group_by {
+            if *tree {
+                match candidate {
+                    Some(c) => cmd_tree_diff(baseline, c, &cli),
+                    None => {
+                        eprintln!("vajra: drift --tree requires two directories");
+                        std::process::exit(1);
+                    }
+                }
+            } else if let Some(field) = group_by {
                 cmd_population_drift(baseline, field, &cli)
             } else {
                 match candidate {
@@ -2212,6 +2225,73 @@ fn drift_pair_to_json(
 }
 
 #[allow(clippy::too_many_lines)]
+/// Compare two directory trees structurally, file by file.
+fn cmd_tree_diff(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
+    let diff = treediff::diff_trees(
+        Path::new(baseline),
+        Path::new(candidate),
+        &|p| is_selectable_file(p, cli),
+        &|p| load_document_path(p, cli),
+        &|doc| {
+            let result = FingerprintAnalyzer
+                .analyze(doc)
+                .context("fingerprint analysis failed")?;
+            Ok(hex(&result.shape))
+        },
+    )?;
+
+    match cli.format {
+        Format::Json => {
+            let json = serde_json::to_string_pretty(&diff).context("JSON serialization failed")?;
+            println!("{json}");
+        }
+        Format::Text | Format::Markdown | Format::CompactAi => {
+            println!("=== Structural Tree Diff ===");
+            println!("  Baseline files:  {}", diff.baseline_files);
+            println!("  Candidate files: {}", diff.candidate_files);
+            for kind in ["added", "removed", "changed", "unchanged"] {
+                println!(
+                    "  {:<10} {}",
+                    format!("{kind}:"),
+                    diff.summary.get(kind).copied().unwrap_or(0)
+                );
+            }
+            println!("  Net node delta:  {:+}", diff.total_node_delta);
+            println!();
+
+            if diff.files.is_empty() {
+                println!("  (no structural differences)");
+            } else {
+                println!("  {:<10}  {:>10}  PATH", "CHANGE", "NODES");
+                for f in &diff.files {
+                    let delta = f
+                        .node_delta
+                        .map_or_else(|| "        --".to_owned(), |d| format!("{d:>+10}"));
+                    println!(
+                        "  {:<10}  {}  {}",
+                        format!("{:?}", f.change).to_lowercase(),
+                        delta,
+                        f.path
+                    );
+                }
+                println!();
+                println!("  Comparison is by structural shape, so reformatting and renaming do");
+                println!("  not register. A file whose shape changed grew or lost structure.");
+            }
+
+            if !diff.errors.is_empty() {
+                println!();
+                println!("=== Errors ({}) ===", diff.errors.len());
+                for e in &diff.errors {
+                    println!("  {}: {}", e.path, e.error);
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn cmd_population_drift(input: &str, group_by: &str, cli: &Cli) -> Result<()> {
     // Use unified load_document so git repos are handled.
     let doc = load_document(input, cli)?;
