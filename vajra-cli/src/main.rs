@@ -968,6 +968,8 @@ struct InspectOutput {
     fingerprints: FingerprintsView,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     domain_hints: Vec<DomainHintView>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    structural_findings: Vec<StructuralFindingView>,
 }
 
 #[derive(Serialize)]
@@ -999,6 +1001,14 @@ struct DomainHintView {
     path: String,
     value: String,
     recognized_type: String,
+}
+
+#[derive(Serialize)]
+struct StructuralFindingView {
+    signal: String,
+    path: String,
+    detail: String,
+    severity: String,
 }
 
 /// Collect all type recognizers from enabled domain plugins.
@@ -1035,6 +1045,12 @@ fn collect_recognizers() -> Vec<Box<dyn vajra_types::traits::TypeRecognizer>> {
         recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
     }
 
+    #[cfg(feature = "package")]
+    {
+        let plugin = vajra_domain_package::PackagePlugin;
+        recognizers.extend(vajra_types::traits::VajraPlugin::type_recognizers(&plugin));
+    }
+
     // Encoding plugin registered LAST — other plugins claim specific types
     // (JWT, SHA hashes) first; encoding detects the general encoding pattern.
     #[cfg(feature = "encoding")]
@@ -1044,6 +1060,77 @@ fn collect_recognizers() -> Vec<Box<dyn vajra_types::traits::TypeRecognizer>> {
     }
 
     recognizers
+}
+
+/// Collect structural detectors from enabled domain plugins.
+fn collect_detectors() -> Vec<Box<dyn vajra_types::traits::StructuralDetector>> {
+    let mut detectors: Vec<Box<dyn vajra_types::traits::StructuralDetector>> = Vec::new();
+
+    #[cfg(feature = "package")]
+    {
+        let plugin = vajra_domain_package::PackagePlugin;
+        detectors.extend(vajra_types::traits::VajraPlugin::structural_detectors(
+            &plugin,
+        ));
+    }
+
+    detectors
+}
+
+/// Run structural detectors over a document.
+///
+/// Unlike type recognizers, which classify sampled values, these read the
+/// document's shape — so they see facts like "an install-time hook is declared"
+/// that are properties of a key existing rather than of any value.
+fn detect_structural_findings(doc: &Document) -> Vec<StructuralFindingView> {
+    let detectors = collect_detectors();
+    if detectors.is_empty() {
+        return Vec::new();
+    }
+
+    // Records may be wrapped in an array (NDJSON, a batch): check the whole
+    // document and each top-level element, so a manifest is found either way.
+    let mut candidates: Vec<&serde_json::Value> = vec![doc.value()];
+    if let Some(items) = doc.value().as_array() {
+        candidates.extend(items.iter());
+    }
+
+    let mut out = Vec::new();
+    let mut seen = std::collections::BTreeSet::new();
+    for candidate in candidates {
+        for detector in &detectors {
+            if !detector.applies(candidate) {
+                continue;
+            }
+            for f in detector.inspect(candidate) {
+                let key = (f.signal.clone(), f.path.clone(), f.detail.clone());
+                if seen.insert(key) {
+                    out.push(StructuralFindingView {
+                        signal: f.signal,
+                        path: f.path,
+                        detail: f.detail,
+                        severity: f.severity.as_str().to_owned(),
+                    });
+                }
+            }
+        }
+    }
+    // Concern first, then by signal and path, so ordering is fully specified.
+    out.sort_by(|a, b| {
+        severity_rank(&b.severity)
+            .cmp(&severity_rank(&a.severity))
+            .then_with(|| a.signal.cmp(&b.signal))
+            .then_with(|| a.path.cmp(&b.path))
+    });
+    out
+}
+
+fn severity_rank(s: &str) -> u8 {
+    match s {
+        "concern" => 2,
+        "notable" => 1,
+        _ => 0,
+    }
 }
 
 /// Try to match document values against domain-specific type recognizers
@@ -1118,12 +1205,14 @@ fn cmd_inspect(input: &str, cli: &Cli) -> Result<()> {
         .analyze(&doc)
         .context("stats analysis for domain hints failed")?;
     let domain_hints = detect_domain_hints(&stats);
+    let structural_findings = detect_structural_findings(&doc);
 
     let output = InspectOutput {
         metadata: metadata_view,
         paths: path_views,
         fingerprints: fp_view,
         domain_hints,
+        structural_findings,
     };
 
     match cli.format {
@@ -1189,6 +1278,17 @@ fn cmd_inspect(input: &str, cli: &Cli) -> Result<()> {
                         hint.path, hint.value, hint.recognized_type
                     );
                 }
+            }
+
+            if !output.structural_findings.is_empty() {
+                println!();
+                println!("=== Structural Findings ===");
+                for f in &output.structural_findings {
+                    println!("  [{:<8}] {:<32} {}", f.severity, f.path, f.detail);
+                }
+                println!();
+                println!("  `concern` marks structure that carries known risk, such as code");
+                println!("  that runs at install time. It is not a verdict on the package.");
             }
         }
     }

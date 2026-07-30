@@ -25,6 +25,7 @@ vajra-domain-devops = { workspace = true, optional = true }
 vajra-domain-source = { workspace = true, optional = true }
 vajra-domain-encoding = { workspace = true, optional = true }
 vajra-domain-github = { workspace = true, optional = true }
+vajra-domain-package = { workspace = true, optional = true }
 vajra-source = { workspace = true, optional = true }
 vajra-query = { workspace = true }
 vajra-cascade = { workspace = true }
@@ -38,14 +39,15 @@ rayon = { workspace = true }
 tempfile = { workspace = true }
 
 [features]
-default = ["medical", "security", "devops", "source", "encoding", "github"]
+default = ["medical", "security", "devops", "source", "encoding", "github", "package"]
 medical = ["vajra-domain-med"]
 security = ["vajra-domain-sec"]
 devops = ["vajra-domain-devops"]
 source = ["vajra-source", "vajra-domain-source"]
 encoding = ["vajra-domain-encoding"]
 github = ["vajra-domain-github"]
-all-plugins = ["medical", "security", "devops", "source", "encoding", "github"]
+package = ["vajra-domain-package"]
+all-plugins = ["medical", "security", "devops", "source", "encoding", "github", "package"]
 
 [dev-dependencies]
 tempfile = "3"

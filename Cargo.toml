@@ -19,6 +19,7 @@ members = [
     "vajra-domain-source",
     "vajra-domain-encoding",
     "vajra-domain-github",
+    "vajra-domain-package",
     "vajra-report",
     "vajra-mcp",
 ]
@@ -101,6 +102,7 @@ vajra-source = { path = "vajra-source" }
 vajra-domain-source = { path = "vajra-domain-source" }
 vajra-domain-encoding = { path = "vajra-domain-encoding" }
 vajra-domain-github = { path = "vajra-domain-github" }
+vajra-domain-package = { path = "vajra-domain-package" }
 vajra-report = { path = "vajra-report" }
 
 # Tree-sitter
