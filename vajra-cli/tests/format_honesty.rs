@@ -76,6 +76,48 @@ fn implemented_format_is_silent() -> Result<()> {
     Ok(())
 }
 
+/// Tracking is per-format, not per-command: `anomalies` renders real Markdown
+/// but has no compact-AI view, and the notice must reflect exactly that.
+#[test]
+fn per_format_tracking_is_exact() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let f = dir.path().join("d.json");
+    std::fs::write(&f, FIXTURE)?;
+
+    let (_, md_err) = run(&f, &["anomalies", "--format", "markdown"])?;
+    assert!(
+        md_err.is_empty(),
+        "anomalies renders markdown, so must not warn: {md_err:?}"
+    );
+
+    let (_, ai_err) = run(&f, &["anomalies", "--format", "compact-ai"])?;
+    assert!(
+        ai_err.contains("compact-ai"),
+        "anomalies has no compact-ai view, so must warn: {ai_err:?}"
+    );
+    Ok(())
+}
+
+/// A migrated command must emit genuine Markdown, not the text output.
+#[test]
+fn migrated_command_emits_real_markdown() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let f = dir.path().join("d.json");
+    std::fs::write(&f, FIXTURE)?;
+
+    let (md, _) = run(&f, &["anomalies", "--format", "markdown", "--quiet"])?;
+    let (text, _) = run(&f, &["anomalies", "--format", "text", "--quiet"])?;
+
+    assert_ne!(md, text, "markdown must not be the text output");
+    assert!(md.contains("## "), "expected Markdown headings:\n{md}");
+    assert!(md.contains("|---|"), "expected a Markdown table:\n{md}");
+    assert!(
+        text.contains("=== "),
+        "text keeps its own heading style:\n{text}"
+    );
+    Ok(())
+}
+
 #[test]
 fn text_and_json_never_warn() -> Result<()> {
     let dir = tempfile::tempdir()?;
@@ -104,9 +146,14 @@ fn quiet_suppresses_the_warning() -> Result<()> {
     Ok(())
 }
 
-/// The warning is diagnostics only — stdout must be byte-identical to before.
+/// For an *unmigrated* command the notice is diagnostics only, so stdout must
+/// stay byte-identical to the text output.
+///
+/// This test will start failing when `stats` is migrated onto the renderer —
+/// that is the intended signal, not a regression. Point it at another
+/// unmigrated command, or delete it once every command renders every format.
 #[test]
-fn stdout_is_unchanged() -> Result<()> {
+fn unmigrated_command_stdout_is_unchanged() -> Result<()> {
     let dir = tempfile::tempdir()?;
     let f = dir.path().join("d.json");
     std::fs::write(&f, FIXTURE)?;

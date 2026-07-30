@@ -5,7 +5,14 @@ Each command does one thing. They compose.
 
 ## A note on `--format`
 
-`json` and `text` are implemented everywhere. **`markdown` and `compact-ai` currently have a real renderer only in `essence`** — for every other command they produce the text output verbatim.
+`json` and `text` are implemented everywhere. `markdown` and `compact-ai` need a real renderer, and coverage is partial:
+
+| format | commands with a real renderer |
+|---|---|
+| `markdown` | `essence`, `anomalies` |
+| `compact-ai` | `essence` |
+
+For every other command those formats produce the text output verbatim. Commands are being migrated onto a shared renderer, and a command only joins the table above once it genuinely renders that format — so the notice below can never claim more than is true.
 
 Rather than accept the flag and quietly ignore it, those commands now say so on stderr:
 
