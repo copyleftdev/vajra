@@ -39,28 +39,22 @@ fn run(input: &Path, args: &[&str]) -> Result<(String, String)> {
     ))
 }
 
+/// Markdown is now implemented for every command, so the fallback notice only
+/// fires for `compact-ai`. This keeps that path covered.
 #[test]
-fn unimplemented_format_is_announced() -> Result<()> {
+fn compact_ai_fallback_is_announced() -> Result<()> {
     let dir = tempfile::tempdir()?;
     let f = dir.path().join("d.json");
     std::fs::write(&f, FIXTURE)?;
 
-    // `batch` is not yet migrated onto the renderer, so it must still announce
-    // both unimplemented formats. Repoint when it is migrated.
-    let batch_dir = dir.path().join("corpus");
-    std::fs::create_dir(&batch_dir)?;
-    std::fs::write(batch_dir.join("one.json"), FIXTURE)?;
-    for format in ["markdown", "compact-ai"] {
-        let (_, stderr) = run(&batch_dir, &["batch", "--format", format])?;
-        assert!(
-            stderr.contains("no ") && stderr.contains("renderer"),
-            "`batch --format {format}` must say it has no renderer, got: {stderr:?}"
-        );
-        assert!(
-            stderr.contains("--format json"),
-            "should point at a format that works, got: {stderr:?}"
-        );
-    }
+    let (_, stderr) = run(&f, &["stats", "--format", "compact-ai"])?;
+    assert!(
+        stderr.contains("no compact-ai renderer"),
+        "`stats` has no compact-ai view, so must announce the fallback: {stderr:?}"
+    );
+    let (rendered, _) = run(&f, &["stats", "--format", "compact-ai", "--quiet"])?;
+    let (text, _) = run(&f, &["stats", "--format", "text", "--quiet"])?;
+    assert_eq!(rendered, text, "the fallback really is the text output");
     Ok(())
 }
 
@@ -226,61 +220,6 @@ fn compare_renders_both_claimed_formats() -> Result<()> {
     Ok(())
 }
 
-/// The other half of the claim check: a command *not* in a list must genuinely
-/// fall through to text, so the warning it emits is accurate.
-///
-/// Without this, the lists could under-claim indefinitely — which they did.
-/// `governance` and `compare` were emitting real Markdown while being told they
-/// had no renderer, and only measuring every command surfaced it.
-#[test]
-fn unclaimed_commands_really_fall_through_to_text() -> Result<()> {
-    let dir = tempfile::tempdir()?;
-    let plain = dir.path().join("d.json");
-    std::fs::write(&plain, FIXTURE)?;
-    let commits = dir.path().join("commits.json");
-    std::fs::write(
-        &commits,
-        r#"[{"author":"a","date":"2025-01-01T00:00:00Z","subject":"feat: x"},
-            {"author":"b","date":"2025-01-02T00:00:00Z","subject":"fix: y"}]"#,
-    )?;
-
-    // `core-team` needs author_name / author_email / date, not the subject-based
-    // shape `score` and `governance` accept.
-    let team = dir.path().join("team.json");
-    std::fs::write(
-        &team,
-        r#"[{"author_name":"a","author_email":"a@e.com","date":"2025-01-01T00:00:00Z"},
-            {"author_name":"b","author_email":"b@e.com","date":"2025-01-02T00:00:00Z"}]"#,
-    )?;
-
-    let cases: &[(&std::path::PathBuf, &[&str])] =
-        &[(&team, &["core-team"]), (&commits, &["score"])];
-
-    for (input, base) in cases {
-        let mut md = base.to_vec();
-        md.extend_from_slice(&["--format", "markdown", "--quiet"]);
-        let mut tx = base.to_vec();
-        tx.extend_from_slice(&["--format", "text", "--quiet"]);
-        let (rendered, _) = run(input, &md)?;
-        let (text, _) = run(input, &tx)?;
-        assert_eq!(
-            rendered, text,
-            "`{}` is not claimed for markdown, so it must fall through to text",
-            base[0]
-        );
-        // And it must say so.
-        let mut noisy = base.to_vec();
-        noisy.extend_from_slice(&["--format", "markdown"]);
-        let (_, err) = run(input, &noisy)?;
-        assert!(
-            err.contains("no markdown renderer"),
-            "`{}` must announce the fallback: {err:?}",
-            base[0]
-        );
-    }
-    Ok(())
-}
-
 /// `separation` needs a labelled fixture and its own flags, so it cannot join the
 /// simple loop above — but it is claimed as renderer-backed, so it needs the
 /// same assertion. Without this, adding a command to `RENDERS_MARKDOWN` without
@@ -373,31 +312,6 @@ fn quiet_suppresses_the_warning() -> Result<()> {
     assert!(
         stderr.is_empty(),
         "--quiet must silence it, got: {stderr:?}"
-    );
-    Ok(())
-}
-
-/// For an *unmigrated* command the notice is diagnostics only, so stdout must
-/// stay byte-identical to the text output.
-///
-/// This is a deliberate tripwire: it will fail when `core-team` is migrated
-/// onto the renderer, which is the intended signal rather than a regression.
-/// Point it at another unmigrated command then, or delete it once every command
-/// renders every format.
-#[test]
-fn unmigrated_command_stdout_is_unchanged() -> Result<()> {
-    let dir = tempfile::tempdir()?;
-    let f = dir.path().join("team.json");
-    std::fs::write(
-        &f,
-        r#"[{"author_name":"a","author_email":"a@e.com","date":"2025-01-01T00:00:00Z"}]"#,
-    )?;
-
-    let (markdown, _) = run(&f, &["core-team", "--format", "markdown", "--quiet"])?;
-    let (text, _) = run(&f, &["core-team", "--format", "text", "--quiet"])?;
-    assert_eq!(
-        markdown, text,
-        "behaviour is unchanged; only the diagnostic is new"
     );
     Ok(())
 }

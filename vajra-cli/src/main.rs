@@ -25,7 +25,7 @@ use vajra_fingerprint::{
 };
 use vajra_stats::{
     commit_records_from_json, detect_core_team, extract_json_path, governance_analysis,
-    linear_regression, render_core_team_text, render_governance_markdown, render_governance_text,
+    linear_regression, render_governance_markdown, render_governance_text,
     shannon_entropy_from_counts, StatsAnalyzer, StatsResult, StreamingStatsAccumulator,
 };
 use vajra_types::scoring::{compute_health_score, HealthMetrics, HealthScore, HealthWeights};
@@ -364,16 +364,25 @@ enum Command {
 /// accepting a format and ignoring it is the same failure as reporting
 /// `errors: []` over a partial batch: the caller cannot distinguish "rendered
 /// as Markdown" from "fell back to text".
+/// Markdown is implemented for every command, so the notice never fires for it.
+///
+/// Kept as an explicit list rather than removed: the machinery is what stops the
+/// claim drifting, and `compact-ai` still needs it. Tests assert both that every
+/// listed pair genuinely renders and that unlisted pairs genuinely fall back.
 const RENDERS_MARKDOWN: &[&str] = &[
     "anomalies",
+    "batch",
     "cascade",
     "cluster",
     "compare",
+    "core-team",
+    "drift",
     "essence",
     "fingerprint",
     "governance",
     "inspect",
     "invariants",
+    "score",
     "separation",
     "stats",
 ];
@@ -779,9 +788,12 @@ fn cmd_score(
                 println!("{out}");
             }
             Format::Text | Format::Markdown => {
-                let t = score_to_text(s);
-                let t = maybe_redact(&t, cli);
-                print!("{t}");
+                let report = score_report(s);
+                let t = match cli.format {
+                    Format::Markdown => report.to_markdown(),
+                    _ => report.to_text(),
+                };
+                print!("{}", maybe_redact(&t, cli));
             }
             Format::CompactAi => {
                 let j = score_to_json(s);
@@ -926,52 +938,41 @@ fn score_to_json(score: &HealthScore) -> serde_json::Value {
     })
 }
 
-fn score_to_text(score: &HealthScore) -> String {
-    use std::fmt::Write;
-    let mut out = String::new();
-    let _ = writeln!(out, "=== Health Score ===");
-    let _ = writeln!(
-        out,
-        "  Overall: {} ({:.2})",
-        score.overall, score.overall_numeric
-    );
-    let _ = writeln!(out);
-    let _ = writeln!(out, "=== Dimensions ===");
+/// Build the health-score report, independent of output format.
+fn score_report(score: &HealthScore) -> render::Report {
+    let mut report = render::Report::new();
 
-    // Find max dimension name width for alignment
-    let name_width = score
-        .dimensions
-        .keys()
-        .map(|k| k.len())
-        .max()
-        .unwrap_or(10)
-        .max(10);
+    report.heading("Health Score");
+    report.fields(vec![(
+        "Overall".to_owned(),
+        format!("{} ({:.2})", score.overall, score.overall_numeric),
+    )]);
 
-    let _ = writeln!(
-        out,
-        "  {:<nw$}  {:>5}  {:>10}  METRIC",
-        "DIMENSION",
-        "GRADE",
-        "VALUE",
-        nw = name_width
+    report.heading("Dimensions");
+    let mut t = render::Table::new(
+        &["DIMENSION", "GRADE", "VALUE", "METRIC"],
+        "no scorable dimensions",
     );
     for (name, ds) in &score.dimensions {
-        let _ = writeln!(
-            out,
-            "  {:<nw$}  {:>5}  {:>10.4}  {}",
-            name,
-            ds.grade,
-            ds.value,
-            ds.metric_name,
-            nw = name_width
-        );
+        t.push(vec![
+            name.clone(),
+            ds.grade.to_string(),
+            format!("{:.4}", ds.value),
+            ds.metric_name.clone(),
+        ]);
     }
-    let _ = writeln!(out);
-    let _ = writeln!(out, "=== Descriptions ===");
-    for (name, ds) in &score.dimensions {
-        let _ = writeln!(out, "  {}: {}", name, ds.description);
-    }
-    out
+    report.table(t);
+
+    report.heading("Descriptions");
+    report.nested(
+        score
+            .dimensions
+            .iter()
+            .map(|(name, ds)| (name.clone(), vec![ds.description.clone()]))
+            .collect(),
+    );
+
+    report
 }
 
 // ---------------------------------------------------------------------------
@@ -2350,57 +2351,62 @@ fn cmd_drift(baseline: &str, candidate: &str, cli: &Cli) -> Result<()> {
             println!("{json_str}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!("Drift Report: {baseline} -> {candidate}");
-            println!(
-                "Structural similarity: {:.4} (Jaccard)",
-                report.structural_similarity
-            );
-            println!("Severity: {:?}", report.severity);
-            println!();
+            let mut out = render::Report::new();
+            out.heading(format!("Drift Report: {baseline} -> {candidate}"));
+            out.fields(vec![
+                (
+                    "Structural similarity".to_owned(),
+                    format!("{:.4} (Jaccard)", report.structural_similarity),
+                ),
+                ("Severity".to_owned(), format!("{:?}", report.severity)),
+            ]);
 
-            println!("Added paths ({}):", report.path_diff.added.len());
-            if report.path_diff.added.is_empty() {
-                println!("  (none)");
-            } else {
-                for p in &report.path_diff.added {
-                    println!("  + {p}");
+            for (label, paths) in [
+                ("Added paths", &report.path_diff.added),
+                ("Removed paths", &report.path_diff.removed),
+            ] {
+                out.heading(format!("{label} ({})", paths.len()));
+                let mut t = render::Table::new(&["PATH"], "none");
+                for p in paths {
+                    t.push(vec![p.to_string()]);
                 }
+                out.table(t);
             }
-            println!();
-
-            println!("Removed paths ({}):", report.path_diff.removed.len());
-            if report.path_diff.removed.is_empty() {
-                println!("  (none)");
-            } else {
-                for p in &report.path_diff.removed {
-                    println!("  - {p}");
-                }
-            }
-            println!();
 
             if !report.type_changes.is_empty() {
-                println!("Type changes ({}):", report.type_changes.len());
+                out.heading(format!("Type changes ({})", report.type_changes.len()));
+                let mut t = render::Table::new(&["PATH", "FROM", "TO"], "none");
                 for tc in &report.type_changes {
-                    println!("  {} : {} -> {}", tc.path, tc.from, tc.to);
+                    t.push(vec![tc.path.clone(), tc.from.clone(), tc.to.clone()]);
                 }
-                println!();
+                out.table(t);
             }
 
             if !report.distributional_drifts.is_empty() {
-                println!(
-                    "Distribution shifts ({}):",
+                out.heading(format!(
+                    "Distribution shifts ({})",
                     report.distributional_drifts.len()
-                );
+                ));
+                let mut t = render::Table::new(&["PATH", "METRIC", "VALUE", "EFFECT"], "none");
                 for dd in &report.distributional_drifts {
-                    println!(
-                        "  {} : {:?} = {:.4}  (effect {:.4})",
-                        dd.path, dd.metric, dd.value, dd.effect_size
-                    );
+                    t.push(vec![
+                        dd.path.clone(),
+                        format!("{:?}", dd.metric),
+                        format!("{:.4}", dd.value),
+                        format!("{:.4}", dd.effect_size),
+                    ]);
                 }
-                println!(
-                    "  Rank by effect (unit-free, 0-1); metric values use each metric's own units."
+                out.table(t);
+                out.note(
+                    "Rank by EFFECT (unit-free, 0-1). VALUE is in each metric's own units, so\nJSD and Wasserstein values are not comparable with each other.",
                 );
             }
+
+            let txt = match cli.format {
+                Format::Markdown => out.to_markdown(),
+                _ => out.to_text(),
+            };
+            print!("{}", maybe_redact(&txt, cli));
         }
     }
 
@@ -3232,101 +3238,92 @@ fn cmd_batch(directory: &str, cli: &Cli) -> Result<()> {
             println!("{json}");
         }
         Format::Text | Format::Markdown | Format::CompactAi => {
-            println!(
-                "=== Batch Analysis: {} documents ===",
-                result.aggregate.total_documents
-            );
-            println!(
-                "Total nodes across all documents: {}",
-                result.aggregate.total_nodes
-            );
-            println!();
+            let mut out = render::Report::new();
 
-            // Per-document summary table
-            println!("=== Per-Document Summary ===");
-            let max_name = result
-                .per_document
-                .iter()
-                .map(|d| d.file_name.len())
-                .max()
-                .unwrap_or(4)
-                .max(4);
-            println!(
-                "  {:<name_w$}  {:>7}  {:>5}  {:>7}  {:>9}",
-                "FILE",
-                "NODES",
-                "DEPTH",
-                "PATHS",
-                "ANOMALIES",
-                name_w = max_name,
+            out.heading("Batch Analysis");
+            out.fields(vec![
+                (
+                    "Documents".to_owned(),
+                    result.aggregate.total_documents.to_string(),
+                ),
+                (
+                    "Total nodes".to_owned(),
+                    result.aggregate.total_nodes.to_string(),
+                ),
+                ("Skipped".to_owned(), skipped_names.len().to_string()),
+                ("Errors".to_owned(), result.errors.len().to_string()),
+            ]);
+
+            out.heading("Per-Document Summary");
+            let mut per_doc = render::Table::new(
+                &["FILE", "NODES", "DEPTH", "PATHS", "ANOMALIES"],
+                "no documents analysed",
             );
             for d in &result.per_document {
                 let anomaly_count = d.anomalies.numeric_outliers.len()
                     + d.anomalies.rare_values.len()
                     + d.anomalies.type_instabilities.len();
                 let meta = d.document.metadata();
-                println!(
-                    "  {:<name_w$}  {:>7}  {:>5}  {:>7}  {:>9}",
-                    d.file_name,
-                    meta.total_nodes,
-                    meta.max_depth,
-                    meta.distinct_paths,
-                    anomaly_count,
-                    name_w = max_name,
+                per_doc.push(vec![
+                    d.file_name.clone(),
+                    meta.total_nodes.to_string(),
+                    meta.max_depth.to_string(),
+                    meta.distinct_paths.to_string(),
+                    anomaly_count.to_string(),
+                ]);
+            }
+            out.table(per_doc);
+
+            for (title, paths) in [
+                (
+                    "Common Paths (>50% of documents)",
+                    &result.aggregate.common_paths,
+                ),
+                (
+                    "Rare Paths (<10% of documents)",
+                    &result.aggregate.rare_paths,
+                ),
+            ] {
+                out.heading(title);
+                let mut t = render::Table::new(&["PATH", "DOCUMENTS"], "none");
+                for path in paths {
+                    let count = result
+                        .aggregate
+                        .path_frequency
+                        .get(path)
+                        .copied()
+                        .unwrap_or(0);
+                    t.push(vec![path.clone(), count.to_string()]);
+                }
+                out.table(t);
+            }
+
+            if !result.errors.is_empty() {
+                out.heading(format!("Errors ({})", result.errors.len()));
+                let mut t = render::Table::new(&["FILE", "ERROR"], "none");
+                for (name, err) in &result.errors {
+                    t.push(vec![name.clone(), err.clone()]);
+                }
+                out.table(t);
+            }
+
+            if !skipped_names.is_empty() {
+                out.heading(format!("Skipped ({})", skipped_names.len()));
+                let mut t = render::Table::new(&["FILE"], "none");
+                for name in &skipped_names {
+                    t.push(vec![name.clone()]);
+                }
+                out.table(t);
+                out.note(
+                    "Skipped files were not analysed. Check this count before reading the\nresult as complete.",
                 );
             }
-            println!();
 
-            // Common paths
-            println!("=== Common Paths (>50% of documents) ===",);
-            if result.aggregate.common_paths.is_empty() {
-                println!("  (none)");
-            } else {
-                for path in &result.aggregate.common_paths {
-                    let count = result
-                        .aggregate
-                        .path_frequency
-                        .get(path)
-                        .copied()
-                        .unwrap_or(0);
-                    println!("  {path}  ({count} docs)");
-                }
-            }
-            println!();
-
-            // Rare paths
-            println!("=== Rare Paths (<10% of documents) ===",);
-            if result.aggregate.rare_paths.is_empty() {
-                println!("  (none)");
-            } else {
-                for path in &result.aggregate.rare_paths {
-                    let count = result
-                        .aggregate
-                        .path_frequency
-                        .get(path)
-                        .copied()
-                        .unwrap_or(0);
-                    println!("  {path}  ({count} docs)");
-                }
-            }
-
-            // Errors
-            if !result.errors.is_empty() {
-                println!();
-                println!("=== Errors ({}) ===", result.errors.len());
-                for (name, err) in &result.errors {
-                    println!("  {name}: {err}");
-                }
-            }
-
-            // Files present in the directory that the selector passed over.
-            if !skipped_names.is_empty() {
-                println!();
-                println!("=== Skipped ({}) ===", skipped_names.len());
-                for name in &skipped_names {
-                    println!("  {name}");
-                }
-            }
+            let txt = match cli.format {
+                Format::Markdown => out.to_markdown(),
+                _ => out.to_text(),
+            };
+            print!("{}", maybe_redact(&txt, cli));
         }
     }
 
@@ -3644,9 +3641,37 @@ fn cmd_core_team(input: &str, cli: &Cli) -> Result<()> {
             println!("{out}");
         }
         Format::Text | Format::Markdown => {
-            let txt = render_core_team_text(&result);
-            let txt = maybe_redact(&txt, cli);
-            print!("{txt}");
+            let mut report = render::Report::new();
+            report.heading("Core Team Detection");
+            report.fields(vec![("Method".to_owned(), result.detection_method.clone())]);
+
+            for (label, group) in [
+                ("Core", &result.core),
+                ("Bots", &result.bots),
+                ("Community", &result.community),
+            ] {
+                report.heading(format!("{label} ({})", group.len()));
+                let mut t = render::Table::new(
+                    &["NAME", "EMAIL", "COMMITS", "CONFIDENCE", "REASON"],
+                    "none",
+                );
+                for a in group {
+                    t.push(vec![
+                        a.name.clone(),
+                        a.email.clone().unwrap_or_else(|| "(no email)".to_owned()),
+                        a.commits.to_string(),
+                        format!("{:?}", a.confidence),
+                        a.reason.clone(),
+                    ]);
+                }
+                report.table(t);
+            }
+
+            let txt = match cli.format {
+                Format::Markdown => report.to_markdown(),
+                _ => report.to_text(),
+            };
+            print!("{}", maybe_redact(&txt, cli));
         }
     }
 
