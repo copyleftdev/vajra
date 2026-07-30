@@ -875,7 +875,7 @@ fn extract_health_metrics(
 ) -> HealthMetrics {
     let mut metrics = HealthMetrics::default();
 
-    // --- Bus factor: commit entropy from author distribution ---
+    // --- Bus factor: top contributor share, plus entropy for diversity ---
     let mut author_map: BTreeMap<String, u64> = BTreeMap::new();
     let mut total_authors = 0_u64;
     for record in records {
@@ -890,6 +890,19 @@ fn extract_health_metrics(
         let counts: Vec<u64> = author_map.values().copied().collect();
         let entropy = shannon_entropy_from_counts(&counts);
         metrics.commit_entropy = Some(entropy);
+        // Concentration at the top, which entropy over a long one-commit tail
+        // cannot see. This is what the bus_factor dimension grades.
+        //
+        // The u64 -> f64 casts lose precision only past 2^53 commits, which no
+        // repository reaches; the ratio is exact for any real input.
+        #[allow(clippy::cast_precision_loss)]
+        {
+            metrics.top1_share = counts
+                .iter()
+                .copied()
+                .max()
+                .map(|top| top as f64 / total_authors as f64);
+        }
     }
 
     // --- Code stability: fix ratio ---

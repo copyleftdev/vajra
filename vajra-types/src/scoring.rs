@@ -235,6 +235,7 @@ pub struct HealthScore {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HealthWeights {
     pub bus_factor: f64,
+    pub contribution_diversity: f64,
     pub code_stability: f64,
     pub contributor_retention: f64,
     pub velocity_trend: f64,
@@ -244,7 +245,8 @@ pub struct HealthWeights {
 impl Default for HealthWeights {
     fn default() -> Self {
         Self {
-            bus_factor: 0.25,
+            bus_factor: 0.15,
+            contribution_diversity: 0.10,
             code_stability: 0.20,
             contributor_retention: 0.20,
             velocity_trend: 0.15,
@@ -258,6 +260,7 @@ impl HealthWeights {
     #[must_use]
     pub fn total(&self) -> f64 {
         self.bus_factor
+            + self.contribution_diversity
             + self.code_stability
             + self.contributor_retention
             + self.velocity_trend
@@ -281,6 +284,27 @@ pub fn grade_commit_entropy(entropy: f64) -> LetterGrade {
         _ if entropy > 3.5 => LetterGrade::B,
         _ if entropy > 3.0 => LetterGrade::C,
         _ if entropy > 2.5 => LetterGrade::D,
+        _ => LetterGrade::F,
+    }
+}
+
+/// Grade the top contributor's share of commits — the bus factor proper.
+///
+/// Graded instead of author entropy, which is dominated by the long tail of
+/// one-commit contributors and so is nearly blind to concentration at the top:
+/// a repository where one person authored 52% of commits and 75% of
+/// contributors committed exactly once scored B on entropy while its true
+/// `bus_factor_50` was 1. Lower is better. See #89.
+#[must_use]
+pub fn grade_top1_share(share: f64) -> LetterGrade {
+    match () {
+        _ if share < 0.15 => LetterGrade::A,
+        _ if share < 0.20 => LetterGrade::AMinus,
+        _ if share < 0.25 => LetterGrade::BPlus,
+        _ if share < 0.30 => LetterGrade::B,
+        _ if share < 0.35 => LetterGrade::BMinus,
+        _ if share < 0.40 => LetterGrade::C,
+        _ if share < 0.50 => LetterGrade::D,
         _ => LetterGrade::F,
     }
 }
@@ -351,6 +375,8 @@ pub fn grade_zero_comment_rate(rate: f64) -> LetterGrade {
 pub struct HealthMetrics {
     /// Shannon entropy of the commit author distribution.
     pub commit_entropy: Option<f64>,
+    /// Share of commits authored by the single most active contributor.
+    pub top1_share: Option<f64>,
     /// Fix commits / total commits.
     pub fix_ratio: Option<f64>,
     /// Fraction of contributors with exactly one commit.
@@ -375,19 +401,42 @@ pub fn compute_health_score(
     let mut weighted_sum = 0.0_f64;
     let mut total_weight = 0.0_f64;
 
-    if let Some(entropy) = metrics.commit_entropy {
-        let grade = grade_commit_entropy(entropy);
+    // A share outside [0, 1] — or NaN — is not a share. Every comparison in
+    // grade_top1_share is false for NaN, so it would silently return F; the
+    // dimension is dropped instead, and its weight redistributed, exactly as
+    // for a metric that was never supplied.
+    if let Some(share) = metrics
+        .top1_share
+        .filter(|s| s.is_finite() && (0.0..=1.0).contains(s))
+    {
+        let grade = grade_top1_share(share);
         dimensions.insert(
             "bus_factor".to_owned(),
             DimensionScore {
                 grade,
-                value: entropy,
-                metric_name: "commit_entropy".to_owned(),
-                description: "Contributor diversity measured by commit author entropy".to_owned(),
+                value: share,
+                metric_name: "top1_share".to_owned(),
+                description: "Continuity risk measured by the top contributor's share of commits"
+                    .to_owned(),
             },
         );
         weighted_sum += weights.bus_factor * grade.to_numeric();
         total_weight += weights.bus_factor;
+    }
+
+    if let Some(entropy) = metrics.commit_entropy {
+        let grade = grade_commit_entropy(entropy);
+        dimensions.insert(
+            "contribution_diversity".to_owned(),
+            DimensionScore {
+                grade,
+                value: entropy,
+                metric_name: "commit_entropy".to_owned(),
+                description: "Breadth of contribution measured by commit author entropy".to_owned(),
+            },
+        );
+        weighted_sum += weights.contribution_diversity * grade.to_numeric();
+        total_weight += weights.contribution_diversity;
     }
 
     if let Some(ratio) = metrics.fix_ratio {
@@ -587,6 +636,120 @@ mod tests {
         assert_eq!(grade_commit_entropy(0.0), LetterGrade::F);
     }
 
+    /// Non-panicking fallback for `compute_health_score`, matching this
+    /// module's existing test style.
+    fn empty_score() -> HealthScore {
+        HealthScore {
+            overall: LetterGrade::F,
+            overall_numeric: 0.0,
+            dimensions: BTreeMap::new(),
+        }
+    }
+
+    #[test]
+    fn grade_top1_share_thresholds() {
+        assert_eq!(grade_top1_share(0.10), LetterGrade::A);
+        assert_eq!(grade_top1_share(0.18), LetterGrade::AMinus);
+        assert_eq!(grade_top1_share(0.22), LetterGrade::BPlus);
+        assert_eq!(grade_top1_share(0.28), LetterGrade::B);
+        assert_eq!(grade_top1_share(0.33), LetterGrade::BMinus);
+        assert_eq!(grade_top1_share(0.38), LetterGrade::C);
+        assert_eq!(grade_top1_share(0.45), LetterGrade::D);
+        assert_eq!(grade_top1_share(0.50), LetterGrade::F);
+        assert_eq!(grade_top1_share(1.00), LetterGrade::F);
+    }
+
+    /// The case from #89: one contributor authored 52% of commits while 60
+    /// others committed once each. Entropy over that tail stays high, so the
+    /// old entropy-graded `bus_factor` returned B for a repository whose real
+    /// `bus_factor_50` was 1.
+    #[test]
+    fn a_dominant_author_cannot_grade_well_on_bus_factor() {
+        let total = 125.0_f64;
+        let metrics = HealthMetrics {
+            // 65 of 125 commits by one person, 60 singletons.
+            top1_share: Some(65.0 / total),
+            commit_entropy: Some(3.68),
+            ..HealthMetrics::default()
+        };
+        let score = compute_health_score(&metrics, &HealthWeights::default());
+        assert!(score.is_some(), "the metrics supply scorable dimensions");
+        let score = score.unwrap_or_else(empty_score);
+
+        let bus = score.dimensions.get("bus_factor");
+        assert!(bus.is_some(), "bus_factor dimension must be present");
+        if let Some(bus) = bus {
+            assert_eq!(bus.metric_name, "top1_share");
+            assert!(
+                bus.grade.to_numeric() <= LetterGrade::C.to_numeric(),
+                "52% single-author concentration graded {:?}",
+                bus.grade
+            );
+        }
+
+        // The entropy signal is not lost, only renamed to what it measures.
+        let diversity = score.dimensions.get("contribution_diversity");
+        assert!(
+            diversity.is_some(),
+            "contribution_diversity dimension must be present"
+        );
+        if let Some(diversity) = diversity {
+            assert_eq!(diversity.metric_name, "commit_entropy");
+            assert_eq!(diversity.grade, LetterGrade::B);
+        }
+    }
+
+    #[test]
+    fn an_evenly_shared_project_still_grades_well_on_bus_factor() {
+        let metrics = HealthMetrics {
+            top1_share: Some(0.12),
+            commit_entropy: Some(5.2),
+            ..HealthMetrics::default()
+        };
+        let score = compute_health_score(&metrics, &HealthWeights::default());
+        assert!(score.is_some(), "the metrics supply scorable dimensions");
+        let score = score.unwrap_or_else(empty_score);
+        let bus = score.dimensions.get("bus_factor");
+        assert!(bus.is_some(), "bus_factor dimension must be present");
+        if let Some(bus) = bus {
+            assert_eq!(bus.grade, LetterGrade::A);
+        }
+    }
+
+    /// A share outside [0, 1] is not a share; the dimension must be dropped
+    /// rather than graded. NaN in particular would otherwise fall through every
+    /// comparison in `grade_top1_share` and silently return F.
+    #[test]
+    fn an_out_of_domain_top1_share_drops_the_dimension() {
+        for bad in [f64::NAN, -0.1, 1.5, f64::INFINITY] {
+            let metrics = HealthMetrics {
+                top1_share: Some(bad),
+                commit_entropy: Some(3.6),
+                ..HealthMetrics::default()
+            };
+            let score = compute_health_score(&metrics, &HealthWeights::default());
+            assert!(score.is_some());
+            let score = score.unwrap_or_else(empty_score);
+            assert!(
+                !score.dimensions.contains_key("bus_factor"),
+                "top1_share {bad} must not be graded"
+            );
+            assert!(
+                score.dimensions.contains_key("contribution_diversity"),
+                "the other dimensions must still score"
+            );
+        }
+    }
+
+    #[test]
+    fn default_weights_still_sum_to_one() {
+        let total = HealthWeights::default().total();
+        assert!(
+            (total - 1.0).abs() < 1e-9,
+            "weights must sum to 1.0, got {total}"
+        );
+    }
+
     #[test]
     fn grade_fix_ratio_thresholds() {
         assert_eq!(grade_fix_ratio(0.01), LetterGrade::A);
@@ -638,6 +801,7 @@ mod tests {
     #[test]
     fn health_score_perfect() {
         let metrics = HealthMetrics {
+            top1_share: None,
             commit_entropy: Some(6.0),
             fix_ratio: Some(0.01),
             one_commit_rate: Some(0.10),
@@ -660,6 +824,7 @@ mod tests {
     #[test]
     fn health_score_worst() {
         let metrics = HealthMetrics {
+            top1_share: None,
             commit_entropy: Some(0.0),
             fix_ratio: Some(0.50),
             one_commit_rate: Some(0.90),
@@ -690,6 +855,7 @@ mod tests {
     #[test]
     fn health_score_partial_data() {
         let metrics = HealthMetrics {
+            top1_share: None,
             commit_entropy: Some(4.5),
             fix_ratio: Some(0.08),
             one_commit_rate: None,
@@ -705,9 +871,10 @@ mod tests {
             dimensions: BTreeMap::new(),
         });
         assert_eq!(score.dimensions.len(), 2);
-        // commit_entropy=4.5 grades to BPlus (3.3) since threshold is > 4.5 for A-
+        // commit_entropy=4.5 grades to BPlus (3.3); it scores contribution_diversity,
+        // weight 0.10. bus_factor is absent because top1_share is None.
         // fix_ratio=0.08 grades to B (3.0) since threshold is < 0.10
-        let expected = (0.25 * 3.3 + 0.20 * 3.0) / (0.25 + 0.20);
+        let expected = (0.10 * 3.3 + 0.20 * 3.0) / (0.10 + 0.20);
         assert!(
             (score.overall_numeric - expected).abs() < 1e-10,
             "expected {expected}, got {}",
@@ -718,6 +885,7 @@ mod tests {
     #[test]
     fn health_score_mixed_grades() {
         let metrics = HealthMetrics {
+            top1_share: Some(0.28),
             commit_entropy: Some(3.6),
             fix_ratio: Some(0.12),
             one_commit_rate: Some(0.40),
@@ -732,7 +900,10 @@ mod tests {
             overall_numeric: 0.0,
             dimensions: BTreeMap::new(),
         });
-        let expected = 0.25 * 3.0 + 0.20 * 2.0 + 0.20 * 2.0 + 0.15 * 3.0 + 0.20 * 2.0;
+        // top1_share=0.28 -> B (3.0), commit_entropy=3.6 -> B (3.0),
+        // fix_ratio=0.12 -> C (2.0), one_commit_rate=0.40 -> C (2.0),
+        // velocity_slope=0.5 -> B (3.0), zero_comment_rate=0.30 -> C (2.0)
+        let expected = 0.15 * 3.0 + 0.10 * 3.0 + 0.20 * 2.0 + 0.20 * 2.0 + 0.15 * 3.0 + 0.20 * 2.0;
         assert!(
             (score.overall_numeric - expected).abs() < 1e-10,
             "expected {expected}, got {}",
@@ -783,6 +954,7 @@ mod tests {
         let weights = HealthWeights::default();
         for (ent, fix, ocr, slope, zcr) in &test_cases {
             let metrics = HealthMetrics {
+                top1_share: None,
                 commit_entropy: Some(*ent),
                 fix_ratio: Some(*fix),
                 one_commit_rate: Some(*ocr),
