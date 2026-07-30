@@ -100,6 +100,54 @@ fn per_format_tracking_is_exact() -> Result<()> {
     Ok(())
 }
 
+/// `separation` needs a labelled fixture and its own flags, so it cannot join the
+/// simple loop above — but it is claimed as renderer-backed, so it needs the
+/// same assertion. Without this, adding a command to `RENDERS_MARKDOWN` without
+/// migrating it would go unnoticed, which is the exact rot the loop prevents.
+#[test]
+fn separation_emits_real_markdown() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    let f = dir.path().join("labelled.json");
+    let rows: Vec<String> = (0..40)
+        .map(|i| {
+            let positive = i % 2 == 0;
+            let score = if positive { 60 + i } else { i };
+            let label = if positive { "aaa_pos" } else { "zzz_neg" };
+            format!(r#"{{"score": {score}, "label": "{label}"}}"#)
+        })
+        .collect();
+    std::fs::write(&f, format!("[{}]", rows.join(",")))?;
+
+    let args = [
+        "separation",
+        "--label-field",
+        "label",
+        "--base-rate",
+        "0.01",
+    ];
+    let mut md_args = args.to_vec();
+    md_args.extend_from_slice(&["--format", "markdown", "--quiet"]);
+    let mut text_args = args.to_vec();
+    text_args.extend_from_slice(&["--format", "text", "--quiet"]);
+
+    let (md, err) = run(&f, &md_args)?;
+    let (text, _) = run(&f, &text_args)?;
+
+    assert!(
+        err.is_empty(),
+        "separation is migrated, must not warn: {err:?}"
+    );
+    assert_ne!(md, text, "markdown must differ from text");
+    assert!(md.contains("## "), "expected Markdown headings:\n{md}");
+    assert!(md.contains("|---|"), "expected a Markdown table:\n{md}");
+    // The caveats are the product — they must survive the format.
+    assert!(
+        md.contains("> ") && md.contains("Ranked by MI"),
+        "notes must render as blockquotes:\n{md}"
+    );
+    Ok(())
+}
+
 /// Detailed assertions for one migrated command; the loop above covers the set.
 #[test]
 fn migrated_command_emits_real_markdown() -> Result<()> {
