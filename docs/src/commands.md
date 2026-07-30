@@ -1,6 +1,6 @@
 # Commands
 
-Vajra ships 11 commands. Each does one thing. They compose.
+Each command does one thing. They compose.
 
 ---
 

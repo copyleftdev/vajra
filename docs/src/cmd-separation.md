@@ -117,6 +117,16 @@ When a field predicts the *negative* class, the **complement** rule is reported 
 
 ---
 
+## Scale
+
+This command accumulates the full labelled corpus in memory: quantile cuts need the value distribution, and AUC needs per-class value vectors, so neither can be computed in a single bounded pass. Memory grows with records x fields.
+
+That matches [`invariants`](./cmd-invariants.md), which has the same shape for the same reason, but it does mean `separation` is not usable on a corpus larger than memory. There is no `--streaming` mode yet; a sketch-based variant (the crate already carries DDSketch) would be the way to add one.
+
+Also note `--base-rate` is only meaningful for a two-class label — with more classes there is no single decision rule to price, and the command says so rather than printing an empty table.
+
+---
+
 ## Watch for identifier-like fields
 
 A near-unique **string** field — a primary key, a UUID, a filename — will report MI equal to the baseline entropy, because each distinct value maps to one label. That is an artefact, not a finding. `distinct_values` and `coverage` are reported so it is visible; binning fixes the numeric version of the same trap but cannot fix the categorical one.
