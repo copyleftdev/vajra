@@ -158,6 +158,9 @@ vajra inspect claim.json --format json
 }
 ```
 
+`structural_findings` also appears when a domain plugin recognises the document's shape — a package manifest declaring an install-time hook, for example. It is omitted entirely when empty, so its absence means "nothing recognised", not "not checked". See [Domain Plugins](./plugins.md#structural-detectors).
+
+
 ---
 
 ## When to Use It

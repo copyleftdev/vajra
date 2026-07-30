@@ -180,51 +180,39 @@ vajra stats claim.json --format json
 
 ```json
 {
-  "document": "claim.json",
-  "total_nodes": 847,
-  "distinct_paths": 23,
-  "paths": {
-    "$.claims[*].service_lines[*].charge_amount": {
-      "count": 14,
-      "cardinality": 12,
-      "entropy": 3.41,
-      "normalized_entropy": 0.88,
-      "types": {"number": 14},
-      "null_rate": 0.0,
-      "absent_rate": 0.0,
+  "paths": [
+    {
+      "path": "$[*].id",
+      "entropy": 1.584962500721156,
+      "normalized_entropy": 1.0,
+      "cardinality": 3,
+      "total_count": 3,
+      "max_rarity": 1.5849625007211563,
       "numeric": {
-        "min": 45.0,
-        "max": 1250.0,
-        "mean": 312.5,
-        "median": 285.0,
-        "mad": 195.0,
-        "percentiles": {
-          "p01": 45.0, "p05": 52.0, "p25": 125.0,
-          "p50": 285.0, "p75": 425.0, "p95": 890.0, "p99": 1125.0
-        }
+        "min": 1.0, "max": 3.0, "mean": 2.0, "median": 2.0, "mad": 1.0,
+        "p05": 1.1, "p25": 1.5, "p75": 2.5, "p95": 2.9
       },
       "top_values": [
-        {"value": "285.00", "count": 2},
-        {"value": "125.00", "count": 2}
+        { "value": "1", "count": 1 }
       ]
     },
-    "$.claims[*].service_lines[*].status": {
-      "count": 14,
+    {
+      "path": "$[*].name",
+      "entropy": 1.584962500721156,
+      "normalized_entropy": 1.0,
       "cardinality": 3,
-      "entropy": 1.22,
-      "normalized_entropy": 0.77,
-      "types": {"string": 14},
-      "null_rate": 0.0,
-      "absent_rate": 0.0,
+      "total_count": 3,
+      "max_rarity": 1.5849625007211563,
+      "numeric": null,
       "top_values": [
-        {"value": "adjudicated", "count": 10},
-        {"value": "pending", "count": 3},
-        {"value": "denied", "count": 1}
+        { "value": "a", "count": 1 }
       ]
     }
-  }
+  ]
 }
 ```
+
+Output is a single `paths` array, one entry per distinct wildcard path. `numeric` is `null` for non-numeric paths. With `--window`, the response instead carries `windows` and `trends`.
 
 ---
 
